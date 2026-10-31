@@ -40,7 +40,13 @@ def demo(http_request: Request):
     person = auth.principal(http_request)
     if feature_flags(runtime_mode() == "live").layer3 and person.group != "manager":
         raise HTTPException(403, "forbidden")
-    return load_demo()
+    bundle = load_demo()
+    evaluated = service.engine.evaluate(bundle.request)
+    if evaluated.mode == "live":
+        return bundle.model_copy(
+            update={"rules": evaluated.rule_snapshots, "clauses": evaluated.clause_snapshots}
+        )
+    return bundle
 
 
 @router.post("/check", response_model=CheckResult, responses=ERRORS)

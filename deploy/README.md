@@ -37,16 +37,17 @@ them. This is a single-worker synthetic demo, not durable production storage.
 
 Khanh authorized publishing the branch and opening a review PR on 2026-10-31.
 This does not enable any layer or deploy this feature branch. Keep the existing
-public fixture deployment until the integrated main SHA passes its real gates.
+reviewed live deployment until the integrated main SHA passes its real gates.
 
 Integration baseline: reviewed main includes engine, impact, validator and
-R-01..R-04 catalog verification. Legal/pattern adapters await their owners.
+R-01..R-04 catalog verification. Main 86fbb03 also includes the owner's preloaded
+legal change and pattern guard; activation flags remain off.
 The scoped-cache PR #10 still needs current-session
 authorization callback integration before layer 3 can be accepted. Intake now
 passes server user/group and hashes of canonical ACL/active patterns to the
 existing model client; no client-supplied role is trusted.
 
-Windows verification currently has 10 upstream final-CLI test failures because
+Windows verification at main 86fbb03 plus P2 has 11 upstream final-CLI test failures because
 `eval/final.py` uses POSIX-only `os.O_NOFOLLOW`; report these to the eval owner.
 This branch does not change the owner's evaluator or access the final dataset.
 
@@ -55,3 +56,12 @@ main, `LEXCHECK_REMEDIATION_ENABLED=1` exposes internal due dates, reviewer-ente
 legal due dates with immutable clause/version/quote, and closure conditions.
 No statutory date is inferred. Acknowledgement preserves the current task state.
 Keep the flag off until its acceptance and browser checks pass on the deploy SHA.
+
+The P2 task dashboard additionally requires `LEXCHECK_TASK_DASHBOARD_ENABLED=1`.
+It counts each finding once across repeated checks and uses the latest server
+task state; acknowledgement does not close a task. History shows workload by
+demo owner, and Updates shows dossier dependency rechecks with old results kept.
+The build copies the rule owner's preloaded legal source into `legal-preview.json`
+for a read-only old/new clause card with four separate dates. Showing the card
+does not activate a rule or enable layer 2. Keep both task flags off on hosting
+until smoke0 and the frontend acceptance checks pass on the reviewed deploy SHA.

@@ -125,6 +125,9 @@ p {
   font-size: 28px;
 }
 .task-timing { margin-top: 20px; border-top: 1px solid #c9d1c5; padding-top: 12px; }
+.task-dashboard { margin: 24px 0; }
+.task-dashboard th, .task-dashboard td { overflow-wrap: anywhere; }
+.task-filters { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
 .task-timing label { display: block; margin: 12px 0; }
 .task-timing .checkbox-label { display: flex; align-items: center; gap: 8px; }
 .task-timing .checkbox-label input { width: auto; }

@@ -4,5 +4,6 @@ import shell from "./en-shell.js";
 import chat from "./en-chat.js";
 import review from "./en-review.js";
 import updates from "./en-updates.js";
+import tasks from "./en-tasks.js";
 
-export default { ...shell, ...chat, ...review, ...updates };
+export default { ...shell, ...chat, ...review, ...updates, ...tasks };
