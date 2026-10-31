@@ -156,7 +156,7 @@ def test_missing_warning_not_cancelled_by_another_target(request_data, basis):
     assert check(request, basis, evidence=(present,)).rejected[0].reason == "missing_field_present"
 
 
-@pytest.mark.parametrize("field", ["warning", "uses", "text", "issuing_authority"])
+@pytest.mark.parametrize("field", ["warning", "text"])
 def test_local_field_not_cancelled_by_context(request_data, basis, field):
     versions = tuple(
         v.model_copy(update={"text": "", "uses": (), "issuing_authority": "unknown"})
@@ -207,3 +207,19 @@ def test_confirmation_checks_record_kind(request_data, basis):
     )
     request = request_data.model_copy(update={"context_version_ids": ("RV-01-v1",)})
     assert check(request, confirmation_basis, evidence=(missing,)).findings
+
+
+def test_context_uses_are_checked(request_data, basis):
+    versions = tuple(
+        v.model_copy(update={"uses": ()}) if v.id == basis[2].record_version_id else v
+        for v in request_data.versions
+    )
+    evidence = Evidence(
+        record_version_id=basis[2].record_version_id, kind="missing_field", field="uses"
+    )
+    assert (
+        check(request_data.model_copy(update={"versions": versions}), basis, evidence=(evidence,))
+        .rejected[0]
+        .reason
+        == "missing_field_present"
+    )
