@@ -8,7 +8,7 @@ from pathlib import Path
 from time import perf_counter
 
 from contracts.models import CheckRequest, EvaluationReport
-from detect.candidates import CandidateBatch
+from detect.candidates import WireCandidateBatch, validate_candidates
 from detect.client import cache_key, configured_client
 from detect.inputs import model_input
 from detect.service import PROMPT, suggest_with_trace
@@ -52,7 +52,7 @@ def _evaluate_case(case, *, mode, active_client, prompt):
     gold_all = {tuple(pair) for pair in label["gold"]}
     gold = {(version, rule) for version, rule in gold_all if rule in scope}
     payload = model_input(request, evaluation.rule_snapshots, evaluation.clause_snapshots)
-    outputs = {}
+    outputs, batches, rejections = {}, {}, {}
     for system, purpose, model_payload, tools in (
         ("plain_chat", "plain-chat-v1", payload, ()),
         ("plain_chat_web", "plain-chat-web-v1", payload, ({"type": "web_search"},)),
@@ -63,11 +63,16 @@ def _evaluate_case(case, *, mode, active_client, prompt):
             purpose=purpose,
             payload=model_payload,
             prompt=prompt,
-            schema=CandidateBatch,
+            schema=WireCandidateBatch,
             mode=mode,
             **({"tools": tools} if tools else {}),
         )
         outputs[system] = output
+        batch, invalid = (
+            validate_candidates(output.parsed) if output.parsed is not None else (None, 0)
+        )
+        batches[system] = batch
+        rejections[system] = {"schema_invalid": invalid} if invalid else {}
         if output.calls:
             latencies[system].append((perf_counter() - started) * 1000)
         calls[system] = output.calls
@@ -101,7 +106,7 @@ def _evaluate_case(case, *, mode, active_client, prompt):
         for system, output in outputs.items():
             if output.parsed is not None:
                 predictions[system] = sorted(
-                    {(c.record_version_id, c.rule_id) for c in output.parsed.candidates}
+                    {(c.record_version_id, c.rule_id) for c in batches[system].candidates}
                 )
         if detection.model_status != "unavailable":
             predictions["lexcheck"] = sorted(
@@ -133,6 +138,7 @@ def _evaluate_case(case, *, mode, active_client, prompt):
             **{system: output.error for system, output in outputs.items()},
             "lexcheck": suggestion.error,
         },
+        "rejected_by_system": {**rejections, "lexcheck": dict(suggestion.rejected)},
         "unmeasured_gold_pairs": len(gold_all - gold),
     }
     return rows, calls, failures, latencies, trace, scope
@@ -184,6 +190,14 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
             "errors": {
                 s: dict(Counter(t["errors"].get(s) for t in trace if t["errors"].get(s)))
                 for s in SYSTEMS
+            },
+            "rejected_by_system": {
+                system: dict(
+                    sum(
+                        (Counter(t["rejected_by_system"].get(system, {})) for t in trace), Counter()
+                    )
+                )
+                for system in SYSTEMS
             },
             "per_rule": {s: per_rule(rows[s]) for s in rows},
             "false_clean": {

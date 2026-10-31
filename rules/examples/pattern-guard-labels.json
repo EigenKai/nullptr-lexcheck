@@ -1,0 +1,30 @@
+{
+  "provenance": "Developer-authored synthetic development guard labels, not human held-out data or legal accuracy measurements.",
+  "company_id": "CO-DEMO",
+  "pack": "tpbvsk",
+  "rule_id": "R-04",
+  "rule_version": 1,
+  "clause_version_id": "CV-04-v1",
+  "cases": {
+    "4eed085932bd447d5ebeb139ac5128d048c3aeac5014576096310342c78d5771": {
+      "id": "G-P01",
+      "positive_target_ids": [
+        "RV-02-v1"
+      ]
+    },
+    "c9ae48b6ce29460a2c01733a9fbba3b59f2dfa23abb0c9bab65227bb8e04428b": {
+      "id": "G-P02",
+      "positive_target_ids": [
+        "RV-02-v1"
+      ]
+    },
+    "99ed1702d0419094903cb84dd79d59817a665f1c5cb43b13229850c1f5e699ee": {
+      "id": "G-N01",
+      "positive_target_ids": []
+    },
+    "72dd1c0b34eed6c5bd5175db8db727bce7594e91f94879e8bc982a7f234278d8": {
+      "id": "G-N02",
+      "positive_target_ids": []
+    }
+  }
+}

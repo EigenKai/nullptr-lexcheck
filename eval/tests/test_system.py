@@ -124,3 +124,38 @@ def test_report_has_five_systems_in_order():
         "retrieval",
         "lexcheck",
     ]
+
+
+def test_plain_wire_rejections_keep_call_and_denominator_live():
+    from types import SimpleNamespace
+
+    from detect.client import ModelClient
+    from eval.run import evaluate_cases, load_cases
+    from rules.engine import evaluate
+
+    case = next(case for case in load_cases(ROOT / "data/dev") if case[0] == "use-mismatch")
+    evaluation = evaluate(case[1])
+    finding = next(f for f in evaluation.findings if f.rule_id == "R-02")
+    valid = {
+        "rule_id": finding.rule_id,
+        "record_version_id": finding.record_version_id,
+        "clause_quote": finding.clause_quote,
+        "evidence": [e.model_dump() for e in finding.evidence],
+    }
+    invalid = {**valid, "evidence": [{**valid["evidence"][0], "field": "warning"}]}
+
+    def transport(**kwargs):
+        assert kwargs["text_format"].__name__ == "WireCandidateBatch"
+        return SimpleNamespace(
+            status="completed",
+            output_parsed=kwargs["text_format"].model_validate({"candidates": [valid, invalid]}),
+        )
+
+    report, trace = evaluate_cases(
+        (case,), mode="live", client=ModelClient(model="test", transport=transport)
+    )
+    assert all(s.failed_calls == 0 for s in report.systems)
+    assert report.systems[1].evaluated_cases == 1 and report.systems[1].true_positive == 1
+    for system in ("plain_chat", "plain_chat_web", "retrieval", "lexcheck"):
+        assert trace[0]["rejected_by_system"][system] == {"schema_invalid": 1}
+        assert trace[-1]["rejected_by_system"][system] == {"schema_invalid": 1}

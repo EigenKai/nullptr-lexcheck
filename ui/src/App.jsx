@@ -425,7 +425,14 @@ export default function App() {
               go("reviews");
             }}
           >
-            <span className="brand-mark">◈</span>lexcheck
+            <img
+              className="brand-mark"
+              src="/assets/lex-mark-96.png"
+              alt="Lex"
+              width="44"
+              height="44"
+            />
+            lexcheck
             <span className="brand-dot">.</span>
           </a>
           <div className="workspace">
