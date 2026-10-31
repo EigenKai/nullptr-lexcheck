@@ -183,6 +183,16 @@ def test_preloaded_update_preserves_history():
     assert validate_activation(state, date(2026, 10, 31)) == ()
 
 
+def test_previous_clause_matches_original_nd15_article27_5a_verbatim():
+    from rules.legal import load_preloaded
+
+    previous, _ = load_preloaded()
+    assert previous.text == (
+        "Tổ chức, cá nhân có sản phẩm quảng cáo gửi hồ sơ đăng ký xác nhận "
+        "nội dung quảng cáo đến cơ quan cấp Giấy tiếp nhận đăng ký bản công bố sản phẩm;"
+    )
+
+
 @pytest.mark.parametrize("change", [{"verification_status": "to_be_verified"}, {"method": "llm"}])
 def test_unverified_or_model_rule_does_not_activate(state, change):
     from rules.legal import validate_activation
