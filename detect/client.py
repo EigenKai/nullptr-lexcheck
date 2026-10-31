@@ -3,10 +3,12 @@
 import hashlib
 import json
 import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from openai import APITimeoutError
 from pydantic import ValidationError
 
 
@@ -14,6 +16,14 @@ def cache_key(value):
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def timeout_seconds():
+    try:
+        value = float(os.getenv("LEXCHECK_LLM_TIMEOUT_SECONDS", "60"))
+    except ValueError:
+        return 60.0
+    return value if 0 < value <= 180 else 60.0
 
 
 @dataclass(frozen=True)
@@ -98,7 +108,7 @@ class ModelClient:
             if self.transport is None:
                 from openai import OpenAI
 
-                with OpenAI(timeout=15.0, max_retries=1) as client:
+                with OpenAI(timeout=timeout_seconds(), max_retries=1) as client:
                     response = client.responses.parse(
                         model=self.model,
                         instructions=prompt,
@@ -117,19 +127,24 @@ class ModelClient:
             if response.status != "completed" or response.output_parsed is None:
                 return ModelOutput("unavailable", key=key, calls=1, error="no_complete_output")
             parsed = schema.model_validate(response.output_parsed)
+        except APITimeoutError:
+            return ModelOutput("unavailable", key=key, calls=1, error="timeout")
         except Exception:  # noqa: BLE001 - transport boundary must preserve deterministic results
             # Never expose transport exceptions containing private input or credentials.
             return ModelOutput("unavailable", key=key, calls=1, error="transport_failed")
         if path:
+            temporary = None
             try:
                 path.parent.mkdir(parents=True, exist_ok=True)
-                descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                descriptor, temporary = tempfile.mkstemp(dir=path.parent, prefix=".response-")
                 with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
                     handle.write(parsed.model_dump_json())
-            except FileExistsError:
-                pass
+                os.replace(temporary, path)
             except OSError:
                 return ModelOutput("live", parsed, key, 1, "cache_write_failed")
+            finally:
+                if temporary is not None:
+                    Path(temporary).unlink(missing_ok=True)
         return ModelOutput("live", parsed, key, 1)
 
 

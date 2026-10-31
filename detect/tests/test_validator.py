@@ -348,3 +348,89 @@ def test_linked_confirmation_must_match_target_product(request_data, basis, prod
     result = check(request, confirmation_basis, evidence=(missing,))
     assert bool(result.findings) is not present
     assert [r.reason for r in result.rejected] == (["missing_field_present"] if present else [])
+
+
+def _dev_finding(case, rule_id, evidence):
+    from contracts.models import CheckRequest, Finding
+    from eval.run import ROOT
+    from rules.engine import evaluate
+
+    request = CheckRequest.model_validate_json((ROOT / f"data/dev/cases/{case}.json").read_text())
+    evaluation = evaluate(request)
+    rule = next(r for r in evaluation.rule_snapshots if r.id == rule_id)
+    clause = next(c for c in evaluation.clause_snapshots if c.id == rule.clause_version_id)
+    finding = Finding(
+        id="F-regression",
+        rule_id=rule.id,
+        rule_version=rule.version,
+        clause_version_id=clause.id,
+        record_version_id="RV-02-v1",
+        source="llm",
+        status="suggestion",
+        severity=rule.severity,
+        message="Review item",
+        clause_quote=clause.text,
+        evidence=(evidence,),
+    )
+    return validate_findings(
+        (finding,), request, evaluation.rule_snapshots, evaluation.clause_snapshots
+    )
+
+
+def test_rejects_confirmation_span_inside_linked_confirmation():
+    from contracts.models import CheckRequest
+    from eval.run import ROOT
+
+    request = CheckRequest.model_validate_json((ROOT / "data/dev/cases/clean-1.json").read_text())
+    text = next(v.text for v in request.versions if v.id == "RV-04-v1")
+    quote = "No official receipt or certificate is reproduced."
+    start = text.index(quote)
+    result = _dev_finding(
+        "clean-1",
+        "R-03",
+        Evidence(
+            record_version_id="RV-04-v1",
+            kind="span",
+            quote=quote,
+            start=start,
+            end=start + len(quote),
+        ),
+    )
+    assert not result.findings
+    assert result.rejected[0].reason == "evidence_mismatch"
+
+
+def test_rejects_absence_rule_without_missing_field_evidence():
+    from contracts.models import CheckRequest
+    from eval.run import ROOT
+
+    request = CheckRequest.model_validate_json((ROOT / "data/dev/cases/clean-1.json").read_text())
+    text = next(v.text for v in request.versions if v.id == "RV-02-v1")
+    result = _dev_finding(
+        "clean-1",
+        "R-01",
+        Evidence(record_version_id="RV-02-v1", kind="span", quote=text[:6], start=0, end=6),
+    )
+    assert result.rejected[0].reason == "evidence_mismatch"
+
+
+def test_accepts_llm_confirmation_when_really_missing():
+    result = _dev_finding(
+        "missing-evidence",
+        "R-03",
+        Evidence(record_version_id="RV-02-v1", kind="missing_field", field="confirmation_date"),
+    )
+    assert result.findings and not result.rejected
+
+
+def test_llm_uses_span_still_accepted():
+    from contracts.models import CheckRequest
+    from eval.run import ROOT
+    from rules.engine import evaluate
+
+    request = CheckRequest.model_validate_json(
+        (ROOT / "data/dev/cases/use-mismatch.json").read_text()
+    )
+    evidence = next(f.evidence[0] for f in evaluate(request).findings if f.rule_id == "R-02")
+    result = _dev_finding("use-mismatch", "R-02", evidence)
+    assert result.findings and not result.rejected

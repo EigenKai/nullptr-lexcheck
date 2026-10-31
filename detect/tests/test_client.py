@@ -176,3 +176,101 @@ def test_rejections_counted(request_data, basis):
     )
     assert dict(trace.rejected) == {"unknown_rule": 1}
     assert not trace.result.findings
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (None, 60),
+        ("30.5", 30.5),
+        ("180", 180),
+        ("0", 60),
+        ("-1", 60),
+        ("181", 60),
+        ("bad", 60),
+        ("nan", 60),
+        ("inf", 60),
+    ],
+)
+def test_timeout_from_env_with_bounds(monkeypatch, value, expected):
+    from detect.client import timeout_seconds
+
+    if value is None:
+        monkeypatch.delenv("LEXCHECK_LLM_TIMEOUT_SECONDS", raising=False)
+    else:
+        monkeypatch.setenv("LEXCHECK_LLM_TIMEOUT_SECONDS", value)
+    assert timeout_seconds() == expected
+
+
+def test_timeout_error_code_is_distinct(request_data, basis):
+    import importlib
+
+    import httpx
+
+    sdk = importlib.import_module("openai")
+
+    def timeout(**kwargs):
+        raise sdk.APITimeoutError(request=httpx.Request("POST", "https://example.org"))
+
+    client = ModelClient(transport=timeout, model="test")
+    output = client.generate(
+        purpose="test", payload={}, prompt="test", schema=CandidateBatch, mode="live"
+    )
+    assert output.error == "timeout" and output.calls == 1
+    rule, clause, finding = basis
+    evaluation = RuleEvaluation(
+        mode="live",
+        applicability="applies",
+        reason="Test",
+        findings=(finding,),
+        rule_snapshots=(rule,),
+        clause_snapshots=(clause,),
+    )
+    assert (
+        suggest(
+            request_data.model_copy(update={"llm_mode": "live"}), evaluation, client=client
+        ).model_status
+        == "unavailable"
+    )
+    assert evaluation.findings == (finding,)
+
+
+def test_cache_publication_is_atomic(tmp_path, monkeypatch):
+    import os
+    from types import SimpleNamespace
+
+    import detect.client as module
+
+    replace = os.replace
+    published = []
+
+    def inspect_replace(source, target):
+        # A reader cannot see a partial final file, even while publication is paused.
+        assert not target.exists()
+        assert (
+            CandidateBatch.model_validate_json(
+                __import__("pathlib").Path(source).read_text()
+            ).candidates
+            == ()
+        )
+        published.append(target)
+        replace(source, target)
+
+    monkeypatch.setattr(module.os, "replace", inspect_replace)
+    client = ModelClient(
+        model="test",
+        cache_dir=tmp_path,
+        user_id="U-test",
+        group="manager",
+        acl_hash="test",
+        transport=lambda **kw: SimpleNamespace(
+            status="completed", output_parsed=CandidateBatch(candidates=())
+        ),
+    )
+    assert (
+        client.generate(
+            purpose="test", payload={}, prompt="test", schema=CandidateBatch, mode="live"
+        ).status
+        == "live"
+    )
+    assert len(published) == 1 and len(list(tmp_path.iterdir())) == 1
