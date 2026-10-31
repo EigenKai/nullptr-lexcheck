@@ -15,6 +15,11 @@ def _fold(text):
     )
 
 
+def worksheet_label(source, page):
+    worksheets = source.get("worksheets", [])
+    return worksheets[page - 1]["label"] if len(worksheets) >= page else f"Sheet {page}"
+
+
 class WorkspaceIndex:
     def __init__(self, store, workspace_id):
         self.store, self.workspace_id = store, workspace_id
@@ -118,7 +123,7 @@ class WorkspaceIndex:
                             "version": doc["version"],
                             "page": number,
                             "text": content,
-                            "worksheet": f"Sheet {number}"
+                            "worksheet": worksheet_label(doc, number)
                             if doc.get("suffix") == ".xlsx"
                             else None,
                         }
@@ -196,7 +201,7 @@ class WorkspaceIndex:
             # Coordinates come from original extracted lines, never model guesses.
             line_start = original.rfind("\n", 0, start) + 1
             lines = original[line_start : start + len(quote)].splitlines()
-            citation["worksheet"] = f"Sheet {chunk['page']}"
+            citation["worksheet"] = worksheet_label(source, chunk["page"])
             citation["cells"] = list(
                 dict.fromkeys(
                     match.group(1) for line in lines if (match := re.match(r"([A-Z]+\d+)\t", line))

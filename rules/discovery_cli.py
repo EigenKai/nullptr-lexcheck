@@ -28,7 +28,7 @@ def load_local_env(path=Path(".env")):
         return
     for line in path.read_text(encoding="utf-8-sig").splitlines():
         key, sep, value = line.strip().removeprefix("export ").partition("=")
-        if sep and key.strip() in ("OPENAI_API_KEY", "OPENAI_MODEL"):
+        if sep and key.strip() in ("OPENAI_API_KEY", "OPENAI_MODEL", "BRAVE_SEARCH_API_KEY"):
             value = value.strip()
             if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
                 value = value[1:-1]
