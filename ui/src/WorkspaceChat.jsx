@@ -4,7 +4,7 @@ import "./workspace-chat.css";
 
 const statusLabel = {
   answered: "LLM · Thông tin tham khảo",
-  not_enough_information: "Chưa đủ thông tin",
+  not_enough_information: "LLM · Thông tin tham khảo",
   unavailable: "Model chưa sẵn sàng",
 };
 
@@ -261,7 +261,7 @@ export function WorkspaceChat({
                 </h1>
                 <p>
                   Hỏi từ tài liệu doanh nghiệp đã chọn và nguồn luật trong
-                  workspace. Mỗi câu trả lời cần căn cứ để bạn đối chiếu.
+                  workspace. Bạn cũng có thể hỏi đáp thông thường; nguồn tham khảo là tùy chọn.
                 </p>
               </div>
               <div className="mascot-wrap">
@@ -364,7 +364,7 @@ export function WorkspaceChat({
               <button onClick={() => onNavigate("business")}>
                 Tài liệu doanh nghiệp
               </button>
-              , xem bản trích đã che dữ liệu cá nhân và chọn làm ngữ cảnh model.
+              , xem nội dung file và chọn làm ngữ cảnh model.
             </p>
           )}
           {documents.some((doc) => doc.collection === "business") && (
@@ -374,21 +374,21 @@ export function WorkspaceChat({
                 <div className="chat-document-row" key={doc.id}>
                   <span><b>{doc.name}</b><small>{doc.id} · v{doc.version} · {doc.context_enabled ? "Đã chọn" : "Chưa chọn cho model"}</small></span>
                   <button className="button" disabled={busy || documentBusy} onClick={() => documentAction(() => researchClient.document(workspaceId, doc.id))}>
-                    Xem và chọn bản đã che
+                    Xem và chọn nội dung file
                   </button>
                 </div>
               ))}
-              <p className="research-note">File đã được lưu; không cần tải lên lại. Chỉ bản đã che và được chọn mới được model đọc.</p>
+              <p className="research-note">Model đọc toàn bộ nội dung file được chọn. File đã được lưu; không cần tải lên lại.</p>
             </details>
           )}
           {documentPreview && (
             <section className="chat-document-preview" aria-label="Duyệt tài liệu cho model">
               <div className="section-head"><h3>{documentPreview.name} · v{documentPreview.version}</h3><button className="button" onClick={() => setDocumentPreview(null)}>Đóng</button></div>
-              <p>Bản trích đã che. XLSX chỉ giữ số liệu và nhãn vận hành nhận diện được; văn bản tự do giữ cục bộ. Hãy đối chiếu trước khi chọn.</p>
-              {documentPreview.method === "xlsx-cell-text-limited" && <button className="button" disabled={busy || documentBusy} onClick={() => documentAction(() => researchClient.refreshExtraction(workspaceId, documentPreview.id))}>Cập nhật bản trích XLSX an toàn</button>}
-              {(documentPreview.model_pages || []).map((text, index) => <details key={index}><summary>Trang / Sheet {index + 1}</summary><pre>{text || "Chưa có text để đọc"}</pre></details>)}
-              <button className="button primary" disabled={busy || documentBusy || !documentPreview.model_pages?.some((text) => text.trim()) || documentPreview.method === "xlsx-cell-text-limited"} onClick={() => documentAction(() => researchClient.context(workspaceId, documentPreview.id, !documentPreview.context_enabled))}>
-                {documentBusy ? "Đang lưu…" : documentPreview.context_enabled ? "Bỏ chọn khỏi model" : "Tôi đã xem · Dùng bản đã che cho chat"}
+              <p>Nội dung đầy đủ từ file đã chọn, gồm văn bản và các ô dữ liệu.</p>
+              {documentPreview.method === "xlsx-cell-text-limited" && <button className="button" disabled={busy || documentBusy} onClick={() => documentAction(() => researchClient.refreshExtraction(workspaceId, documentPreview.id))}>Cập nhật bản trích XLSX</button>}
+              {(documentPreview.pages || []).map((text, index) => <details key={index}><summary>Trang / Sheet {index + 1}</summary><pre>{text || "Chưa có text để đọc"}</pre></details>)}
+              <button className="button primary" disabled={busy || documentBusy || !documentPreview.pages?.some((text) => text.trim())} onClick={() => documentAction(() => researchClient.context(workspaceId, documentPreview.id, !documentPreview.context_enabled, false))}>
+                {documentBusy ? "Đang lưu…" : documentPreview.context_enabled ? "Bỏ chọn khỏi model" : "Dùng nội dung file cho chat"}
               </button>
             </section>
           )}
@@ -414,7 +414,7 @@ export function WorkspaceChat({
             />
             <div className="composer-bottom">
               <span className="composer-context">
-                Chỉ mục của workspace hiện tại · Có trích dẫn
+                Workspace hiện tại · Nguồn tham khảo tùy chọn
               </span>
               <button
                 className="send"
@@ -464,8 +464,7 @@ export function WorkspaceChat({
           <>
             <h2>Nguồn của câu trả lời</h2>
             <p className="workspace-chat-evidence-note">
-              Trích dẫn từ lượt đang chọn. Nguồn luật vẫn cần xác minh hiệu lực
-              và cách áp dụng.
+              Nguồn và công cụ đã dùng trong lượt trả lời đang chọn.
             </p>
             {(shownTurn.citations || []).length ? (
               shownTurn.citations.map((citation, index) => (
@@ -476,7 +475,9 @@ export function WorkspaceChat({
                   <small>
                     [{index + 1}]{" "}
                     {citation.collection === "legal"
-                      ? "Tài liệu luật · chưa xác minh"
+                      ? "Tài liệu luật"
+                      : citation.collection === "web"
+                        ? "Nguồn web"
                       : citation.collection === "metadata"
                         ? "Chỉ mục workspace"
                         : "Tài liệu doanh nghiệp"}
@@ -487,6 +488,13 @@ export function WorkspaceChat({
                     {citation.cells?.length ? ` · Ô ${citation.cells.join(", ")}` : ""}
                   </p>
                   <blockquote>{citation.quote}</blockquote>
+                  {/^https?:\/\//.test(citation.source_url || citation.official_url || "") && (
+                    <p className="workspace-chat-source-link">
+                      <a href={citation.source_url || citation.official_url} target="_blank" rel="noopener noreferrer">
+                        Mở nguồn ↗
+                      </a>
+                    </p>
+                  )}
                   <code>
                     Đoạn [{citation.start}, {citation.end}) · Unicode
                     <br />
@@ -501,8 +509,7 @@ export function WorkspaceChat({
               ))
             ) : (
               <div className="workspace-chat-source-empty">
-                Lượt này chưa có trích dẫn được API trả về. Không coi nội dung
-                trả lời là kết luận đã có căn cứ.
+                Lượt này không kèm nguồn tham khảo. Bạn có thể yêu cầu nguồn nếu cần.
               </div>
             )}
             <details className="workspace-chat-trace">
@@ -512,6 +519,20 @@ export function WorkspaceChat({
                   <b>{tool.tool}</b>
                   {tool.query && <p>{tool.query}</p>}
                   {tool.document_id && <code>{tool.document_id}</code>}
+                  {(tool.sources || []).filter((source) => /^https:\/\//.test(source.url || "")).map((source) => (
+                    <p className="workspace-chat-source-link" key={source.url}>
+                      <a href={source.url} target="_blank" rel="noopener noreferrer">
+                        {source.url}
+                      </a>
+                      <small>
+                        {source.retrieval_status === "ingested_unverified"
+                          ? "Đã đọc nội dung nguồn"
+                          : source.retrieval_status === "search_observation_only"
+                            ? "Kết quả tìm kiếm web · Chưa mở bản gốc"
+                            : "Chưa đọc được nội dung nguồn"}
+                      </small>
+                    </p>
+                  ))}
                   {tool.hits !== undefined && (
                     <small>
                       {Array.isArray(tool.hits)
@@ -537,6 +558,12 @@ export function WorkspaceChat({
                 Lượt gọi model:{" "}
                 {shownTurn.provenance?.model_calls ?? "Chưa ghi nhận"}
               </p>
+              {shownTurn.provenance?.agent_model_calls !== undefined && (
+                <p>
+                  Trợ lý: {shownTurn.provenance.agent_model_calls} · Tìm kiếm: {shownTurn.provenance.public_search_model_calls ?? "Chưa ghi nhận"}
+                  {shownTurn.provenance.public_search_http_calls !== undefined && ` · Brave HTTP: ${shownTurn.provenance.public_search_http_calls}`}
+                </p>
+              )}
               <code>
                 Index: {shownTurn.provenance?.index_sha256 || "Chưa ghi nhận"}
               </code>

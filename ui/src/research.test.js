@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { createResearchClient } from "./research.js";
 
 describe("private research client", () => {
-  it("scopes conversations and sends messages with a 90-second timeout", async () => {
+  it("scopes conversations and allows a five-minute tool-assisted answer", async () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
     const fetcher = vi
       .fn()
@@ -30,7 +30,7 @@ describe("private research client", () => {
     expect(JSON.parse(fetcher.mock.calls[4][1].body)).toEqual({
       question: "Question from user",
     });
-    expect(timeout).toHaveBeenCalledWith(90000);
+    expect(timeout).toHaveBeenCalledWith(300000);
     timeout.mockRestore();
   });
   it("keeps both document collections on the same workspace API without starting research", async () => {

@@ -43,6 +43,7 @@ class WorkspaceCreate(Contract):
 
 class DocumentContext(Contract):
     enabled: bool
+    redact_personal: bool | None = None
 
 
 class ProfileStart(Contract):
@@ -375,7 +376,16 @@ def create_app(
 
     @app.patch("/api/workspaces/{workspace_id}/documents/{document_id}/context")
     def document_model_context(workspace_id: str, document_id: str, selection: DocumentContext):
-        return store.document_context(workspace_id, document_id, selection.enabled)
+        mode = (
+            selection.redact_personal
+            if selection.redact_personal is not None
+            else False
+            if selection.enabled
+            else None
+        )
+        return store.document_context(
+            workspace_id, document_id, selection.enabled, redact_personal=mode
+        )
 
     @app.post("/api/workspaces/{workspace_id}/documents/{document_id}/extract")
     def document_extract(workspace_id: str, document_id: str):

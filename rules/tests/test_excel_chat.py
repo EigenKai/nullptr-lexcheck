@@ -53,11 +53,12 @@ def billing_workbook():
 
 
 def test_excel_projection_retains_billing_cells_beyond_row_80_but_masks_private_values():
-    document = extract_document("billing.xlsx", billing_workbook())
+    document = extract_document("billing.xlsx", billing_workbook(), redact_personal=True)
     safe = "\n".join(document["model_pages"])
     assert "C81\t15000" in safe
     assert "C12\t3500" in safe and "Đơn giá điện" in safe
-    assert "PRIVATE" not in safe and "12345678" not in safe and "87654321" not in safe
+    assert "PRIVATE SYNTHETIC TENANT" not in safe and "12345678" not in safe
+    assert "PRIVATE FREE TEXT" in safe and "87654321" in safe
     assert document["worksheets"][0]["page"] == 1
     assert document["worksheets"][0]["path"] == "xl/worksheets/sheet1.xml"
 
@@ -68,7 +69,9 @@ def test_existing_unselected_excel_is_in_inventory_and_selected_cells_have_exact
     store = WorkspaceStore(tmp_path)
     workspace = store.create_blank("Synthetic billing company")
     raw = billing_workbook()
-    document = store.add_document(workspace["id"], "business", "billing.xlsx", raw)
+    document = store.add_document(
+        workspace["id"], "business", "billing.xlsx", raw, redact_personal=True
+    )
     index = WorkspaceIndex(store, workspace["id"])
     entry = next(item for item in index.inventory() if item["document_id"] == document["id"])
     assert entry["selected"] is False and entry["title"] == "billing.xlsx"
@@ -81,7 +84,9 @@ def test_existing_unselected_excel_is_in_inventory_and_selected_cells_have_exact
         model = "synthetic"
 
         def generate(self, **kwargs):
-            assert "PRIVATE" not in json.dumps(kwargs, ensure_ascii=False, default=str)
+            assert "PRIVATE SYNTHETIC TENANT" not in json.dumps(
+                kwargs, ensure_ascii=False, default=str
+            )
             if "plan" in kwargs["purpose"]:
                 parsed = {"queries": ["đơn giá điện"], "read_documents": []}
             else:
