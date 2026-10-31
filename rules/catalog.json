@@ -10,11 +10,17 @@
     ],
     "method": "deterministic",
     "severity": "medium",
-    "verification_status": "to_be_verified",
-    "enabled": false,
+    "verification_status": "verified",
+    "enabled": true,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "Hỗ trợ tiêu hóa.",
+      "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc."
+    ],
+    "negative_examples": [
+      "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "Hỗ trợ tiêu hóa.\nThực  phẩm  này  không  phải  là  thuốc  và  không  có  tác  dụng  thay  thế  thuốc  chữa  bệnh."
+    ]
   },
   {
     "id": "R-02",
@@ -27,11 +33,17 @@
     ],
     "method": "deterministic",
     "severity": "medium",
-    "verification_status": "to_be_verified",
-    "enabled": false,
+    "verification_status": "verified",
+    "enabled": true,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "Hỗ trợ giấc ngủ.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "Hỗ trợ ổn định đường huyết.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh."
+    ],
+    "negative_examples": [
+      "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "Hỗ trợ giảm cholesterol.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh."
+    ]
   },
   {
     "id": "R-03",
@@ -44,11 +56,17 @@
     ],
     "method": "deterministic",
     "severity": "medium",
-    "verification_status": "to_be_verified",
-    "enabled": false,
+    "verification_status": "verified",
+    "enabled": true,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh."
+    ],
+    "negative_examples": [
+      "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh."
+    ]
   },
   {
     "id": "R-04",
