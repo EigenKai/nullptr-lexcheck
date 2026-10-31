@@ -4,6 +4,12 @@ import fs from "node:fs";
 
 function fixtureCopy() {
   const path = new URL("../data/fixtures/demo.json", import.meta.url);
+  const legalPath = new URL("../rules/nq21-preloaded.json", import.meta.url);
+  function legalPreview() {
+    return fs.existsSync(legalPath)
+      ? JSON.parse(fs.readFileSync(legalPath, "utf8"))
+      : null;
+  }
   function publicDemo() {
     const bundle = JSON.parse(fs.readFileSync(path, "utf8"));
     const access = JSON.parse(
@@ -79,8 +85,16 @@ function fixtureCopy() {
       this.emitFile({
         type: "asset",
         fileName: "legal-event.json",
-        source: JSON.stringify(layers.LegalChangeEvent),
+        source: JSON.stringify(
+          legalPreview()?.state.event || layers.LegalChangeEvent,
+        ),
       });
+      if (legalPreview())
+        this.emitFile({
+          type: "asset",
+          fileName: "legal-preview.json",
+          source: JSON.stringify(legalPreview()),
+        });
     },
     configureServer(server) {
       server.middlewares.use("/finding-preview.json", (_req, res) => {
@@ -99,7 +113,21 @@ function fixtureCopy() {
             "utf8",
           ),
         );
-        res.end(JSON.stringify(layers.LegalChangeEvent));
+        res.end(
+          JSON.stringify(
+            legalPreview()?.state.event || layers.LegalChangeEvent,
+          ),
+        );
+      });
+      server.middlewares.use("/legal-preview.json", (_req, res) => {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        const preview = legalPreview();
+        if (!preview) res.statusCode = 404;
+        res.end(
+          JSON.stringify(
+            preview || { message: "Preloaded law source unavailable." },
+          ),
+        );
       });
     },
   };

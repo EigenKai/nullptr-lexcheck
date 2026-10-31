@@ -101,6 +101,17 @@ def test_live_pipeline_uses_rule_engine(api):
     assert fresh["findings"] != finding_check["findings"]
 
 
+def test_demo_source_inventory_matches_the_actual_engine(api):
+    bundle = api.get("/api/demo").json()
+    assert {"R-01", "R-02", "R-03"} <= {rule["id"] for rule in bundle["rules"]}
+    assert all(
+        rule["enabled"] and rule["verification_status"] == "verified" for rule in bundle["rules"]
+    )
+    assert {rule["clause_version_id"] for rule in bundle["rules"]} == {
+        clause["id"] for clause in bundle["clauses"]
+    }
+
+
 def test_closure_requires_reviewer_session(api):
     assert (
         api.post(
