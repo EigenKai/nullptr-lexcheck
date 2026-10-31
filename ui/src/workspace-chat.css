@@ -350,6 +350,15 @@
   border-bottom: 1px solid #dce3d1;
   font-size: 12px;
 }
+
+.workspace-chat-source-link {
+  overflow-wrap: anywhere;
+}
+
+.workspace-chat-source-link small {
+  display: block;
+  margin-top: 6px;
+}
 .workspace-chat-trace summary {
   cursor: pointer;
 }

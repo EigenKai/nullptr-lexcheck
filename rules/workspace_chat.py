@@ -1,5 +1,6 @@
 """Bounded model-selected search/read tools and cited workspace conversations."""
 
+import os
 import re
 import uuid
 from datetime import UTC, datetime
@@ -138,89 +139,108 @@ def answer(store, history, workspace_id, thread_id, question, client):
         "history": prior,
         "index_sha256": index.fingerprint,
     }
-    first = client.generate(
-        purpose="workspace_chat_plan_v1",
-        payload={
-            **common,
-            "inventory": index.inventory(),
-            "tools": ["search_documents(query)", "read_document(document_id,page)"],
-        },
-        prompt=PLAN_PROMPT,
-        schema=SearchPlan,
-        mode="live",
-    )
-    if first.status not in ("live", "cached") or first.parsed is None:
-        raise RuntimeError("Chat model unavailable; no sample answer substituted.")
-    plan = SearchPlan.model_validate(first.parsed)
-    retrieved, trace = {}, []
-    for query in plan.queries:
-        chunks = index.search(query)
-        trace.append({"tool": "search_documents", "query": query, "hits": len(chunks)})
-        for chunk in chunks:
-            retrieved[chunk["chunk_id"]] = chunk
-    for request in plan.read_documents:
-        if request.document_id not in index.sources:
+    if os.getenv("LEXCHECK_WORKSPACE_TOOL_HARNESS_ENABLED", "0") == "1":
+        from rules.workspace_harness import run
+
+        draft, selected, trace, provenance = run(index, common, client)
+    else:
+        first = client.generate(
+            purpose="workspace_chat_plan_v1",
+            payload={
+                **common,
+                "inventory": index.inventory(),
+                "tools": ["search_documents(query)", "read_document(document_id,page)"],
+            },
+            prompt=PLAN_PROMPT,
+            schema=SearchPlan,
+            mode="live",
+        )
+        if first.status not in ("live", "cached") or first.parsed is None:
+            raise RuntimeError("Chat model unavailable; no sample answer substituted.")
+        plan = SearchPlan.model_validate(first.parsed)
+        retrieved, trace = {}, []
+        for query in plan.queries:
+            chunks = index.search(query)
+            trace.append({"tool": "search_documents", "query": query, "hits": len(chunks)})
+            for chunk in chunks:
+                retrieved[chunk["chunk_id"]] = chunk
+        for request in plan.read_documents:
+            if request.document_id not in index.sources:
+                trace.append(
+                    {
+                        "tool": "read_document",
+                        "document_id": request.document_id,
+                        "hits": 0,
+                        "status": "not_selected_or_unavailable",
+                    }
+                )
+                continue
+            chunks = index.read_document(request.document_id, request.page)
             trace.append(
                 {
                     "tool": "read_document",
                     "document_id": request.document_id,
-                    "hits": 0,
-                    "status": "not_selected_or_unavailable",
+                    "page": request.page,
+                    "hits": len(chunks),
                 }
             )
-            continue
-        chunks = index.read_document(request.document_id, request.page)
-        trace.append(
-            {
-                "tool": "read_document",
-                "document_id": request.document_id,
-                "page": request.page,
-                "hits": len(chunks),
-            }
+            for chunk in chunks:
+                retrieved[chunk["chunk_id"]] = chunk
+        # Read actual stored passages for the ranked hits, never invent document text.
+        if retrieved:
+            for chunk in list(retrieved.values())[:4]:
+                read_chunks = index.read_document(chunk["document_id"], chunk["page"])
+                trace.append(
+                    {
+                        "tool": "read_document",
+                        "document_id": chunk["document_id"],
+                        "page": chunk["page"],
+                        "hits": len(read_chunks),
+                    }
+                )
+                for read_chunk in read_chunks:
+                    retrieved.setdefault(read_chunk["chunk_id"], read_chunk)
+        for chunk in index.read_document("WORKSPACE-INVENTORY"):
+            retrieved.setdefault(chunk["chunk_id"], chunk)
+        selected = [
+            chunk for chunk in retrieved.values() if chunk["document_id"] != "WORKSPACE-INVENTORY"
+        ][:8]
+        selected += index.read_document("WORKSPACE-INVENTORY")[:1]
+        second = client.generate(
+            purpose="workspace_chat_answer_v1",
+            payload={
+                **common,
+                "inventory": index.inventory(),
+                "sources": selected,
+                "tool_results": trace,
+            },
+            prompt=ANSWER_PROMPT,
+            schema=AnswerDraft,
+            mode="live",
         )
-        for chunk in chunks:
-            retrieved[chunk["chunk_id"]] = chunk
-    # Read actual stored passages for the ranked hits, never invent document text.
-    if retrieved:
-        for chunk in list(retrieved.values())[:4]:
-            read_chunks = index.read_document(chunk["document_id"], chunk["page"])
-            trace.append(
-                {
-                    "tool": "read_document",
-                    "document_id": chunk["document_id"],
-                    "page": chunk["page"],
-                    "hits": len(read_chunks),
-                }
-            )
-            for read_chunk in read_chunks:
-                retrieved.setdefault(read_chunk["chunk_id"], read_chunk)
-    for chunk in index.read_document("WORKSPACE-INVENTORY"):
-        retrieved.setdefault(chunk["chunk_id"], chunk)
-    selected = [
-        chunk for chunk in retrieved.values() if chunk["document_id"] != "WORKSPACE-INVENTORY"
-    ][:8]
-    selected += index.read_document("WORKSPACE-INVENTORY")[:1]
-    second = client.generate(
-        purpose="workspace_chat_answer_v1",
-        payload={
-            **common,
-            "inventory": index.inventory(),
-            "sources": selected,
-            "tool_results": trace,
-        },
-        prompt=ANSWER_PROMPT,
-        schema=AnswerDraft,
-        mode="live",
-    )
-    if second.status not in ("live", "cached") or second.parsed is None:
-        raise RuntimeError("Chat model unavailable; no sample answer substituted.")
-    draft = AnswerDraft.model_validate(second.parsed)
+        if second.status not in ("live", "cached") or second.parsed is None:
+            raise RuntimeError("Chat model unavailable; no sample answer substituted.")
+        draft = AnswerDraft.model_validate(second.parsed)
+        provenance = {
+            "model": getattr(client, "model", None),
+            "status": "live" if "live" in (first.status, second.status) else "cached",
+            "model_calls": first.calls + second.calls,
+            "index_sha256": index.fingerprint,
+            "cache_keys": [first.key, second.key],
+            "retrieval": "model_selected_local_tools",
+        }
     by_id = {chunk["chunk_id"]: chunk for chunk in selected}
     citations = []
     for reference in draft.citations:
         if reference.chunk_id not in by_id:
             raise ValueError("Model quotation refers to an unretrieved source.")
         citations.append(index.citation(by_id[reference.chunk_id], reference.quote))
+        source = index.sources[by_id[reference.chunk_id]["document_id"]]
+        if source.get("official_url"):
+            citations[-1].update(
+                official_url=source["official_url"],
+                verification_status=source.get("verification_status", "to_be_verified"),
+            )
     if draft.status == "answered" and not citations:
         raise ValueError("A factual answer needs a grounded quotation.")
     if (
@@ -246,14 +266,7 @@ def answer(store, history, workspace_id, thread_id, question, client):
         "status": draft.status,
         "citations": citations,
         "tool_trace": trace,
-        "provenance": {
-            "model": getattr(client, "model", None),
-            "status": "live" if "live" in (first.status, second.status) else "cached",
-            "model_calls": first.calls + second.calls,
-            "index_sha256": index.fingerprint,
-            "cache_keys": [first.key, second.key],
-            "retrieval": "model_selected_local_tools",
-        },
+        "provenance": provenance,
         "created_at": datetime.now(UTC).isoformat(),
     }
     history.append(workspace_id, thread_id, turn)
