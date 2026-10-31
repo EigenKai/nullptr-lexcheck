@@ -74,4 +74,11 @@ def answer(request: ChatRequest, check: CheckResult, *, client=None) -> ChatResp
     prohibited = ("compliant", "hợp lệ", "đúng luật", "approved")
     if any(word in output.parsed.answer.casefold() for word in prohibited):
         return _response((), output.status)
+    if not selected:
+        return ChatResponse(
+            status="needs_evidence",
+            answer="No evidence for this question in the selected check.",
+            citations=(),
+            model_status=output.status,
+        )
     return _response(selected, output.status, output.parsed.answer)
