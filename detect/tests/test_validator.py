@@ -207,3 +207,12 @@ def test_confirmation_checks_record_kind(request_data, basis):
     )
     request = request_data.model_copy(update={"context_version_ids": ("RV-01-v1",)})
     assert check(request, confirmation_basis, evidence=(missing,)).findings
+
+
+def test_missing_use_must_be_absent(request_data, basis):
+    ev = Evidence(record_version_id=basis[2].record_version_id, kind="missing_field", field="uses")
+    assert check(request_data, basis, evidence=(ev,)).rejected[0].reason == "missing_field_present"
+    versions = tuple(v.model_copy(update={"uses": ()}) for v in request_data.versions)
+    assert check(
+        request_data.model_copy(update={"versions": versions}), basis, evidence=(ev,)
+    ).findings
