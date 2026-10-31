@@ -53,7 +53,7 @@ export const date = (value, t = (text) => text) =>
 export function Page({ eyebrow, title, action, children }) {
   return (
     <div className="content-page appear">
-      <div className="page-eyebrow">{eyebrow}</div>
+      {eyebrow && <div className="page-eyebrow">{eyebrow}</div>}
       <div className="page-title-row">
         <h1 className="page-title">{title}</h1>
         {action}

@@ -11,7 +11,7 @@ export default function Settings({ offline, features, busy, reload }) {
       ? t("Đã kết nối · live")
       : t("Đã kết nối · engine chưa sẵn sàng");
   return (
-    <Page eyebrow={t("Tuỳ chọn")} title={t("Cài đặt")}>
+    <Page title={t("Cài đặt")}>
       <section className="settings-group" aria-labelledby="settings-language">
         <h2 id="settings-language">{t("Ngôn ngữ")}</h2>
         <div

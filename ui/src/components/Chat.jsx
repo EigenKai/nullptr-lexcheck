@@ -60,7 +60,6 @@ export default function Chat({
           <div className="context-line">
             <Icon name="network" />
             <b>{t("{count} phiên bản hồ sơ", { count: versions.length })}</b>
-            <span>·</span>
             <button onClick={() => go("knowledge")}>
               {t("Xem kho tri thức ↗")}
             </button>

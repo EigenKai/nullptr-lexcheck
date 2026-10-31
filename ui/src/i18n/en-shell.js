@@ -90,7 +90,6 @@ export default {
     "No issue found under {count} encoded rules",
   "Chưa đủ thông tin": "Not enough information",
   // Settings
-  "Tuỳ chọn": "Preferences",
   "Ngôn ngữ": "Language",
   "Điều khoản và nội dung hồ sơ giữ nguyên văn gốc.":
     "Legal clauses and record text stay in the original Vietnamese.",
@@ -100,7 +99,7 @@ export default {
   "Mất kết nối · đang xem bản mẫu đi kèm": "Unreachable · showing the bundled sample",
   "Đã kết nối · live": "Connected · live",
   "Đã kết nối · engine chưa sẵn sàng": "Connected · engine not ready",
-  "Dữ liệu tổng hợp (synthetic/staged)": "Synthetic data (synthetic/staged)",
+  "Dữ liệu tổng hợp (synthetic/staged)": "Synthetic / staged",
   "Thực phẩm bảo vệ sức khỏe (TPBVSK)": "Health supplements (TPBVSK)",
   "Tải lại dữ liệu": "Reload data",
 };
