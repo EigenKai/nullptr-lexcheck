@@ -79,11 +79,17 @@
     ],
     "method": "deterministic",
     "severity": "medium",
-    "verification_status": "to_be_verified",
-    "enabled": false,
+    "verification_status": "verified",
+    "enabled": true,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "Bác sĩ An khuyên dùng sản phẩm.",
+      "Hình ảnh bác sỹ An trên ma két quảng cáo."
+    ],
+    "negative_examples": [
+      "Hỏi ý kiến bác sĩ trước khi dùng.",
+      "Không sử dụng hình ảnh bác sĩ để quảng cáo thực phẩm."
+    ]
   },
   {
     "id": "R-05",
