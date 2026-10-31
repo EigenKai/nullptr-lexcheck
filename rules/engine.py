@@ -177,7 +177,7 @@ def evaluate(
 ) -> RuleEvaluation:
     """Run only implemented, active rules on selected advertising targets.
 
-    Patterns do not affect these deterministic checks. Missing comparison
+    Only explicitly supplied active, version-scoped Patterns may annotate review evidence. Missing comparison
     inputs remain uncertain; no ungrounded span or clean conclusion is emitted.
     """
     try:
@@ -221,9 +221,15 @@ def evaluate(
     checked, findings, incomplete = _execute(
         request, active, clause_map, targets, records, selected
     )
+    pattern_ids = ()
+    if patterns:
+        from rules.patterns import apply_patterns
+
+        findings, pattern_ids = apply_patterns(request, checked, findings, patterns)
     clause_ids = tuple(dict.fromkeys(r.clause_version_id for r in checked))
     return RuleEvaluation(
         mode="live",
+        pattern_ids_used=pattern_ids,
         applicability="not_enough_information" if incomplete else "applies",
         reason="Connected dossier or exact use text is missing or ambiguous."
         if incomplete
