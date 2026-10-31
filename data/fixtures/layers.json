@@ -1,0 +1,314 @@
+{
+  "FeatureFlags": {
+    "layer0_ready": false,
+    "layer1": false,
+    "layer2": false,
+    "layer3": false
+  },
+  "DemoLoginRequest": {
+    "user_id": "U-MANAGER"
+  },
+  "DemoSession": {
+    "user_id": "U-MANAGER",
+    "group": "manager",
+    "token": "synthetic-fixture-session-only",
+    "expires_at": "2026-10-31T17:00:00Z"
+  },
+  "RecordsResponse": {
+    "records": [
+      {
+        "id": "REC-01",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "dossier",
+        "title": "Synthetic dossier",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
+        "synthetic": true
+      },
+      {
+        "id": "REC-02",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "marketing",
+        "title": "Synthetic marketing",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
+        "synthetic": true
+      },
+      {
+        "id": "REC-03",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "marketing",
+        "title": "Synthetic marketing control",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
+        "synthetic": true
+      },
+      {
+        "id": "REC-04",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "ad_confirmation",
+        "title": "Synthetic confirmation index; no official certificate",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
+        "synthetic": true
+      },
+      {
+        "id": "REC-05",
+        "company_id": "CO-DEMO",
+        "product_id": "P-02",
+        "kind": "marketing",
+        "title": "Unrelated product control",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
+        "synthetic": true
+      }
+    ],
+    "versions": [
+      {
+        "id": "RV-01-v1",
+        "record_id": "REC-01",
+        "version": 1,
+        "text": "Hỗ trợ tiêu hóa.\nHỗ trợ giảm cholesterol.",
+        "uses": [
+          "Hỗ trợ tiêu hóa.",
+          "Hỗ trợ giảm cholesterol."
+        ],
+        "reference_ids": [],
+        "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
+        "supersedes": null
+      },
+      {
+        "id": "RV-02-v1",
+        "record_id": "REC-02",
+        "version": 1,
+        "text": "Hỗ trợ tiêu hóa.\nHỗ trợ giảm cholesterol.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+        "uses": [
+          "Hỗ trợ tiêu hóa.",
+          "Hỗ trợ giảm cholesterol."
+        ],
+        "reference_ids": [
+          "RV-01-v1",
+          "RV-04-v1"
+        ],
+        "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
+        "supersedes": null
+      },
+      {
+        "id": "RV-03-v1",
+        "record_id": "REC-03",
+        "version": 1,
+        "text": "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+        "uses": [
+          "Hỗ trợ tiêu hóa."
+        ],
+        "reference_ids": [
+          "RV-01-v1",
+          "RV-04-v1"
+        ],
+        "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
+        "supersedes": null
+      },
+      {
+        "id": "RV-04-v1",
+        "record_id": "REC-04",
+        "version": 1,
+        "text": "Synthetic index links marketing RV-02-v1. No official receipt or certificate is reproduced.",
+        "uses": [],
+        "reference_ids": [],
+        "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
+        "supersedes": null
+      },
+      {
+        "id": "RV-05-v1",
+        "record_id": "REC-05",
+        "version": 1,
+        "text": "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+        "uses": [],
+        "reference_ids": [],
+        "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
+        "supersedes": null
+      }
+    ]
+  },
+  "ChatRequest": {
+    "check_id": "CHK-finding-preview",
+    "question": "Cần bổ sung hồ sơ nào?"
+  },
+  "ChatResponse": {
+    "status": "needs_evidence",
+    "answer": "Source verification is pending.",
+    "citations": [],
+    "model_status": "off"
+  },
+  "LegalChangeEvent": {
+    "id": "EV-L01",
+    "kind": "law_changed",
+    "label": "preloaded",
+    "previous_clause_version_id": "CV-07-v1",
+    "new_clause": {
+      "id": "CV-07-v2",
+      "clause_id": "CL-07",
+      "document": "NQ 21/2026/NQ-CP",
+      "article": "2(1)(a), 6(2)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: NQ 21/2026 Article 2(1)(a).",
+      "source_url": "https://xdcs.cdnchinhphu.vn/446259493575335936/2026/5/5/21-nqcp-signed-1777970679563128188225.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T06:00:00Z",
+      "valid_from": "2026-07-01",
+      "valid_to": "2028-01-01",
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Preloaded historical update; rule owner must verify text and dates."
+    },
+    "proposed_rules": [
+      {
+        "id": "R-07",
+        "version": 2,
+        "clause_version_id": "CV-07-v2",
+        "title": "Confirmation authority review",
+        "check_type": "authority_review",
+        "activities": [
+          "ad_registration"
+        ],
+        "method": "deterministic",
+        "severity": "medium",
+        "verification_status": "to_be_verified",
+        "enabled": false,
+        "patterns": [],
+        "positive_examples": [],
+        "negative_examples": []
+      }
+    ],
+    "issued_on": "2026-04-29",
+    "effective_on": "2026-07-01",
+    "received_at": "2026-10-31T06:00:00Z"
+  },
+  "LegalReviewRequest": {
+    "action": "accept",
+    "note": "Review original text and effective dates before acceptance."
+  },
+  "LegalActivationRequest": {
+    "review_date": "2026-10-31"
+  },
+  "LegalChangeResponse": {
+    "state": {
+      "event": {
+        "id": "EV-L01",
+        "kind": "law_changed",
+        "label": "preloaded",
+        "previous_clause_version_id": "CV-07-v1",
+        "new_clause": {
+          "id": "CV-07-v2",
+          "clause_id": "CL-07",
+          "document": "NQ 21/2026/NQ-CP",
+          "article": "2(1)(a), 6(2)",
+          "text": "SOURCE TEXT PENDING VERIFICATION: NQ 21/2026 Article 2(1)(a).",
+          "source_url": "https://xdcs.cdnchinhphu.vn/446259493575335936/2026/5/5/21-nqcp-signed-1777970679563128188225.pdf",
+          "source_sha256": null,
+          "retrieved_at": "2026-10-31T06:00:00Z",
+          "valid_from": "2026-07-01",
+          "valid_to": "2028-01-01",
+          "verification_status": "to_be_verified",
+          "in_force": "unknown",
+          "verified_by": null,
+          "verified_at": null,
+          "status_note": "Preloaded historical update; rule owner must verify text and dates."
+        },
+        "proposed_rules": [
+          {
+            "id": "R-07",
+            "version": 2,
+            "clause_version_id": "CV-07-v2",
+            "title": "Confirmation authority review",
+            "check_type": "authority_review",
+            "activities": [
+              "ad_registration"
+            ],
+            "method": "deterministic",
+            "severity": "medium",
+            "verification_status": "to_be_verified",
+            "enabled": false,
+            "patterns": [],
+            "positive_examples": [],
+            "negative_examples": []
+          }
+        ],
+        "issued_on": "2026-04-29",
+        "effective_on": "2026-07-01",
+        "received_at": "2026-10-31T06:00:00Z"
+      },
+      "interpretation": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "activated_at": null,
+      "status": "pending"
+    },
+    "queue": [],
+    "mode": "fixture"
+  },
+  "FeedbackRequest": {
+    "decision_id": "DEC-01",
+    "phrase": "Hỗ trợ giấc ngủ.",
+    "polarity": "positive"
+  },
+  "PatternReviewRequest": {
+    "action": "accept",
+    "note": "Run positive and clean guard cases before activation."
+  },
+  "PatternResponse": {
+    "pattern": {
+      "id": "PAT-01",
+      "company_id": "CO-DEMO",
+      "pack": "tpbvsk",
+      "source_decision_id": "DEC-01",
+      "rule_id": "R-02",
+      "rule_version": 1,
+      "clause_version_id": "CV-02-v1",
+      "phrase": "Hỗ trợ giấc ngủ.",
+      "polarity": "positive",
+      "state": "candidate",
+      "test_report_sha256": null,
+      "reviewed_by": null,
+      "access_groups": [
+        "manager"
+      ]
+    },
+    "mode": "fixture"
+  },
+  "EvaluationReport": {
+    "phase": "bootstrap",
+    "n": 0,
+    "git_sha": null,
+    "dataset_sha256": null,
+    "model": null,
+    "rule_ids": [],
+    "systems": [],
+    "note": "No model performance measured."
+  }
+}

@@ -4,7 +4,7 @@ Review a synthetic company's health-supplement dossier and marketing records, tr
 
 ## Status
 
-Bootstrap only: typed contracts, synthetic fixtures and API previews. All legal rules are disabled pending the rule owner's source verification. `mode=fixture` is a preview, not a legal check or a measured model result. Feature work starts after the team's review checkpoints. No live deployment yet.
+Bootstrap only: typed contracts, synthetic fixtures and API previews. All legal rules are disabled pending the rule owner's source verification. `mode=fixture` is a preview, not a legal check or a measured model result. The full build is organized in four gated layers; feature work starts after the team's review checkpoints. No live deployment yet.
 
 ## Run
 
@@ -33,3 +33,9 @@ This repository was created on 31 October 2026. Product code, schema, synthetic 
 Existing libraries: [FastAPI](https://github.com/fastapi/fastapi) (MIT), [Pydantic](https://github.com/pydantic/pydantic) (MIT), [Uvicorn](https://github.com/encode/uvicorn) (BSD-3-Clause), [HTTPX](https://github.com/encode/httpx) (BSD-3-Clause), [pytest](https://github.com/pytest-dev/pytest) (MIT), [pytest-cov](https://github.com/pytest-dev/pytest-cov) (MIT), [Ruff](https://github.com/astral-sh/ruff) (MIT), [OpenAI Python SDK](https://github.com/openai/openai-python) (Apache-2.0), [pip-audit](https://github.com/pypa/pip-audit) (Apache-2.0). Add frontend libraries and their licenses when used. The framework examples were consulted; no project implementation was copied. Keep this declaration consistent with the submission and declarations PDF.
 
 Only synthetic/staged company records are included. Public legal source links are documented in the plan. A missing connected record is a request for evidence, not a claim about what happened outside the connected records. No private company data, credentials or identity documents belong here.
+
+## Layer gates
+
+The plan covers the full Today scope with working checkpoints: records and rechecks (layer 0), cited chat and baselines (1), a preloaded legal update (2), then demo permission groups and reviewed feedback (3). Later flags default to off. `make smoke LAYER=0` through `LAYER=3` are live gates; the bootstrap intentionally cannot pass these yet. `make smoke` validates the current completed mode. See [the plan](docs/plan/plan.md) and the three member jobs. Baseline figures remain unmeasured at bootstrap.
+
+Use `make frontend-test`, `make frontend-build` and `make e2e` after the UI package exists. Environment settings are supplied by the shell or hosting service; `.env.example` is a template, not automatically loaded. The final evaluation command is for a human only, on a pinned commit at 15:15.

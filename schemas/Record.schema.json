@@ -22,7 +22,10 @@
         "marketing",
         "customer_script",
         "evidence_index",
-        "scientific_evidence"
+        "scientific_evidence",
+        "label",
+        "registration_receipt",
+        "ad_confirmation"
       ],
       "title": "Kind",
       "type": "string"
@@ -32,6 +35,21 @@
       "minLength": 1,
       "title": "Title",
       "type": "string"
+    },
+    "access_groups": {
+      "default": [
+        "manager",
+        "operations"
+      ],
+      "items": {
+        "enum": [
+          "manager",
+          "operations"
+        ],
+        "type": "string"
+      },
+      "title": "Access Groups",
+      "type": "array"
     },
     "synthetic": {
       "const": true,

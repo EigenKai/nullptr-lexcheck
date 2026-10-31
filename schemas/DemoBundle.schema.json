@@ -115,6 +115,23 @@
     "CheckResult": {
       "additionalProperties": false,
       "properties": {
+        "pattern_ids_used": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Pattern Ids Used",
+          "type": "array"
+        },
+        "validator_rejections": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ValidationRejection"
+          },
+          "title": "Validator Rejections",
+          "type": "array"
+        },
         "rule_snapshots": {
           "default": [],
           "items": {
@@ -198,6 +215,23 @@
         "created_at": {
           "format": "date-time",
           "title": "Created At",
+          "type": "string"
+        },
+        "applicability": {
+          "default": "not_enough_information",
+          "enum": [
+            "applies",
+            "does_not_apply",
+            "not_enough_information"
+          ],
+          "title": "Applicability",
+          "type": "string"
+        },
+        "applicability_reason": {
+          "default": "Applicability awaits review.",
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Applicability Reason",
           "type": "string"
         },
         "parent_check_id": {
@@ -389,6 +423,7 @@
         "activity": {
           "enum": [
             "advertising",
+            "ad_registration",
             "label_only",
             "unknown"
           ],
@@ -544,6 +579,19 @@
     "Finding": {
       "additionalProperties": false,
       "properties": {
+        "pattern_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern Id"
+        },
         "id": {
           "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
           "title": "Id",
@@ -567,6 +615,15 @@
         "record_version_id": {
           "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
           "title": "Record Version Id",
+          "type": "string"
+        },
+        "applicability": {
+          "default": "applies",
+          "enum": [
+            "applies",
+            "not_enough_information"
+          ],
+          "title": "Applicability",
           "type": "string"
         },
         "status": {
@@ -656,7 +713,10 @@
             "marketing",
             "customer_script",
             "evidence_index",
-            "scientific_evidence"
+            "scientific_evidence",
+            "label",
+            "registration_receipt",
+            "ad_confirmation"
           ],
           "title": "Kind",
           "type": "string"
@@ -666,6 +726,21 @@
           "minLength": 1,
           "title": "Title",
           "type": "string"
+        },
+        "access_groups": {
+          "default": [
+            "manager",
+            "operations"
+          ],
+          "items": {
+            "enum": [
+              "manager",
+              "operations"
+            ],
+            "type": "string"
+          },
+          "title": "Access Groups",
+          "type": "array"
         },
         "synthetic": {
           "const": true,
@@ -731,6 +806,29 @@
           "title": "Received At",
           "type": "string"
         },
+        "confirmation_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation Date"
+        },
+        "issuing_authority": {
+          "default": "unknown",
+          "enum": [
+            "national_food_admin",
+            "provincial_chair",
+            "unknown"
+          ],
+          "title": "Issuing Authority",
+          "type": "string"
+        },
         "supersedes": {
           "anyOf": [
             {
@@ -785,10 +883,27 @@
             "uses",
             "confirmation",
             "endorsement",
-            "medicinal"
+            "medicinal",
+            "receipt",
+            "authority_review",
+            "label_copy"
           ],
           "title": "Check Type",
           "type": "string"
+        },
+        "activities": {
+          "default": [
+            "advertising"
+          ],
+          "items": {
+            "enum": [
+              "advertising",
+              "ad_registration"
+            ],
+            "type": "string"
+          },
+          "title": "Activities",
+          "type": "array"
         },
         "method": {
           "default": "deterministic",
@@ -862,6 +977,35 @@
         "check_type"
       ],
       "title": "Rule",
+      "type": "object"
+    },
+    "ValidationRejection": {
+      "additionalProperties": false,
+      "properties": {
+        "finding_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "unknown_rule",
+            "unknown_clause",
+            "inactive_clause",
+            "unverified_rule",
+            "quote_mismatch",
+            "evidence_mismatch",
+            "missing_field_present"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "reason"
+      ],
+      "title": "ValidationRejection",
       "type": "object"
     }
   },

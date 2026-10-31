@@ -14,6 +14,10 @@
       "product_id": "P-01",
       "kind": "dossier",
       "title": "Synthetic dossier",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
       "synthetic": true
     },
     {
@@ -22,6 +26,10 @@
       "product_id": "P-01",
       "kind": "marketing",
       "title": "Synthetic marketing",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
       "synthetic": true
     },
     {
@@ -30,14 +38,22 @@
       "product_id": "P-01",
       "kind": "marketing",
       "title": "Synthetic marketing control",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
       "synthetic": true
     },
     {
       "id": "REC-04",
       "company_id": "CO-DEMO",
       "product_id": "P-01",
-      "kind": "evidence_index",
+      "kind": "ad_confirmation",
       "title": "Synthetic confirmation index; no official certificate",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
       "synthetic": true
     },
     {
@@ -46,6 +62,10 @@
       "product_id": "P-02",
       "kind": "marketing",
       "title": "Unrelated product control",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
       "synthetic": true
     }
   ],
@@ -61,6 +81,8 @@
       ],
       "reference_ids": [],
       "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
       "supersedes": null
     },
     {
@@ -78,6 +100,8 @@
         "RV-04-v1"
       ],
       "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
       "supersedes": null
     },
     {
@@ -93,6 +117,8 @@
         "RV-04-v1"
       ],
       "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
       "supersedes": null
     },
     {
@@ -103,6 +129,8 @@
       "uses": [],
       "reference_ids": [],
       "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
       "supersedes": null
     },
     {
@@ -113,6 +141,8 @@
       "uses": [],
       "reference_ids": [],
       "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
       "supersedes": null
     }
   ],

@@ -5,6 +5,9 @@
     "clause_version_id": "CV-01-v1",
     "title": "warning",
     "check_type": "warning",
+    "activities": [
+      "advertising"
+    ],
     "method": "deterministic",
     "severity": "medium",
     "verification_status": "to_be_verified",
@@ -19,6 +22,9 @@
     "clause_version_id": "CV-02-v1",
     "title": "uses",
     "check_type": "uses",
+    "activities": [
+      "advertising"
+    ],
     "method": "deterministic",
     "severity": "medium",
     "verification_status": "to_be_verified",
@@ -33,6 +39,9 @@
     "clause_version_id": "CV-03-v1",
     "title": "confirmation",
     "check_type": "confirmation",
+    "activities": [
+      "advertising"
+    ],
     "method": "deterministic",
     "severity": "medium",
     "verification_status": "to_be_verified",
@@ -47,6 +56,9 @@
     "clause_version_id": "CV-04-v1",
     "title": "endorsement",
     "check_type": "endorsement",
+    "activities": [
+      "advertising"
+    ],
     "method": "deterministic",
     "severity": "medium",
     "verification_status": "to_be_verified",
@@ -61,7 +73,61 @@
     "clause_version_id": "CV-05-v1",
     "title": "medicinal",
     "check_type": "medicinal",
+    "activities": [
+      "advertising"
+    ],
     "method": "llm",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  },
+  {
+    "id": "R-06",
+    "version": 1,
+    "clause_version_id": "CV-06-v1",
+    "title": "receipt",
+    "check_type": "receipt",
+    "activities": [
+      "ad_registration"
+    ],
+    "method": "deterministic",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  },
+  {
+    "id": "R-07",
+    "version": 1,
+    "clause_version_id": "CV-07-v1",
+    "title": "authority_review",
+    "check_type": "authority_review",
+    "activities": [
+      "ad_registration"
+    ],
+    "method": "deterministic",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  },
+  {
+    "id": "R-08",
+    "version": 1,
+    "clause_version_id": "CV-08-v1",
+    "title": "label_copy",
+    "check_type": "label_copy",
+    "activities": [
+      "ad_registration"
+    ],
+    "method": "deterministic",
     "severity": "medium",
     "verification_status": "to_be_verified",
     "enabled": false,

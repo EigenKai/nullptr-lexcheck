@@ -1,5 +1,5 @@
 # Kế hoạch kiểm thử
-v0 — trước proposal final.
+v1 — theo proposal final đã nhận 12:48:37 và quyết định chia tầng của user 12:58, 31/10/2026.
 
 ## Lệnh và tầng test
 - `make setup`: Python 3.11 + venv, dependency ghim. `make test`: pytest, contract + API + smoke không cần key, coverage ≥80% phần Python đã triển khai. `make lint`: Ruff. `make schemas`: xuất schema/OpenAPI. `make eval`: kiểm fixture lúc bootstrap, bảng dev thật sau job 1; tuyệt đối không gọi preview là kết quả model.
@@ -18,7 +18,7 @@ v0 — trước proposal final.
 ## Eval và baseline
 Tuấn Anh sở hữu `eval/`, `detect/`, `data/dev/`. Keyword baseline công khai cùng input, từ khóa không cố ý yếu. Dev gồm ca sạch, explicit, implied, use mismatch, missing evidence, profile unknown và injection. So cặp (record, rule), precision/recall theo rule, false flags ca sạch, validator rejects theo nguyên nhân, N thực chạy, gold queue precision/recall, stability 3 lần, latency/calls/cache. Mọi mẫu số ghi rõ; N=0 ghi null/not_measured, không 100%.
 
-Baseline model thuần (P1 nếu proposal cho phép): cùng model OPENAI_MODEL và cùng hồ sơ/điều khoản, không graph/tool routing; giữ raw response + prompt hash + input hash, timeout và refusal là lỗi đo, không âm tính. B+/RAG là P2. Mọi call chỉ qua detect/client.py; cache key gồm schema+prompt version+model+review date+record hashes+rule/clause versions. Không gắn output giả vào cache.
+Baseline model thuần là bắt buộc cho gate tầng 1: cùng model OPENAI_MODEL và cùng hồ sơ/điều khoản, không graph/tool routing; giữ raw response + prompt hash + input hash, timeout và refusal là lỗi đo, không âm tính. B+/RAG chưa triển khai hôm nay; không nhận là đã đo. Mọi call chỉ qua detect/client.py; cache key gồm schema+prompt version+model+review date+record hashes+rule/clause versions. Không gắn output giả vào cache.
 
 Merge gate: chạy dev trên main và PR cùng input/rule scope/model mode, không tụt recall hay tăng false flags/grounding errors; nếu thay phạm vi rule thì báo scope change riêng, không so hai mẫu số khác. Ghi ledger pr-blocked nếu tụt. Bootstrap `make eval` chỉ fixture validation, chưa có số so sánh.
 
@@ -33,3 +33,24 @@ Con người tự viết và gán nhãn ở `~/nullptr-test-final/`; Codex khôn
 - 15:30: freeze SHA; 16:15 link/public README/PDF/video/credentials scan.
 
 Contract test thích nghi với runtime_mode fixture/live để các job thay adapter trong thư mục riêng, không cần sửa test chung. Test chuyển sang live bắt buộc ở intake/tests không được condition/skip; fixture gate không thay test tính năng.
+
+## Gate theo tầng và smoke thực
+CI chạy make test + make smoke + lint + eval; khi ui/package-lock.json có thì thêm frontend test/build. make smoke không được bỏ qua test chưa có: bootstrap chỉ có fixture smoke; explicit LAYER=0..3 phải có intake/tests/test_smoke_layers.py và mode live. Dispatcher bật flags prerequisite trong child process để thử tầng mới trước khi bật deployment. Không skip/xfail smoke; test không được mock checker/store/validator. Model transport có thể dùng recorded real dev cache cho smoke no-key, ghi cached rõ; test lỗi dùng stub riêng và không đi vào số eval.
+
+| Tầng | Test smoke bắt buộc | Cửa chặn quan trọng |
+|---|---|---|
+| 0 | intake/tests/test_smoke_layers.py::test_layer0_smoke | profile→>=3 verified rules→decision→dossier event→N=2 queue/K=1 finding→manual revision→fresh recheck→authorized close; old hash giữ nguyên; P-02 không queued; no key |
+| 1 | test_layer1_smoke | layer0 vẫn chạy; validator 5 kiểm; report dev có cả3systems và n thật hoặc gate không đạt; cited chat; assignment không close; timeout/refusal không mất deterministic result |
+| 2 | test_layer2_smoke | pending legal change không đổi rule active; verified+accepted+effective mới activate; before/after date; cùngevent retry không nhân queue; old result giữbasis; 5–8 distinct verified rule nếu đủ nguồn |
+| 3 | test_layer3_smoke | operations không đọc được manager sentinel qua records/check/history/chat/cache/demo; role giả không close; reviewed Pattern qua guard mới active; old/new+model-call delta thật |
+
+Luật chặn merge: mỗi PR make test + smoke của tầng đang bật đều xanh; feature mới off thì vẫn phải có unit/integration tests của thay đổi. Muốn bật tầng N phải chạy explicit smoke N trên main ở chính SHA đó, browser smoke, và ghi flagstate+SHA vào ledger. Người merge kiểm git diff cả branch; agent không merge PR người khác. Khi tắt lower layer phải tắt upper layers.
+
+## Ma trận quyền và cache
+Test cả401 no token,403 action cấm,404 private ID,422 schema,409 stale,503 unavailable và404 feature_disabled. Kiểm nested snapshot/evidence, /api/demo, /api/records, /api/checks/{id}, /api/history, /api/chat, /api/evaluation, /api/feedback và legal routes. API authorization trước retrieval/cache; text private không xuất hiện trong response/error/log. UI user switch xóa dữ liệu người trước. Demo session selector không là production auth; mọi record tổng hợp.
+
+## Khóa 15:15 độc lập tầng 3
+15:10 human ghi EVAL_SHA/flags/rule hashes; checkout riêng đúng SHA, chỉ đọc bản đó trong final run. Không merge thay đổi vào working directory của lần đo. Human final đúng15:15 kể cả tầng 2 chưa đạt (đo tầng cao nhất đã hoàn tất). Dataset thực bao nhiêu ghi bấy nhiêu; proposal40–60 là mục tiêu, không bịa. Tầng 3 vẫn có thể hoàn tất15:30 nhưng chỉ báo smoke/dev của nó; metrics held-out gắn SHA15:10, không đánh tráo sangSHA freeze. Nếu không thể lấy model response, ghi failed/unavailable, không rerun để làm đẹp số.
+
+## Tự review khởi tạo
+Đã sửa: context_version_ids rõ căn cứ mới mà không đổi record cũ; snapshots giữ cả rule/clause khi không finding; health runtime extension tránh đổi file chung; per-app state để test không nhiễm; các endpoint tầng sau khóa404. Chưa phải bằng chứng tính năng live. Baseline/e2e/per-rule tests trong job files là nghiệm thu cần triển khai, không báo là đã chạy.

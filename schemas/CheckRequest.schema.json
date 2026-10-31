@@ -20,6 +20,7 @@
         "activity": {
           "enum": [
             "advertising",
+            "ad_registration",
             "label_only",
             "unknown"
           ],
@@ -81,7 +82,10 @@
             "marketing",
             "customer_script",
             "evidence_index",
-            "scientific_evidence"
+            "scientific_evidence",
+            "label",
+            "registration_receipt",
+            "ad_confirmation"
           ],
           "title": "Kind",
           "type": "string"
@@ -91,6 +95,21 @@
           "minLength": 1,
           "title": "Title",
           "type": "string"
+        },
+        "access_groups": {
+          "default": [
+            "manager",
+            "operations"
+          ],
+          "items": {
+            "enum": [
+              "manager",
+              "operations"
+            ],
+            "type": "string"
+          },
+          "title": "Access Groups",
+          "type": "array"
         },
         "synthetic": {
           "const": true,
@@ -154,6 +173,29 @@
         "received_at": {
           "format": "date-time",
           "title": "Received At",
+          "type": "string"
+        },
+        "confirmation_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation Date"
+        },
+        "issuing_authority": {
+          "default": "unknown",
+          "enum": [
+            "national_food_admin",
+            "provincial_chair",
+            "unknown"
+          ],
+          "title": "Issuing Authority",
           "type": "string"
         },
         "supersedes": {

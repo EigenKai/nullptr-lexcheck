@@ -6,7 +6,10 @@
         "not_found",
         "conflict",
         "invalid_request",
-        "not_ready"
+        "not_ready",
+        "unauthenticated",
+        "forbidden",
+        "feature_disabled"
       ],
       "title": "Code",
       "type": "string"

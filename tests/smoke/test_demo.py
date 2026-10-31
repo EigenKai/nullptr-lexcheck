@@ -1,15 +1,11 @@
-from fastapi.testclient import TestClient
-
-from app.main import app
 from detect.service import suggest
 from detect.validator import validate_findings
 from intake.fixtures import load_demo
 from rules.engine import evaluate
 
 
-def test_bootstrap_demo_without_key_or_network(monkeypatch):
+def test_bootstrap_demo_without_key_or_network(client, monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    client = TestClient(app)
     bundle = load_demo()
     evaluation = evaluate(bundle.request)
     assert evaluation.mode in ("fixture", "live")

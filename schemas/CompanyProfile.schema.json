@@ -18,6 +18,7 @@
     "activity": {
       "enum": [
         "advertising",
+        "ad_registration",
         "label_only",
         "unknown"
       ],

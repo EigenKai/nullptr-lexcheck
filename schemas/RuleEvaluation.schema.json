@@ -258,6 +258,19 @@
     "Finding": {
       "additionalProperties": false,
       "properties": {
+        "pattern_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern Id"
+        },
         "id": {
           "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
           "title": "Id",
@@ -281,6 +294,15 @@
         "record_version_id": {
           "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
           "title": "Record Version Id",
+          "type": "string"
+        },
+        "applicability": {
+          "default": "applies",
+          "enum": [
+            "applies",
+            "not_enough_information"
+          ],
+          "title": "Applicability",
           "type": "string"
         },
         "status": {
@@ -376,10 +398,27 @@
             "uses",
             "confirmation",
             "endorsement",
-            "medicinal"
+            "medicinal",
+            "receipt",
+            "authority_review",
+            "label_copy"
           ],
           "title": "Check Type",
           "type": "string"
+        },
+        "activities": {
+          "default": [
+            "advertising"
+          ],
+          "items": {
+            "enum": [
+              "advertising",
+              "ad_registration"
+            ],
+            "type": "string"
+          },
+          "title": "Activities",
+          "type": "array"
         },
         "method": {
           "default": "deterministic",
@@ -458,6 +497,15 @@
   },
   "additionalProperties": false,
   "properties": {
+    "pattern_ids_used": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+        "type": "string"
+      },
+      "title": "Pattern Ids Used",
+      "type": "array"
+    },
     "rule_snapshots": {
       "default": [],
       "items": {

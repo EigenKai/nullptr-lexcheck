@@ -86,6 +86,12 @@
     "request": {
       "$ref": "#/$defs/DecisionRequest"
     },
+    "actor_user_id": {
+      "default": "U-MANAGER",
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Actor User Id",
+      "type": "string"
+    },
     "task_status": {
       "enum": [
         "open",

@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "layer0_ready": {
+      "default": false,
+      "title": "Layer0 Ready",
+      "type": "boolean"
+    },
+    "layer1": {
+      "default": false,
+      "title": "Layer1",
+      "type": "boolean"
+    },
+    "layer2": {
+      "default": false,
+      "title": "Layer2",
+      "type": "boolean"
+    },
+    "layer3": {
+      "default": false,
+      "title": "Layer3",
+      "type": "boolean"
+    }
+  },
+  "title": "FeatureFlags",
+  "type": "object"
+}

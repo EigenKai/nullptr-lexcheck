@@ -115,6 +115,23 @@
     "CheckResult": {
       "additionalProperties": false,
       "properties": {
+        "pattern_ids_used": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Pattern Ids Used",
+          "type": "array"
+        },
+        "validator_rejections": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ValidationRejection"
+          },
+          "title": "Validator Rejections",
+          "type": "array"
+        },
         "rule_snapshots": {
           "default": [],
           "items": {
@@ -198,6 +215,23 @@
         "created_at": {
           "format": "date-time",
           "title": "Created At",
+          "type": "string"
+        },
+        "applicability": {
+          "default": "not_enough_information",
+          "enum": [
+            "applies",
+            "does_not_apply",
+            "not_enough_information"
+          ],
+          "title": "Applicability",
+          "type": "string"
+        },
+        "applicability_reason": {
+          "default": "Applicability awaits review.",
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Applicability Reason",
           "type": "string"
         },
         "parent_check_id": {
@@ -389,6 +423,7 @@
         "activity": {
           "enum": [
             "advertising",
+            "ad_registration",
             "label_only",
             "unknown"
           ],
@@ -436,6 +471,12 @@
         },
         "request": {
           "$ref": "#/$defs/DecisionRequest"
+        },
+        "actor_user_id": {
+          "default": "U-MANAGER",
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Actor User Id",
+          "type": "string"
         },
         "task_status": {
           "enum": [
@@ -655,6 +696,19 @@
     "Finding": {
       "additionalProperties": false,
       "properties": {
+        "pattern_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern Id"
+        },
         "id": {
           "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
           "title": "Id",
@@ -678,6 +732,15 @@
         "record_version_id": {
           "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
           "title": "Record Version Id",
+          "type": "string"
+        },
+        "applicability": {
+          "default": "applies",
+          "enum": [
+            "applies",
+            "not_enough_information"
+          ],
+          "title": "Applicability",
           "type": "string"
         },
         "status": {
@@ -743,6 +806,261 @@
       "title": "Finding",
       "type": "object"
     },
+    "LegalChangeEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "law_changed",
+          "default": "law_changed",
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "const": "preloaded",
+          "default": "preloaded",
+          "title": "Label",
+          "type": "string"
+        },
+        "previous_clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Previous Clause Version Id",
+          "type": "string"
+        },
+        "new_clause": {
+          "$ref": "#/$defs/ClauseVersion"
+        },
+        "proposed_rules": {
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "minItems": 1,
+          "title": "Proposed Rules",
+          "type": "array"
+        },
+        "issued_on": {
+          "format": "date",
+          "title": "Issued On",
+          "type": "string"
+        },
+        "effective_on": {
+          "format": "date",
+          "title": "Effective On",
+          "type": "string"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "previous_clause_version_id",
+        "new_clause",
+        "proposed_rules",
+        "issued_on",
+        "effective_on",
+        "received_at"
+      ],
+      "title": "LegalChangeEvent",
+      "type": "object"
+    },
+    "LegalChangeState": {
+      "additionalProperties": false,
+      "properties": {
+        "event": {
+          "$ref": "#/$defs/LegalChangeEvent"
+        },
+        "interpretation": {
+          "default": "pending",
+          "enum": [
+            "pending",
+            "accepted",
+            "rejected"
+          ],
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "reviewed_by": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed By"
+        },
+        "reviewed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed At"
+        },
+        "activated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activated At"
+        },
+        "status": {
+          "default": "pending",
+          "enum": [
+            "pending",
+            "ready",
+            "active",
+            "rejected"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event"
+      ],
+      "title": "LegalChangeState",
+      "type": "object"
+    },
+    "Pattern": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "company_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Company Id",
+          "type": "string"
+        },
+        "pack": {
+          "const": "tpbvsk",
+          "default": "tpbvsk",
+          "title": "Pack",
+          "type": "string"
+        },
+        "source_decision_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Source Decision Id",
+          "type": "string"
+        },
+        "rule_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "minimum": 1,
+          "title": "Rule Version",
+          "type": "integer"
+        },
+        "clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Version Id",
+          "type": "string"
+        },
+        "phrase": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Phrase",
+          "type": "string"
+        },
+        "polarity": {
+          "enum": [
+            "positive",
+            "negative"
+          ],
+          "title": "Polarity",
+          "type": "string"
+        },
+        "state": {
+          "default": "candidate",
+          "enum": [
+            "candidate",
+            "active",
+            "rejected",
+            "suspended"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "test_report_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Test Report Sha256"
+        },
+        "reviewed_by": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed By"
+        },
+        "access_groups": {
+          "default": [
+            "manager"
+          ],
+          "items": {
+            "enum": [
+              "manager",
+              "operations"
+            ],
+            "type": "string"
+          },
+          "title": "Access Groups",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "company_id",
+        "source_decision_id",
+        "rule_id",
+        "rule_version",
+        "clause_version_id",
+        "phrase",
+        "polarity"
+      ],
+      "title": "Pattern",
+      "type": "object"
+    },
     "RecheckItem": {
       "additionalProperties": false,
       "properties": {
@@ -769,7 +1087,8 @@
         "reason": {
           "enum": [
             "direct_dependency",
-            "product_fallback"
+            "product_fallback",
+            "legal_dependency"
           ],
           "title": "Reason",
           "type": "string"
@@ -831,7 +1150,10 @@
             "marketing",
             "customer_script",
             "evidence_index",
-            "scientific_evidence"
+            "scientific_evidence",
+            "label",
+            "registration_receipt",
+            "ad_confirmation"
           ],
           "title": "Kind",
           "type": "string"
@@ -841,6 +1163,21 @@
           "minLength": 1,
           "title": "Title",
           "type": "string"
+        },
+        "access_groups": {
+          "default": [
+            "manager",
+            "operations"
+          ],
+          "items": {
+            "enum": [
+              "manager",
+              "operations"
+            ],
+            "type": "string"
+          },
+          "title": "Access Groups",
+          "type": "array"
         },
         "synthetic": {
           "const": true,
@@ -906,6 +1243,29 @@
           "title": "Received At",
           "type": "string"
         },
+        "confirmation_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation Date"
+        },
+        "issuing_authority": {
+          "default": "unknown",
+          "enum": [
+            "national_food_admin",
+            "provincial_chair",
+            "unknown"
+          ],
+          "title": "Issuing Authority",
+          "type": "string"
+        },
         "supersedes": {
           "anyOf": [
             {
@@ -960,10 +1320,27 @@
             "uses",
             "confirmation",
             "endorsement",
-            "medicinal"
+            "medicinal",
+            "receipt",
+            "authority_review",
+            "label_copy"
           ],
           "title": "Check Type",
           "type": "string"
+        },
+        "activities": {
+          "default": [
+            "advertising"
+          ],
+          "items": {
+            "enum": [
+              "advertising",
+              "ad_registration"
+            ],
+            "type": "string"
+          },
+          "title": "Activities",
+          "type": "array"
         },
         "method": {
           "default": "deterministic",
@@ -1038,10 +1415,55 @@
       ],
       "title": "Rule",
       "type": "object"
+    },
+    "ValidationRejection": {
+      "additionalProperties": false,
+      "properties": {
+        "finding_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "unknown_rule",
+            "unknown_clause",
+            "inactive_clause",
+            "unverified_rule",
+            "quote_mismatch",
+            "evidence_mismatch",
+            "missing_field_present"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "reason"
+      ],
+      "title": "ValidationRejection",
+      "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
+    "legal_changes": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/LegalChangeState"
+      },
+      "title": "Legal Changes",
+      "type": "array"
+    },
+    "patterns": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Pattern"
+      },
+      "title": "Patterns",
+      "type": "array"
+    },
     "checks": {
       "items": {
         "$ref": "#/$defs/CheckResult"

@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "review_date": {
+      "format": "date",
+      "title": "Review Date",
+      "type": "string"
+    }
+  },
+  "required": [
+    "review_date"
+  ],
+  "title": "LegalActivationRequest",
+  "type": "object"
+}

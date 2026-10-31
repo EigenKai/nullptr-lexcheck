@@ -32,3 +32,13 @@ Never read, list, write or summarize the human final test set in `~/nullptr-test
 ## Delivery
 
 Read your job in `docs/plan/`. Write a failing behavioral test before implementation; keep packages at most 45 minutes. Run local tests/lint/dev eval; report limitations and actual results. Self-review code, open a conventional-title PR, and let a human review and merge. Append your own ledger with time/member/kind/what/result/link, then ask the leader to aggregate. Do not invent tasks, metrics, source verification or completion.
+
+## Layer gates and integration
+
+The full Today scope is implemented in layers: 0 (records/rules/review/change/recheck/closure/deploy), 1 (five-check validator, keyword/plain-chat baselines, cited narrow chat and assignment), 2 (preloaded verified legal change and 5–8 distinct verified rules), 3 (two demo permission groups and reviewed feedback reuse). Never start coding layer N+1 before layer N is demonstrated on main. Continue independent work within the current layer.
+
+Flags LEXCHECK_LAYER1_ENABLED, LEXCHECK_LAYER2_ENABLED and LEXCHECK_LAYER3_ENABLED default to 0. Every PR must preserve make test and make smoke on main. Enable a layer only after its explicit make smoke LAYER=N, frontend checks and deployed smoke pass on that SHA. The smoke command enables prerequisite flags only in its test subprocess. Do not skip smoke tests. At 15:30 turn unfinished layers off and update the plan's Today gap table. The human held-out run remains 15:15 on a pinned SHA; never claim later changes share its measurements.
+
+intake/runtime.configure_app is the extension point for per-app store and authorization; layer_routes is already mounted. The API owner creates ui/package-lock.json in the first coordinated UI PR; later dependency changes use a separate PR. All other shared files remain coordinated-only. Do not rerun scripts/create_fixtures.py after the rule owner verifies the catalog: it resets bootstrap data. make schemas only exports contracts.
+
+A server-issued reviewer session is required for layer-0 decisions/closure. Layer 3 expands it to two synthetic demo users; group membership comes from server session state, never client actor/group fields. All retrievals, nested history, chat, caches and actions must enforce visibility before returning data.

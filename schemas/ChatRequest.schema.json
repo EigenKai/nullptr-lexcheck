@@ -1,0 +1,22 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "check_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Check Id",
+      "type": "string"
+    },
+    "question": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Question",
+      "type": "string"
+    }
+  },
+  "required": [
+    "check_id",
+    "question"
+  ],
+  "title": "ChatRequest",
+  "type": "object"
+}

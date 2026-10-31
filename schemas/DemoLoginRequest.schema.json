@@ -1,0 +1,18 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "user_id": {
+      "enum": [
+        "U-MANAGER",
+        "U-OPS"
+      ],
+      "title": "User Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "title": "DemoLoginRequest",
+  "type": "object"
+}

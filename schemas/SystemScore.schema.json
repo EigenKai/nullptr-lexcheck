@@ -1,0 +1,102 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "system": {
+      "enum": [
+        "keyword",
+        "plain_chat",
+        "lexcheck"
+      ],
+      "title": "System",
+      "type": "string"
+    },
+    "evaluated_cases": {
+      "minimum": 0,
+      "title": "Evaluated Cases",
+      "type": "integer"
+    },
+    "true_positive": {
+      "minimum": 0,
+      "title": "True Positive",
+      "type": "integer"
+    },
+    "false_positive": {
+      "minimum": 0,
+      "title": "False Positive",
+      "type": "integer"
+    },
+    "false_negative": {
+      "minimum": 0,
+      "title": "False Negative",
+      "type": "integer"
+    },
+    "false_flags_on_clean": {
+      "minimum": 0,
+      "title": "False Flags On Clean",
+      "type": "integer"
+    },
+    "precision": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Precision"
+    },
+    "recall": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Recall"
+    },
+    "model_calls": {
+      "minimum": 0,
+      "title": "Model Calls",
+      "type": "integer"
+    },
+    "failed_calls": {
+      "minimum": 0,
+      "title": "Failed Calls",
+      "type": "integer"
+    },
+    "latency_ms": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Latency Ms"
+    }
+  },
+  "required": [
+    "system",
+    "evaluated_cases",
+    "true_positive",
+    "false_positive",
+    "false_negative",
+    "false_flags_on_clean",
+    "model_calls",
+    "failed_calls"
+  ],
+  "title": "SystemScore",
+  "type": "object"
+}

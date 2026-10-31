@@ -9,6 +9,24 @@
       "get": {
         "summary": "Demo",
         "operationId": "demo_api_demo_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -16,6 +34,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DemoBundle"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -27,15 +55,33 @@
       "post": {
         "summary": "Check",
         "operationId": "check_api_check_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CheckRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -49,44 +95,44 @@
             }
           },
           "404": {
-            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Not Found"
           },
           "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Conflict"
           },
           "422": {
-            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Unprocessable Entity"
           },
           "503": {
-            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -95,15 +141,33 @@
       "post": {
         "summary": "Change",
         "operationId": "change_api_changes_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ChangeEvent"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -117,44 +181,44 @@
             }
           },
           "404": {
-            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Not Found"
           },
           "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Conflict"
           },
           "422": {
-            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Unprocessable Entity"
           },
           "503": {
-            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -163,15 +227,33 @@
       "post": {
         "summary": "Recheck",
         "operationId": "recheck_api_rechecks_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RecheckRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -185,44 +267,44 @@
             }
           },
           "404": {
-            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Not Found"
           },
           "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Conflict"
           },
           "422": {
-            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Unprocessable Entity"
           },
           "503": {
-            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -231,15 +313,33 @@
       "post": {
         "summary": "Decide",
         "operationId": "decide_api_decisions_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/DecisionRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -253,44 +353,44 @@
             }
           },
           "404": {
-            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Not Found"
           },
           "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Conflict"
           },
           "422": {
-            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Unprocessable Entity"
           },
           "503": {
-            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
                 }
               }
-            }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -299,6 +399,24 @@
       "get": {
         "summary": "History",
         "operationId": "history_api_history_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -309,6 +427,1128 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/features": {
+      "get": {
+        "summary": "Features",
+        "operationId": "features_api_features_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeatureFlags"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session": {
+      "post": {
+        "summary": "Session",
+        "operationId": "session_api_session_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoSession"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/records": {
+      "get": {
+        "summary": "Records",
+        "operationId": "records_api_records_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/checks/{check_id}": {
+      "get": {
+        "summary": "Get Check",
+        "operationId": "get_check_api_checks__check_id__get",
+        "parameters": [
+          {
+            "name": "check_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Check Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "summary": "Chat",
+        "operationId": "chat_api_chat_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/evaluation": {
+      "get": {
+        "summary": "Evaluation",
+        "operationId": "evaluation_api_evaluation_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationReport"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/legal-changes": {
+      "post": {
+        "summary": "Legal Change",
+        "operationId": "legal_change_api_legal_changes_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalChangeEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalChangeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/legal-changes/{event_id}/review": {
+      "post": {
+        "summary": "Review Legal Change",
+        "operationId": "review_legal_change_api_legal_changes__event_id__review_post",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalChangeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/legal-changes/{event_id}/activate": {
+      "post": {
+        "summary": "Activate Legal Change",
+        "operationId": "activate_legal_change_api_legal_changes__event_id__activate_post",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalActivationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalChangeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/feedback": {
+      "post": {
+        "summary": "Feedback",
+        "operationId": "feedback_api_feedback_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatternResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/patterns/{pattern_id}/review": {
+      "post": {
+        "summary": "Review Pattern",
+        "operationId": "review_pattern_api_patterns__pattern_id__review_post",
+        "parameters": [
+          {
+            "name": "pattern_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Pattern Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatternReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatternResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -317,6 +1557,24 @@
       "get": {
         "summary": "Health",
         "operationId": "health_health_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -324,6 +1582,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -342,7 +1610,10 @@
               "not_found",
               "conflict",
               "invalid_request",
-              "not_ready"
+              "not_ready",
+              "unauthenticated",
+              "forbidden",
+              "feature_disabled"
             ],
             "title": "Code"
           },
@@ -434,6 +1705,104 @@
         ],
         "title": "ChangeResponse"
       },
+      "ChatCitation": {
+        "properties": {
+          "clause_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Clause Version Id"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Quote"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Evidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "clause_version_id",
+          "quote"
+        ],
+        "title": "ChatCitation"
+      },
+      "ChatRequest": {
+        "properties": {
+          "check_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Check Id"
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Question"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "check_id",
+          "question"
+        ],
+        "title": "ChatRequest"
+      },
+      "ChatResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "answered",
+              "needs_evidence"
+            ],
+            "title": "Status"
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Answer"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/ChatCitation"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "model_status": {
+            "type": "string",
+            "enum": [
+              "off",
+              "cached",
+              "live",
+              "unavailable"
+            ],
+            "title": "Model Status",
+            "default": "off"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "answer",
+          "citations"
+        ],
+        "title": "ChatResponse"
+      },
       "CheckRequest": {
         "properties": {
           "profile": {
@@ -505,6 +1874,23 @@
       },
       "CheckResult": {
         "properties": {
+          "pattern_ids_used": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+            },
+            "type": "array",
+            "title": "Pattern Ids Used",
+            "default": []
+          },
+          "validator_rejections": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationRejection"
+            },
+            "type": "array",
+            "title": "Validator Rejections",
+            "default": []
+          },
           "rule_snapshots": {
             "items": {
               "$ref": "#/components/schemas/Rule"
@@ -589,6 +1975,23 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "applicability": {
+            "type": "string",
+            "enum": [
+              "applies",
+              "does_not_apply",
+              "not_enough_information"
+            ],
+            "title": "Applicability",
+            "default": "not_enough_information"
+          },
+          "applicability_reason": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Applicability Reason",
+            "default": "Applicability awaits review."
           },
           "parent_check_id": {
             "anyOf": [
@@ -775,6 +2178,7 @@
             "type": "string",
             "enum": [
               "advertising",
+              "ad_registration",
               "label_only",
               "unknown"
             ],
@@ -821,6 +2225,12 @@
           },
           "request": {
             "$ref": "#/components/schemas/DecisionRequest"
+          },
+          "actor_user_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Actor User Id",
+            "default": "U-MANAGER"
           },
           "task_status": {
             "type": "string",
@@ -964,6 +2374,146 @@
         ],
         "title": "DemoBundle"
       },
+      "DemoLoginRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "enum": [
+              "U-MANAGER",
+              "U-OPS"
+            ],
+            "title": "User Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "DemoLoginRequest"
+      },
+      "DemoSession": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "enum": [
+              "U-MANAGER",
+              "U-OPS"
+            ],
+            "title": "User Id"
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "manager",
+              "operations"
+            ],
+            "title": "Group"
+          },
+          "token": {
+            "type": "string",
+            "minLength": 20,
+            "title": "Token"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "user_id",
+          "group",
+          "token",
+          "expires_at"
+        ],
+        "title": "DemoSession"
+      },
+      "EvaluationReport": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "bootstrap",
+              "dev",
+              "held_out"
+            ],
+            "title": "Phase"
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "N"
+          },
+          "git_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Sha"
+          },
+          "dataset_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Sha256"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+            },
+            "type": "array",
+            "title": "Rule Ids",
+            "default": []
+          },
+          "systems": {
+            "items": {
+              "$ref": "#/components/schemas/SystemScore"
+            },
+            "type": "array",
+            "title": "Systems",
+            "default": []
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phase",
+          "n",
+          "note"
+        ],
+        "title": "EvaluationReport"
+      },
       "Evidence": {
         "properties": {
           "record_version_id": {
@@ -1072,8 +2622,78 @@
         ],
         "title": "Evidence"
       },
+      "FeatureFlags": {
+        "properties": {
+          "layer0_ready": {
+            "type": "boolean",
+            "title": "Layer0 Ready",
+            "default": false
+          },
+          "layer1": {
+            "type": "boolean",
+            "title": "Layer1",
+            "default": false
+          },
+          "layer2": {
+            "type": "boolean",
+            "title": "Layer2",
+            "default": false
+          },
+          "layer3": {
+            "type": "boolean",
+            "title": "Layer3",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FeatureFlags"
+      },
+      "FeedbackRequest": {
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Decision Id"
+          },
+          "phrase": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Phrase"
+          },
+          "polarity": {
+            "type": "string",
+            "enum": [
+              "positive",
+              "negative"
+            ],
+            "title": "Polarity"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision_id",
+          "phrase",
+          "polarity"
+        ],
+        "title": "FeedbackRequest"
+      },
       "Finding": {
         "properties": {
+          "pattern_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern Id"
+          },
           "id": {
             "type": "string",
             "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
@@ -1098,6 +2718,15 @@
             "type": "string",
             "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
             "title": "Record Version Id"
+          },
+          "applicability": {
+            "type": "string",
+            "enum": [
+              "applies",
+              "not_enough_information"
+            ],
+            "title": "Applicability",
+            "default": "applies"
           },
           "status": {
             "type": "string",
@@ -1163,6 +2792,19 @@
         ],
         "title": "Finding"
       },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -1189,6 +2831,22 @@
       },
       "HistoryResponse": {
         "properties": {
+          "legal_changes": {
+            "items": {
+              "$ref": "#/components/schemas/LegalChangeState"
+            },
+            "type": "array",
+            "title": "Legal Changes",
+            "default": []
+          },
+          "patterns": {
+            "items": {
+              "$ref": "#/components/schemas/Pattern"
+            },
+            "type": "array",
+            "title": "Patterns",
+            "default": []
+          },
           "checks": {
             "items": {
               "$ref": "#/components/schemas/CheckResult"
@@ -1237,6 +2895,373 @@
         ],
         "title": "HistoryResponse"
       },
+      "LegalActivationRequest": {
+        "properties": {
+          "review_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Review Date"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "review_date"
+        ],
+        "title": "LegalActivationRequest"
+      },
+      "LegalChangeEvent": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "law_changed",
+            "title": "Kind",
+            "default": "law_changed"
+          },
+          "label": {
+            "type": "string",
+            "const": "preloaded",
+            "title": "Label",
+            "default": "preloaded"
+          },
+          "previous_clause_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Previous Clause Version Id"
+          },
+          "new_clause": {
+            "$ref": "#/components/schemas/ClauseVersion"
+          },
+          "proposed_rules": {
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Proposed Rules"
+          },
+          "issued_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Issued On"
+          },
+          "effective_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Effective On"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "previous_clause_version_id",
+          "new_clause",
+          "proposed_rules",
+          "issued_on",
+          "effective_on",
+          "received_at"
+        ],
+        "title": "LegalChangeEvent"
+      },
+      "LegalChangeResponse": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/LegalChangeState"
+          },
+          "queue": {
+            "items": {
+              "$ref": "#/components/schemas/RecheckItem"
+            },
+            "type": "array",
+            "title": "Queue",
+            "default": []
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state",
+          "mode"
+        ],
+        "title": "LegalChangeResponse"
+      },
+      "LegalChangeState": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/LegalChangeEvent"
+          },
+          "interpretation": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ],
+            "title": "Interpretation",
+            "default": "pending"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "activated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activated At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "ready",
+              "active",
+              "rejected"
+            ],
+            "title": "Status",
+            "default": "pending"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event"
+        ],
+        "title": "LegalChangeState"
+      },
+      "LegalReviewRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "reject"
+            ],
+            "title": "Action"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "note"
+        ],
+        "title": "LegalReviewRequest"
+      },
+      "Pattern": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Company Id"
+          },
+          "pack": {
+            "type": "string",
+            "const": "tpbvsk",
+            "title": "Pack",
+            "default": "tpbvsk"
+          },
+          "source_decision_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Source Decision Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Rule Id"
+          },
+          "rule_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Rule Version"
+          },
+          "clause_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Clause Version Id"
+          },
+          "phrase": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Phrase"
+          },
+          "polarity": {
+            "type": "string",
+            "enum": [
+              "positive",
+              "negative"
+            ],
+            "title": "Polarity"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "candidate",
+              "active",
+              "rejected",
+              "suspended"
+            ],
+            "title": "State",
+            "default": "candidate"
+          },
+          "test_report_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Test Report Sha256"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "access_groups": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "manager",
+                "operations"
+              ]
+            },
+            "type": "array",
+            "title": "Access Groups",
+            "default": [
+              "manager"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "source_decision_id",
+          "rule_id",
+          "rule_version",
+          "clause_version_id",
+          "phrase",
+          "polarity"
+        ],
+        "title": "Pattern"
+      },
+      "PatternResponse": {
+        "properties": {
+          "pattern": {
+            "$ref": "#/components/schemas/Pattern"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "pattern",
+          "mode"
+        ],
+        "title": "PatternResponse"
+      },
+      "PatternReviewRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "reject"
+            ],
+            "title": "Action"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "note"
+        ],
+        "title": "PatternReviewRequest"
+      },
       "RecheckItem": {
         "properties": {
           "id": {
@@ -1263,7 +3288,8 @@
             "type": "string",
             "enum": [
               "direct_dependency",
-              "product_fallback"
+              "product_fallback",
+              "legal_dependency"
             ],
             "title": "Reason"
           },
@@ -1349,7 +3375,10 @@
               "marketing",
               "customer_script",
               "evidence_index",
-              "scientific_evidence"
+              "scientific_evidence",
+              "label",
+              "registration_receipt",
+              "ad_confirmation"
             ],
             "title": "Kind"
           },
@@ -1358,6 +3387,21 @@
             "maxLength": 20000,
             "minLength": 1,
             "title": "Title"
+          },
+          "access_groups": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "manager",
+                "operations"
+              ]
+            },
+            "type": "array",
+            "title": "Access Groups",
+            "default": [
+              "manager",
+              "operations"
+            ]
           },
           "synthetic": {
             "type": "boolean",
@@ -1423,6 +3467,28 @@
             "format": "date-time",
             "title": "Received At"
           },
+          "confirmation_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Date"
+          },
+          "issuing_authority": {
+            "type": "string",
+            "enum": [
+              "national_food_admin",
+              "provincial_chair",
+              "unknown"
+            ],
+            "title": "Issuing Authority",
+            "default": "unknown"
+          },
           "supersedes": {
             "anyOf": [
               {
@@ -1446,6 +3512,31 @@
           "received_at"
         ],
         "title": "RecordVersion"
+      },
+      "RecordsResponse": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            },
+            "type": "array",
+            "title": "Records"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/RecordVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "records",
+          "versions"
+        ],
+        "title": "RecordsResponse"
       },
       "Rule": {
         "properties": {
@@ -1477,9 +3568,26 @@
               "uses",
               "confirmation",
               "endorsement",
-              "medicinal"
+              "medicinal",
+              "receipt",
+              "authority_review",
+              "label_copy"
             ],
             "title": "Check Type"
+          },
+          "activities": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "advertising",
+                "ad_registration"
+              ]
+            },
+            "type": "array",
+            "title": "Activities",
+            "default": [
+              "advertising"
+            ]
           },
           "method": {
             "type": "string",
@@ -1555,6 +3663,174 @@
           "check_type"
         ],
         "title": "Rule"
+      },
+      "SystemScore": {
+        "properties": {
+          "system": {
+            "type": "string",
+            "enum": [
+              "keyword",
+              "plain_chat",
+              "lexcheck"
+            ],
+            "title": "System"
+          },
+          "evaluated_cases": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Evaluated Cases"
+          },
+          "true_positive": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "True Positive"
+          },
+          "false_positive": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "False Positive"
+          },
+          "false_negative": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "False Negative"
+          },
+          "false_flags_on_clean": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "False Flags On Clean"
+          },
+          "precision": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precision"
+          },
+          "recall": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recall"
+          },
+          "model_calls": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Model Calls"
+          },
+          "failed_calls": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Failed Calls"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "system",
+          "evaluated_cases",
+          "true_positive",
+          "false_positive",
+          "false_negative",
+          "false_flags_on_clean",
+          "model_calls",
+          "failed_calls"
+        ],
+        "title": "SystemScore"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationRejection": {
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Finding Id"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "unknown_rule",
+              "unknown_clause",
+              "inactive_clause",
+              "unverified_rule",
+              "quote_mismatch",
+              "evidence_mismatch",
+              "missing_field_present"
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "finding_id",
+          "reason"
+        ],
+        "title": "ValidationRejection"
       }
     }
   }

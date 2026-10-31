@@ -24,7 +24,8 @@
     "reason": {
       "enum": [
         "direct_dependency",
-        "product_fallback"
+        "product_fallback",
+        "legal_dependency"
       ],
       "title": "Reason",
       "type": "string"

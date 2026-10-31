@@ -1,5 +1,6 @@
 PYTHON ?= python3.11
 PY = .venv/bin/python
+LAYER ?= auto
 .PHONY: setup test lint eval run schemas smoke audit
 setup:
 	$(PYTHON) -m venv .venv
@@ -16,7 +17,7 @@ run:
 schemas:
 	$(PY) -m scripts.export_contracts
 smoke:
-	$(PY) -m pytest -q tests/smoke
+	$(PY) -m scripts.smoke --layer $(LAYER)
 audit:
 	$(PY) -m pip_audit -r requirements.txt
 

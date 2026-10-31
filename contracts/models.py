@@ -20,7 +20,7 @@ class Contract(BaseModel):
 class CompanyProfile(Contract):
     company_id: Id
     product_group: Literal["tpbvsk", "other", "unknown"]
-    activity: Literal["advertising", "label_only", "unknown"]
+    activity: Literal["advertising", "ad_registration", "label_only", "unknown"]
     role: Literal["domestic_distributor", "producer", "importer", "unknown"]
     confirmed: bool
     synthetic: Literal[True] = True
@@ -31,9 +31,17 @@ class Record(Contract):
     company_id: Id
     product_id: Id
     kind: Literal[
-        "dossier", "marketing", "customer_script", "evidence_index", "scientific_evidence"
+        "dossier",
+        "marketing",
+        "customer_script",
+        "evidence_index",
+        "scientific_evidence",
+        "label",
+        "registration_receipt",
+        "ad_confirmation",
     ]
     title: Text
+    access_groups: tuple[Literal["manager", "operations"], ...] = ("manager", "operations")
     synthetic: Literal[True] = True
 
 
@@ -45,6 +53,8 @@ class RecordVersion(Contract):
     uses: tuple[Text, ...] = ()
     reference_ids: tuple[Id, ...] = ()
     received_at: AwareDatetime
+    confirmation_date: date | None = None
+    issuing_authority: Literal["national_food_admin", "provincial_chair", "unknown"] = "unknown"
     supersedes: Id | None = None
 
 
@@ -81,7 +91,17 @@ class Rule(Contract):
     version: int = Field(ge=1)
     clause_version_id: Id
     title: Text
-    check_type: Literal["warning", "uses", "confirmation", "endorsement", "medicinal"]
+    check_type: Literal[
+        "warning",
+        "uses",
+        "confirmation",
+        "endorsement",
+        "medicinal",
+        "receipt",
+        "authority_review",
+        "label_copy",
+    ]
+    activities: tuple[Literal["advertising", "ad_registration"], ...] = ("advertising",)
     method: Literal["deterministic", "llm"] = "deterministic"
     severity: Literal["low", "medium", "high"] = "medium"
     verification_status: Verification = "to_be_verified"
@@ -136,11 +156,13 @@ class Evidence(Contract):
 
 
 class Finding(Contract):
+    pattern_id: Id | None = None
     id: Id
     rule_id: Id
     rule_version: int = Field(ge=1)
     clause_version_id: Id
     record_version_id: Id
+    applicability: Literal["applies", "not_enough_information"] = "applies"
     status: FindingStatus
     source: Literal["rule", "llm"]
     severity: Literal["low", "medium", "high"]
@@ -193,6 +215,7 @@ class CheckRequest(Contract):
 
 
 class RuleEvaluation(Contract):
+    pattern_ids_used: tuple[Id, ...] = ()
     rule_snapshots: tuple[Rule, ...] = ()
     clause_snapshots: tuple[ClauseVersion, ...] = ()
     mode: Mode
@@ -228,6 +251,8 @@ class ValidationResult(Contract):
 
 
 class CheckResult(Contract):
+    pattern_ids_used: tuple[Id, ...] = ()
+    validator_rejections: tuple[ValidationRejection, ...] = ()
     rule_snapshots: tuple[Rule, ...] = ()
     clause_snapshots: tuple[ClauseVersion, ...] = ()
     id: Id
@@ -240,6 +265,10 @@ class CheckResult(Contract):
     snapshot: CheckRequest
     model_status: Literal["off", "cached", "live", "unavailable"]
     created_at: AwareDatetime
+    applicability: Literal["applies", "does_not_apply", "not_enough_information"] = (
+        "not_enough_information"
+    )
+    applicability_reason: Text = "Applicability awaits review."
     parent_check_id: Id | None = None
 
     @model_validator(mode="after")
@@ -285,6 +314,7 @@ class DecisionRequest(Contract):
 class Decision(Contract):
     id: Id
     request: DecisionRequest
+    actor_user_id: Id = "U-MANAGER"
     task_status: Literal["open", "assigned", "dismissed", "closed"]
     created_at: AwareDatetime
 
@@ -313,7 +343,7 @@ class RecheckItem(Contract):
     event_id: Id
     previous_check_id: Id
     target_version_id: Id
-    reason: Literal["direct_dependency", "product_fallback"]
+    reason: Literal["direct_dependency", "product_fallback", "legal_dependency"]
     status: Literal["queued", "completed"]
     new_check_id: Id | None = None
 
@@ -330,6 +360,8 @@ class RecheckRequest(Contract):
 
 
 class HistoryResponse(Contract):
+    legal_changes: tuple["LegalChangeState", ...] = ()
+    patterns: tuple["Pattern", ...] = ()
     checks: tuple[CheckResult, ...]
     decisions: tuple[Decision, ...]
     events: tuple[ChangeEvent, ...]
@@ -343,7 +375,15 @@ class HealthResponse(Contract):
 
 
 class ApiError(Contract):
-    code: Literal["not_found", "conflict", "invalid_request", "not_ready"]
+    code: Literal[
+        "not_found",
+        "conflict",
+        "invalid_request",
+        "not_ready",
+        "unauthenticated",
+        "forbidden",
+        "feature_disabled",
+    ]
     message: Text
 
 
@@ -354,3 +394,172 @@ class DemoBundle(Contract):
     event: ChangeEvent
     rules: tuple[Rule, ...]
     clauses: tuple[ClauseVersion, ...]
+
+
+class FeatureFlags(Contract):
+    layer0_ready: bool = False
+    layer1: bool = False
+    layer2: bool = False
+    layer3: bool = False
+
+    @model_validator(mode="after")
+    def validate_order(self):
+        if (
+            (self.layer1 and not self.layer0_ready)
+            or (self.layer2 and not self.layer1)
+            or (self.layer3 and not self.layer2)
+        ):
+            raise ValueError("later layers require all prior layers")
+        return self
+
+
+class DemoLoginRequest(Contract):
+    user_id: Literal["U-MANAGER", "U-OPS"]
+
+
+class DemoSession(Contract):
+    user_id: Literal["U-MANAGER", "U-OPS"]
+    group: Literal["manager", "operations"]
+    token: str = Field(min_length=20)
+    expires_at: AwareDatetime
+
+
+class RecordsResponse(Contract):
+    records: tuple[Record, ...]
+    versions: tuple[RecordVersion, ...]
+
+
+class ChatRequest(Contract):
+    check_id: Id
+    question: str = Field(min_length=1, max_length=1000)
+
+
+class ChatCitation(Contract):
+    clause_version_id: Id
+    quote: Text
+    evidence: Evidence | None = None
+
+
+class ChatResponse(Contract):
+    status: Literal["answered", "needs_evidence"]
+    answer: Text
+    citations: tuple[ChatCitation, ...]
+    model_status: Literal["off", "cached", "live", "unavailable"] = "off"
+
+    @model_validator(mode="after")
+    def validate_citations(self):
+        if self.status == "answered" and not self.citations:
+            raise ValueError("answered chat requires citations")
+        return self
+
+
+class LegalChangeEvent(Contract):
+    id: Id
+    kind: Literal["law_changed"] = "law_changed"
+    label: Literal["preloaded"] = "preloaded"
+    previous_clause_version_id: Id
+    new_clause: ClauseVersion
+    proposed_rules: tuple[Rule, ...] = Field(min_length=1)
+    issued_on: date
+    effective_on: date
+    received_at: AwareDatetime
+
+    @model_validator(mode="after")
+    def validate_legal_change(self):
+        if self.new_clause.id == self.previous_clause_version_id:
+            raise ValueError("new clause needs a new version ID")
+        if self.effective_on != self.new_clause.valid_from:
+            raise ValueError("event date must match clause effective date")
+        if any(r.clause_version_id != self.new_clause.id for r in self.proposed_rules):
+            raise ValueError("proposed rules must cite the new clause")
+        return self
+
+
+class LegalReviewRequest(Contract):
+    action: Literal["accept", "reject"]
+    note: Text
+
+
+class LegalActivationRequest(Contract):
+    review_date: date
+
+
+class LegalChangeState(Contract):
+    event: LegalChangeEvent
+    interpretation: Literal["pending", "accepted", "rejected"] = "pending"
+    reviewed_by: Id | None = None
+    reviewed_at: AwareDatetime | None = None
+    activated_at: AwareDatetime | None = None
+    status: Literal["pending", "ready", "active", "rejected"] = "pending"
+
+
+class LegalChangeResponse(Contract):
+    state: LegalChangeState
+    queue: tuple[RecheckItem, ...] = ()
+    mode: Mode
+
+
+class FeedbackRequest(Contract):
+    decision_id: Id
+    phrase: Text
+    polarity: Literal["positive", "negative"]
+
+
+class Pattern(Contract):
+    id: Id
+    company_id: Id
+    pack: Literal["tpbvsk"] = "tpbvsk"
+    source_decision_id: Id
+    rule_id: Id
+    rule_version: int = Field(ge=1)
+    clause_version_id: Id
+    phrase: Text
+    polarity: Literal["positive", "negative"]
+    state: Literal["candidate", "active", "rejected", "suspended"] = "candidate"
+    test_report_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")] | None = None
+    reviewed_by: Id | None = None
+    access_groups: tuple[Literal["manager", "operations"], ...] = ("manager",)
+
+    @model_validator(mode="after")
+    def validate_promotion(self):
+        if self.state == "active" and not (self.test_report_sha256 and self.reviewed_by):
+            raise ValueError("active pattern needs reviewer and test report")
+        return self
+
+
+class PatternReviewRequest(Contract):
+    action: Literal["accept", "reject"]
+    note: Text
+
+
+class PatternResponse(Contract):
+    pattern: Pattern
+    mode: Mode
+
+
+class SystemScore(Contract):
+    system: Literal["keyword", "plain_chat", "lexcheck"]
+    evaluated_cases: int = Field(ge=0)
+    true_positive: int = Field(ge=0)
+    false_positive: int = Field(ge=0)
+    false_negative: int = Field(ge=0)
+    false_flags_on_clean: int = Field(ge=0)
+    precision: float | None = Field(default=None, ge=0, le=1)
+    recall: float | None = Field(default=None, ge=0, le=1)
+    model_calls: int = Field(ge=0)
+    failed_calls: int = Field(ge=0)
+    latency_ms: float | None = Field(default=None, ge=0)
+
+
+class EvaluationReport(Contract):
+    phase: Literal["bootstrap", "dev", "held_out"]
+    n: int = Field(ge=0)
+    git_sha: str | None = None
+    dataset_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")] | None = None
+    model: str | None = None
+    rule_ids: tuple[Id, ...] = ()
+    systems: tuple[SystemScore, ...] = ()
+    note: Text
+
+
+HistoryResponse.model_rebuild()

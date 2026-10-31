@@ -57,7 +57,7 @@ File rule/catalog và clauses là JSON array của Rule/ClauseVersion. Snapshot 
 POST check lưu CheckResult + snapshot bất biến. Mỗi target quảng cáo chạy subset rule theo profile, ngày, nguồn. N = số rule ID duy nhất thực chạy; skipped có ID và giải thích qua applicability, không được no_issue_found. LLM findings status suggestion/needs_evidence.
 POST changes append version; tìm mọi check từng phụ thuộc dossier cũ, kể cả check không findings. Xét reference_ids và product fallback; queue unique (event_id, previous_check_id, target_version_id), không đưa sản phẩm khác vào. Event không sửa snapshot cũ.
 POST rechecks dùng snapshot cũ, append dossier v2, đổi context_version_ids từ v1 sang v2, giữ nguyên text/reference_ids của mọi RecordVersion cũ; tạo check mới có parent_check_id. History giữ cả hai. Recheck cùng item đã completed trả check cũ.
-POST decisions confirm/assign không đóng task; reject cần note và task dismissed. close cần closure_check_id có parent đúng, target đúng và không còn finding liên quan/chưa rõ; trường hợp vẫn thiếu chứng cứ trả409. P0 reviewer là vai trò demo công khai, không giả là phân quyền thật.
+POST decisions confirm/assign không đóng task; reject cần note và task dismissed. close cần closure_check_id có parent đúng, target đúng và không còn finding liên quan/chưa rõ; trường hợp vẫn thiếu chứng cứ trả409. Tầng0 chỉ U-MANAGER có reviewer token; tầng3 thêm phân quyền hai nhóm. Actor trong body không cấp quyền.
 
 ## Toàn bộ model (khớp từng chữ với source)
 """
@@ -118,6 +118,46 @@ POST decisions confirm/assign không đóng task; reject cần note và task dis
         {"checks": [], "decisions": [], "events": [], "queue": [], "mode": "live"}
     )
     text += "GET /health:\n" + json_block({"status": "ok", "mode": "fixture"})
+    examples = json.loads((ROOT / "data/fixtures/layers.json").read_text())
+    extra_routes = (
+        ("GET", "/api/features", None, "FeatureFlags", "all"),
+        ("POST", "/api/session", "DemoLoginRequest", "DemoSession", "0 / operations at 3"),
+        ("GET", "/api/records", None, "RecordsResponse", "0"),
+        ("GET", "/api/checks/{check_id}", None, "CheckResult", "0"),
+        ("POST", "/api/chat", "ChatRequest", "ChatResponse", "1"),
+        ("GET", "/api/evaluation", None, "EvaluationReport", "1"),
+        ("POST", "/api/legal-changes", "LegalChangeEvent", "LegalChangeResponse", "2"),
+        (
+            "POST",
+            "/api/legal-changes/{event_id}/review",
+            "LegalReviewRequest",
+            "LegalChangeResponse",
+            "2",
+        ),
+        (
+            "POST",
+            "/api/legal-changes/{event_id}/activate",
+            "LegalActivationRequest",
+            "LegalChangeResponse",
+            "2",
+        ),
+        ("POST", "/api/feedback", "FeedbackRequest", "PatternResponse", "3"),
+        (
+            "POST",
+            "/api/patterns/{pattern_id}/review",
+            "PatternReviewRequest",
+            "PatternResponse",
+            "3",
+        ),
+    )
+    text += "\n## Endpoint các tầng bổ sung (success HTTP 200)\n| Method | Path | Request | Response | Tầng |\n|---|---|---|---|---|\n"
+    text += "".join(
+        f"| {method} | {route} | {req or 'none'} | {res} | {layer} |\n"
+        for method, route, req, res, layer in extra_routes
+    )
+    text += "\nBootstrap: session/records/checks trả503; feature routes trả404 feature_disabled; /api/features trảfalse. Ví dụ dưới là typed fixture, không giả kết quả live. CheckResult example dùng preview đã ghi ở trên. Authorization header đã khai; server phải kiểm theo tầng.\n"
+    for name, value in examples.items():
+        text += f"\n### {name} JSON mẫu\n" + json_block(value)
     path.write_text(text)
 
 

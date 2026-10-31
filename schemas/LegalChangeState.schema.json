@@ -1,0 +1,405 @@
+{
+  "$defs": {
+    "ClauseVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "clause_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Id",
+          "type": "string"
+        },
+        "document": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Document",
+          "type": "string"
+        },
+        "article": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Article",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Sha256"
+        },
+        "retrieved_at": {
+          "format": "date-time",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "verification_status": {
+          "default": "to_be_verified",
+          "enum": [
+            "to_be_verified",
+            "verified"
+          ],
+          "title": "Verification Status",
+          "type": "string"
+        },
+        "in_force": {
+          "default": "unknown",
+          "enum": [
+            "in_force",
+            "suspended",
+            "superseded",
+            "unknown"
+          ],
+          "title": "In Force",
+          "type": "string"
+        },
+        "verified_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified By"
+        },
+        "verified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified At"
+        },
+        "status_note": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Status Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "clause_id",
+        "document",
+        "article",
+        "text",
+        "source_url",
+        "retrieved_at",
+        "valid_from",
+        "status_note"
+      ],
+      "title": "ClauseVersion",
+      "type": "object"
+    },
+    "LegalChangeEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "law_changed",
+          "default": "law_changed",
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "const": "preloaded",
+          "default": "preloaded",
+          "title": "Label",
+          "type": "string"
+        },
+        "previous_clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Previous Clause Version Id",
+          "type": "string"
+        },
+        "new_clause": {
+          "$ref": "#/$defs/ClauseVersion"
+        },
+        "proposed_rules": {
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "minItems": 1,
+          "title": "Proposed Rules",
+          "type": "array"
+        },
+        "issued_on": {
+          "format": "date",
+          "title": "Issued On",
+          "type": "string"
+        },
+        "effective_on": {
+          "format": "date",
+          "title": "Effective On",
+          "type": "string"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "previous_clause_version_id",
+        "new_clause",
+        "proposed_rules",
+        "issued_on",
+        "effective_on",
+        "received_at"
+      ],
+      "title": "LegalChangeEvent",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Version Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "check_type": {
+          "enum": [
+            "warning",
+            "uses",
+            "confirmation",
+            "endorsement",
+            "medicinal",
+            "receipt",
+            "authority_review",
+            "label_copy"
+          ],
+          "title": "Check Type",
+          "type": "string"
+        },
+        "activities": {
+          "default": [
+            "advertising"
+          ],
+          "items": {
+            "enum": [
+              "advertising",
+              "ad_registration"
+            ],
+            "type": "string"
+          },
+          "title": "Activities",
+          "type": "array"
+        },
+        "method": {
+          "default": "deterministic",
+          "enum": [
+            "deterministic",
+            "llm"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "severity": {
+          "default": "medium",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "verification_status": {
+          "default": "to_be_verified",
+          "enum": [
+            "to_be_verified",
+            "verified"
+          ],
+          "title": "Verification Status",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "patterns": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Patterns",
+          "type": "array"
+        },
+        "positive_examples": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Positive Examples",
+          "type": "array"
+        },
+        "negative_examples": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Negative Examples",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "clause_version_id",
+        "title",
+        "check_type"
+      ],
+      "title": "Rule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event": {
+      "$ref": "#/$defs/LegalChangeEvent"
+    },
+    "interpretation": {
+      "default": "pending",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "title": "Interpretation",
+      "type": "string"
+    },
+    "reviewed_by": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reviewed By"
+    },
+    "reviewed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reviewed At"
+    },
+    "activated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Activated At"
+    },
+    "status": {
+      "default": "pending",
+      "enum": [
+        "pending",
+        "ready",
+        "active",
+        "rejected"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event"
+  ],
+  "title": "LegalChangeState",
+  "type": "object"
+}

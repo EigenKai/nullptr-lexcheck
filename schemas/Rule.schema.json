@@ -28,10 +28,27 @@
         "uses",
         "confirmation",
         "endorsement",
-        "medicinal"
+        "medicinal",
+        "receipt",
+        "authority_review",
+        "label_copy"
       ],
       "title": "Check Type",
       "type": "string"
+    },
+    "activities": {
+      "default": [
+        "advertising"
+      ],
+      "items": {
+        "enum": [
+          "advertising",
+          "ad_registration"
+        ],
+        "type": "string"
+      },
+      "title": "Activities",
+      "type": "array"
     },
     "method": {
       "default": "deterministic",

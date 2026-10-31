@@ -69,7 +69,8 @@
         "reason": {
           "enum": [
             "direct_dependency",
-            "product_fallback"
+            "product_fallback",
+            "legal_dependency"
           ],
           "title": "Reason",
           "type": "string"
@@ -152,6 +153,29 @@
         "received_at": {
           "format": "date-time",
           "title": "Received At",
+          "type": "string"
+        },
+        "confirmation_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation Date"
+        },
+        "issuing_authority": {
+          "default": "unknown",
+          "enum": [
+            "national_food_admin",
+            "provincial_chair",
+            "unknown"
+          ],
+          "title": "Issuing Authority",
           "type": "string"
         },
         "supersedes": {

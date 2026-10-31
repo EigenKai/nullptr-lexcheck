@@ -1,0 +1,25 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "enum": [
+        "accept",
+        "reject"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "note": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Note",
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "note"
+  ],
+  "title": "PatternReviewRequest",
+  "type": "object"
+}

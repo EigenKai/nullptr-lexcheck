@@ -42,7 +42,7 @@ def build():
             "id": "REC-04",
             "company_id": "CO-DEMO",
             "product_id": "P-01",
-            "kind": "evidence_index",
+            "kind": "ad_confirmation",
             "title": "Synthetic confirmation index; no official certificate",
         },
         {
@@ -117,13 +117,25 @@ def build():
         "26(1), 27(1), 27(6)",
         "27(2)",
         "Exact provision pending verification",
+        "27(4)(b)",
+        "27(5)",
+        "27(4)(c)",
     ]
-    types = ["warning", "uses", "confirmation", "endorsement", "medicinal"]
+    types = [
+        "warning",
+        "uses",
+        "confirmation",
+        "endorsement",
+        "medicinal",
+        "receipt",
+        "authority_review",
+        "label_copy",
+    ]
     clauses = [
         {
             "id": f"CV-{i:02}-v1",
             "clause_id": f"CL-{i:02}",
-            "document": "NĐ 15/2018/NĐ-CP" if i < 5 else "Basis pending verification",
+            "document": "NĐ 15/2018/NĐ-CP" if i != 5 else "Basis pending verification",
             "article": article,
             "text": f"SOURCE TEXT PENDING VERIFICATION: {article}",
             "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
@@ -140,6 +152,7 @@ def build():
             "clause_version_id": f"CV-{i:02}-v1",
             "title": kind,
             "check_type": kind,
+            "activities": ["ad_registration"] if i >= 6 else ["advertising"],
             "method": "llm" if i == 5 else "deterministic",
             "enabled": False,
         }

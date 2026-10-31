@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "Pattern": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "company_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Company Id",
+          "type": "string"
+        },
+        "pack": {
+          "const": "tpbvsk",
+          "default": "tpbvsk",
+          "title": "Pack",
+          "type": "string"
+        },
+        "source_decision_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Source Decision Id",
+          "type": "string"
+        },
+        "rule_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "minimum": 1,
+          "title": "Rule Version",
+          "type": "integer"
+        },
+        "clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Version Id",
+          "type": "string"
+        },
+        "phrase": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Phrase",
+          "type": "string"
+        },
+        "polarity": {
+          "enum": [
+            "positive",
+            "negative"
+          ],
+          "title": "Polarity",
+          "type": "string"
+        },
+        "state": {
+          "default": "candidate",
+          "enum": [
+            "candidate",
+            "active",
+            "rejected",
+            "suspended"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "test_report_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Test Report Sha256"
+        },
+        "reviewed_by": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed By"
+        },
+        "access_groups": {
+          "default": [
+            "manager"
+          ],
+          "items": {
+            "enum": [
+              "manager",
+              "operations"
+            ],
+            "type": "string"
+          },
+          "title": "Access Groups",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "company_id",
+        "source_decision_id",
+        "rule_id",
+        "rule_version",
+        "clause_version_id",
+        "phrase",
+        "polarity"
+      ],
+      "title": "Pattern",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "pattern": {
+      "$ref": "#/$defs/Pattern"
+    },
+    "mode": {
+      "enum": [
+        "fixture",
+        "live"
+      ],
+      "title": "Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "pattern",
+    "mode"
+  ],
+  "title": "PatternResponse",
+  "type": "object"
+}

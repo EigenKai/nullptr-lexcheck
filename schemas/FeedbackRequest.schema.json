@@ -1,0 +1,31 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "decision_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "phrase": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Phrase",
+      "type": "string"
+    },
+    "polarity": {
+      "enum": [
+        "positive",
+        "negative"
+      ],
+      "title": "Polarity",
+      "type": "string"
+    }
+  },
+  "required": [
+    "decision_id",
+    "phrase",
+    "polarity"
+  ],
+  "title": "FeedbackRequest",
+  "type": "object"
+}

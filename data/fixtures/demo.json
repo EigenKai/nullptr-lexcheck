@@ -16,6 +16,10 @@
         "product_id": "P-01",
         "kind": "dossier",
         "title": "Synthetic dossier",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
         "synthetic": true
       },
       {
@@ -24,6 +28,10 @@
         "product_id": "P-01",
         "kind": "marketing",
         "title": "Synthetic marketing",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
         "synthetic": true
       },
       {
@@ -32,14 +40,22 @@
         "product_id": "P-01",
         "kind": "marketing",
         "title": "Synthetic marketing control",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
         "synthetic": true
       },
       {
         "id": "REC-04",
         "company_id": "CO-DEMO",
         "product_id": "P-01",
-        "kind": "evidence_index",
+        "kind": "ad_confirmation",
         "title": "Synthetic confirmation index; no official certificate",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
         "synthetic": true
       },
       {
@@ -48,6 +64,10 @@
         "product_id": "P-02",
         "kind": "marketing",
         "title": "Unrelated product control",
+        "access_groups": [
+          "manager",
+          "operations"
+        ],
         "synthetic": true
       }
     ],
@@ -63,6 +83,8 @@
         ],
         "reference_ids": [],
         "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
         "supersedes": null
       },
       {
@@ -79,6 +101,8 @@
           "RV-04-v1"
         ],
         "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
         "supersedes": null
       },
       {
@@ -94,6 +118,8 @@
           "RV-04-v1"
         ],
         "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
         "supersedes": null
       },
       {
@@ -104,6 +130,8 @@
         "uses": [],
         "reference_ids": [],
         "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
         "supersedes": null
       },
       {
@@ -114,6 +142,8 @@
         "uses": [],
         "reference_ids": [],
         "received_at": "2026-10-31T05:00:00Z",
+        "confirmation_date": null,
+        "issuing_authority": "unknown",
         "supersedes": null
       }
     ],
@@ -129,6 +159,8 @@
     "llm_mode": "off"
   },
   "preview": {
+    "pattern_ids_used": [],
+    "validator_rejections": [],
     "rule_snapshots": [],
     "clause_snapshots": [],
     "id": "CHK-preview",
@@ -141,7 +173,10 @@
       "R-02",
       "R-03",
       "R-04",
-      "R-05"
+      "R-05",
+      "R-06",
+      "R-07",
+      "R-08"
     ],
     "findings": [],
     "snapshot": {
@@ -160,6 +195,10 @@
           "product_id": "P-01",
           "kind": "dossier",
           "title": "Synthetic dossier",
+          "access_groups": [
+            "manager",
+            "operations"
+          ],
           "synthetic": true
         },
         {
@@ -168,6 +207,10 @@
           "product_id": "P-01",
           "kind": "marketing",
           "title": "Synthetic marketing",
+          "access_groups": [
+            "manager",
+            "operations"
+          ],
           "synthetic": true
         },
         {
@@ -176,14 +219,22 @@
           "product_id": "P-01",
           "kind": "marketing",
           "title": "Synthetic marketing control",
+          "access_groups": [
+            "manager",
+            "operations"
+          ],
           "synthetic": true
         },
         {
           "id": "REC-04",
           "company_id": "CO-DEMO",
           "product_id": "P-01",
-          "kind": "evidence_index",
+          "kind": "ad_confirmation",
           "title": "Synthetic confirmation index; no official certificate",
+          "access_groups": [
+            "manager",
+            "operations"
+          ],
           "synthetic": true
         },
         {
@@ -192,6 +243,10 @@
           "product_id": "P-02",
           "kind": "marketing",
           "title": "Unrelated product control",
+          "access_groups": [
+            "manager",
+            "operations"
+          ],
           "synthetic": true
         }
       ],
@@ -207,6 +262,8 @@
           ],
           "reference_ids": [],
           "received_at": "2026-10-31T05:00:00Z",
+          "confirmation_date": null,
+          "issuing_authority": "unknown",
           "supersedes": null
         },
         {
@@ -223,6 +280,8 @@
             "RV-04-v1"
           ],
           "received_at": "2026-10-31T05:00:00Z",
+          "confirmation_date": null,
+          "issuing_authority": "unknown",
           "supersedes": null
         },
         {
@@ -238,6 +297,8 @@
             "RV-04-v1"
           ],
           "received_at": "2026-10-31T05:00:00Z",
+          "confirmation_date": null,
+          "issuing_authority": "unknown",
           "supersedes": null
         },
         {
@@ -248,6 +309,8 @@
           "uses": [],
           "reference_ids": [],
           "received_at": "2026-10-31T05:00:00Z",
+          "confirmation_date": null,
+          "issuing_authority": "unknown",
           "supersedes": null
         },
         {
@@ -258,6 +321,8 @@
           "uses": [],
           "reference_ids": [],
           "received_at": "2026-10-31T05:00:00Z",
+          "confirmation_date": null,
+          "issuing_authority": "unknown",
           "supersedes": null
         }
       ],
@@ -274,6 +339,8 @@
     },
     "model_status": "off",
     "created_at": "2026-10-31T05:00:00Z",
+    "applicability": "not_enough_information",
+    "applicability_reason": "Applicability awaits review.",
     "parent_check_id": null
   },
   "event": {
@@ -291,6 +358,8 @@
       ],
       "reference_ids": [],
       "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
       "supersedes": "RV-01-v1"
     },
     "received_at": "2026-10-31T05:00:00Z"
@@ -302,6 +371,9 @@
       "clause_version_id": "CV-01-v1",
       "title": "warning",
       "check_type": "warning",
+      "activities": [
+        "advertising"
+      ],
       "method": "deterministic",
       "severity": "medium",
       "verification_status": "to_be_verified",
@@ -316,6 +388,9 @@
       "clause_version_id": "CV-02-v1",
       "title": "uses",
       "check_type": "uses",
+      "activities": [
+        "advertising"
+      ],
       "method": "deterministic",
       "severity": "medium",
       "verification_status": "to_be_verified",
@@ -330,6 +405,9 @@
       "clause_version_id": "CV-03-v1",
       "title": "confirmation",
       "check_type": "confirmation",
+      "activities": [
+        "advertising"
+      ],
       "method": "deterministic",
       "severity": "medium",
       "verification_status": "to_be_verified",
@@ -344,6 +422,9 @@
       "clause_version_id": "CV-04-v1",
       "title": "endorsement",
       "check_type": "endorsement",
+      "activities": [
+        "advertising"
+      ],
       "method": "deterministic",
       "severity": "medium",
       "verification_status": "to_be_verified",
@@ -358,7 +439,61 @@
       "clause_version_id": "CV-05-v1",
       "title": "medicinal",
       "check_type": "medicinal",
+      "activities": [
+        "advertising"
+      ],
       "method": "llm",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    },
+    {
+      "id": "R-06",
+      "version": 1,
+      "clause_version_id": "CV-06-v1",
+      "title": "receipt",
+      "check_type": "receipt",
+      "activities": [
+        "ad_registration"
+      ],
+      "method": "deterministic",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    },
+    {
+      "id": "R-07",
+      "version": 1,
+      "clause_version_id": "CV-07-v1",
+      "title": "authority_review",
+      "check_type": "authority_review",
+      "activities": [
+        "ad_registration"
+      ],
+      "method": "deterministic",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    },
+    {
+      "id": "R-08",
+      "version": 1,
+      "clause_version_id": "CV-08-v1",
+      "title": "label_copy",
+      "check_type": "label_copy",
+      "activities": [
+        "ad_registration"
+      ],
+      "method": "deterministic",
       "severity": "medium",
       "verification_status": "to_be_verified",
       "enabled": false,
@@ -442,6 +577,57 @@
       "document": "Basis pending verification",
       "article": "Exact provision pending verification",
       "text": "SOURCE TEXT PENDING VERIFICATION: Exact provision pending verification",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    },
+    {
+      "id": "CV-06-v1",
+      "clause_id": "CL-06",
+      "document": "NĐ 15/2018/NĐ-CP",
+      "article": "27(4)(b)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: 27(4)(b)",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    },
+    {
+      "id": "CV-07-v1",
+      "clause_id": "CL-07",
+      "document": "NĐ 15/2018/NĐ-CP",
+      "article": "27(5)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: 27(5)",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    },
+    {
+      "id": "CV-08-v1",
+      "clause_id": "CL-08",
+      "document": "NĐ 15/2018/NĐ-CP",
+      "article": "27(4)(c)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: 27(4)(c)",
       "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
       "source_sha256": null,
       "retrieved_at": "2026-10-31T05:00:00Z",

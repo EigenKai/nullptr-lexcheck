@@ -17,6 +17,7 @@ jobs:
       - run: make setup
       - run: make lint
       - run: make test
+      - run: make smoke
       - run: make eval
       - uses: actions/setup-node@v4
         if: hashFiles('ui/package-lock.json') != ''
