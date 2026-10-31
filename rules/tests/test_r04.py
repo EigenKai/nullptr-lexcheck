@@ -33,6 +33,8 @@ def checked(text):
         "Thư cảm ơn của người bệnh về sản phẩm.",
         "Bài viết của dược sỹ An giới thiệu sản phẩm.",
         "Sản phẩm không đường, bác sĩ An khuyên dùng mỗi ngày.",
+        "Sản phẩm không đường được bác sĩ An khuyên dùng mỗi ngày.",
+        "Sản phẩm không chất bảo quản sử dụng hình ảnh bác sĩ An trên quảng cáo.",
     ],
 )
 def test_positive_cases(text):
