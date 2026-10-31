@@ -46,5 +46,5 @@
       "latency_ms": null
     }
   ],
-  "note": "Draft labels require owner review. Scores cover executed rule scope only; unavailable cases excluded. Stability, queue and latency not measured."
+  "note": "Draft labels require owner review. Keyword baseline includes structured uses differences. Scores cover executed rule scope only; unavailable cases excluded. Stability, queue and latency not measured."
 }

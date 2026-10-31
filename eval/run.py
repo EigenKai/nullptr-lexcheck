@@ -12,7 +12,6 @@ from detect.inputs import model_input
 from detect.service import PROMPT, suggest_with_trace
 from detect.validator import validate_findings
 from eval.baselines import keyword, score
-from intake.fixtures import load_demo
 from rules.engine import evaluate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +26,6 @@ def load_cases(directory):
 
 
 def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
-    bundle = load_demo()
     rows = {name: [] for name in ("keyword", "plain_chat", "lexcheck")}
     calls = Counter()
     failures = Counter()
@@ -39,7 +37,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
     prompt = Path(__file__).with_name("plain-chat-prompt.txt").read_text()
     for name, original, label in cases:
         request = original.model_copy(update={"llm_mode": mode})
-        evaluation = evaluate(request, rules=bundle.rules, clauses=bundle.clauses)
+        evaluation = evaluate(request)
         scope = set(evaluation.rules_checked)
         scope_union.update(scope)
         gold_all = {tuple(pair) for pair in label["gold"]}
@@ -69,11 +67,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
                 rows["plain_chat"].append(
                     ({(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}, gold)
                 )
-            if (
-                detection.model_status != "unavailable"
-                and not validation.rejected
-                and not suggestion.rejected
-            ):
+            if detection.model_status != "unavailable":
                 rows["lexcheck"].append(
                     ({(f.record_version_id, f.rule_id) for f in validation.findings}, gold)
                 )
@@ -103,7 +97,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
         dataset_sha256=cache_key([(n, r.model_dump(mode="json"), g) for n, r, g in cases]),
         rule_ids=tuple(sorted(scope_union)),
         systems=tuple(score(s, rows[s], calls[s], failures[s]) for s in rows),
-        note="Draft labels require owner review. Scores cover executed rule scope only; unavailable cases excluded. Stability, queue and latency not measured.",
+        note="Draft labels require owner review. Keyword baseline includes structured uses differences. Scores cover executed rule scope only; unavailable cases excluded. Stability, queue and latency not measured.",
     )
     return report, trace
 

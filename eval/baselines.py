@@ -1,6 +1,7 @@
 """Transparent paired baselines; unavailable predictions are never negatives."""
 
 import json
+import unicodedata
 from pathlib import Path
 
 from contracts.models import SystemScore
@@ -20,7 +21,7 @@ def keyword(request, scope):
         spec = LEXICON.get(rule_id, {})
         kind = spec.get("kind")
         if kind == "missing_warning":
-            return WARNING not in version.text
+            return WARNING not in unicodedata.normalize("NFC", version.text)
         if kind == "uses":
             return bool(set(version.uses) - context_uses)
         if kind == "confirmation":
