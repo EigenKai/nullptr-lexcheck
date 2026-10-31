@@ -102,12 +102,10 @@ def _reason(finding, request, rules, clauses):
         context = tuple(
             v
             for v in versions.values()
-            if v.id in request.context_version_ids
-            and kinds[v.record_id] in ("dossier", "scientific_evidence", "evidence_index")
+            if v.id in request.context_version_ids and kinds[v.record_id] == "dossier"
         )
         if any(
-            e.kind == "span" and any(e.quote in v.uses or e.quote in v.text for v in context)
-            for e in finding.evidence
+            e.kind == "span" and any(e.quote in v.uses for v in context) for e in finding.evidence
         ):
             return "missing_field_present"
     if any(
