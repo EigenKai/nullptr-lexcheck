@@ -429,3 +429,89 @@ def test_context_revoked_after_tool_is_not_forwarded_to_next_model_call(tmp_path
     with pytest.raises(RuntimeError, match="unavailable"):
         run(WorkspaceIndex(store, workspace["id"]), {"question": "Read unit price"}, client)
     assert len(client.calls) == 1
+
+
+def test_workbook_overview_reads_all_seven_reviewed_sheets_without_legal_evidence(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("LEXCHECK_WORKSPACE_TOOL_HARNESS_ENABLED", "1")
+    monkeypatch.setenv("LEXCHECK_WORKSPACE_WEB_SEARCH_ENABLED", "1")
+    book = openpyxl.Workbook()
+    book.remove(book.active)
+    for page in range(1, 8):
+        sheet = book.create_sheet("Private name " + str(page))
+        sheet["A1"], sheet["A2"] = "Unit price", 3000 + page
+        sheet["B1"], sheet["B2"] = "Họ tên", "PRIVATE PERSON"
+    output = io.BytesIO()
+    book.save(output)
+    store = WorkspaceStore(tmp_path)
+    workspace = store.create_blank("Synthetic summary")
+    document = store.add_document(workspace["id"], "business", "seven.xlsx", output.getvalue())
+    store.document_context(workspace["id"], document["id"], True)
+
+    class SummaryModel:
+        model = "injected-summary"
+        calls = 0
+
+        def generate(self, **kwargs):
+            self.calls += 1
+            assert "summarize_excel" in kwargs["payload"]["tools"]
+            action = {
+                "tool": "summarize_excel",
+                "query": None,
+                "document_id": document["id"],
+                "page": 1,
+                "cell_range": None,
+                "final": None,
+            }
+            if self.calls == 2:
+                text = json.dumps(kwargs["payload"], ensure_ascii=False)
+                assert "PRIVATE" not in text and "Private name" not in text
+                assert "3007" in text and "Sheet 7" in text and "sampled_reviewed_cells" in text
+                chunk_id = re.findall(r"CHUNK-[a-f0-9]{24}", text)[-1]
+                action.update(
+                    tool="final_answer",
+                    final={
+                        "answer": "Tóm tắt phần đã đọc: bảng có đơn giá 3007 trên Sheet 7. Đây là mẫu nội dung đã che, chưa phải toàn bộ dữ liệu.",
+                        "status": "answered",
+                        "answer_type": "company_information",
+                        "citations": [{"chunk_id": chunk_id, "quote": "A2\t3007"}],
+                    },
+                )
+            return SimpleNamespace(status="live", parsed=action, calls=1, key="summary")
+
+    history = ConversationStore(store)
+    conversation = history.create(workspace["id"])
+    turn = answer(
+        store,
+        history,
+        workspace["id"],
+        conversation["id"],
+        "Tóm tắt nội dung file Excel đã chọn",
+        SummaryModel(),
+    )
+    assert turn["status"] == "answered" and turn["citations"][0]["page"] == 7
+    assert turn["provenance"]["model_calls"] == 2
+    assert turn["provenance"]["public_search_requests"] == 0
+    assert any(step.get("worksheets_covered") == 7 for step in turn["tool_trace"])
+
+
+def test_invalid_summary_quote_can_be_repaired_inside_remaining_agent_budget(tmp_path, monkeypatch):
+    monkeypatch.setenv("LEXCHECK_WORKSPACE_TOOL_HARNESS_ENABLED", "1")
+    store, workspace, document = company(tmp_path)
+
+    class RepairModel(ToolModel):
+        def generate(self, **kwargs):
+            result = super().generate(**kwargs)
+            if len(self.calls) == 2:
+                result.parsed["final"]["citations"][0]["quote"] += "\u2063"
+            return result
+
+    client = RepairModel(document["id"])
+    history = ConversationStore(store)
+    conversation = history.create(workspace["id"])
+    turn = answer(
+        store, history, workspace["id"], conversation["id"], "Summarize selected workbook", client
+    )
+    assert turn["status"] == "answered" and turn["provenance"]["model_calls"] == 3
+    assert turn["citations"][0]["quote"] == "A2\t3500"

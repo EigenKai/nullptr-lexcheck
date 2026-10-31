@@ -18,7 +18,14 @@ from rules.workspace_chat import ANSWER_PROMPT, AnswerDraft
 
 
 class ToolAction(Contract):
-    tool: Literal["search_documents", "read_document", "read_excel", "web_search", "final_answer"]
+    tool: Literal[
+        "search_documents",
+        "read_document",
+        "read_excel",
+        "summarize_excel",
+        "web_search",
+        "final_answer",
+    ]
     query: str | None = Field(max_length=500)
     document_id: str | None = Field(max_length=100)
     page: int = Field(ge=1, le=250)
@@ -131,6 +138,92 @@ class WorkspaceTools:
             provider="openpyxl",
             warning="Only reviewed matching cells; formulas are not recalculated.",
         )
+
+    def summarize_excel(self, document_id):
+        """Cover every worksheet using only the already reviewed cell projection."""
+        source = self.index.sources.get(document_id)
+        if not source or source.get("suffix") != ".xlsx":
+            raise FileNotFoundError("Selected XLSX document not found in this workspace.")
+        pages = source["model_pages"]
+        character_budget = min(1800, 18000 // max(1, len(pages)))
+        chunks, coverage, citation_options = [], [], []
+        for page, text in enumerate(pages, 1):
+            original_lines = set(source["pages"][page - 1].splitlines())
+            cells = [
+                line
+                for line in text.splitlines()
+                if re.fullmatch(r"[A-Z]+\d+\t[^\n]+", line)
+                and "[" not in line
+                and line in original_lines
+            ]
+            labels, numbers = [], []
+            for line in cells:
+                (
+                    numbers
+                    if re.fullmatch(r"[-+]?\d+(?:[.,]\d+)?%?", line.split("\t", 1)[1])
+                    else labels
+                ).append(line)
+            # Spread numeric examples over the whole sheet, not just its first index chunks.
+            numeric_samples = [
+                numbers[min(len(numbers) - 1, i * len(numbers) // min(8, len(numbers)))]
+                for i in range(min(8, len(numbers)))
+            ]
+            chosen = set(labels[:8] + numeric_samples)
+            sampled, size = [], 0
+            for line in cells:
+                if line in chosen and size + len(line) + 1 <= character_budget:
+                    sampled.append(line)
+                    size += len(line) + 1
+            coverage.append(
+                {
+                    "worksheet": f"Sheet {page}",
+                    "page": page,
+                    "reviewed_cells_available": len(cells),
+                    "sampled_cells": len(sampled),
+                    "numeric_cells_available": len(numbers),
+                    "coverage": "sampled_reviewed_cells",
+                }
+            )
+            if sampled:
+                chunks.append(
+                    {
+                        "chunk_id": "CHUNK-"
+                        + hashlib.sha256(
+                            f"overview:{document_id}:{source['sha256']}:{source['version']}:{page}".encode()
+                        ).hexdigest()[:24],
+                        "document_id": document_id,
+                        "title": source["title"],
+                        "collection": source["collection"],
+                        "sha256": source["sha256"],
+                        "version": source["version"],
+                        "page": page,
+                        "worksheet": f"Sheet {page}",
+                        "text": "\n".join(sampled),
+                    }
+                )
+                run_lines = []
+                for line in source["pages"][page - 1].splitlines() + [""]:
+                    if line in sampled:
+                        run_lines.append(line)
+                    elif run_lines:
+                        citation_options.append(
+                            {"chunk_id": chunks[-1]["chunk_id"], "quote": "\n".join(run_lines)}
+                        )
+                        run_lines = []
+        return {
+            **self._remember(
+                "summarize_excel",
+                chunks,
+                document_id=document_id,
+                worksheets_covered=len(pages),
+                provider="reviewed_workbook_projection",
+            ),
+            "worksheet_count": len(pages),
+            "worksheets": coverage,
+            "coverage": "sampled_reviewed_cells",
+            "citation_options": citation_options,
+            "note": "Content summary only; no legal evidence is required. All worksheets were inspected through the reviewed projection; samples are partial, private/unknown text is withheld, and no totals across mixed units were inferred. Copy citation_options quotes verbatim; these may contain multiple contiguous original cell lines. For a multi-sheet summary use at most one citation per worksheet plus one header citation, within ten total. Use read_excel for a specific range if needed.",
+        }
 
     def web_search(self, query):
         # Legal topics legitimately mention tenants, addresses and personal data.
@@ -293,6 +386,15 @@ def run(index, common, client, *, search=None, max_steps=4):
         return json.dumps(tools.read_excel(document_id, page, cell_range), ensure_ascii=False)
 
     @tool
+    def summarize_excel(document_id: str) -> str:
+        """Get a bounded content overview of ALL reviewed worksheets in a selected workbook.
+
+        Args:
+            document_id: A selected XLSX inventory ID already in the workspace.
+        """
+        return json.dumps(tools.summarize_excel(document_id), ensure_ascii=False)
+
+    @tool
     def web_search(query: str) -> str:
         """Search current official Vietnamese legal websites through the configured provider.
 
@@ -300,6 +402,28 @@ def run(index, common, client, *, search=None, max_steps=4):
             query: Public legal topic only, without private company/person identifiers.
         """
         return json.dumps(tools.web_search(query), ensure_ascii=False)
+
+    @tool
+    def final_answer(answer: str) -> str:
+        """Return a structured answer only after checking its exact retrieved quotations.
+
+        Args:
+            answer: JSON matching the structured AnswerDraft schema.
+        """
+        draft = AnswerDraft.model_validate_json(answer)
+        for reference in draft.citations:
+            chunk = tools.retrieved.get(reference.chunk_id)
+            if chunk is None:
+                raise ValueError(
+                    "Final quote is not retrieved; use an observed citation_options entry."
+                )
+            try:
+                index.citation(chunk, reference.quote)
+            except ValueError as exc:
+                raise ValueError(
+                    "Final quote is not exact. Copy an observed citation_options quote verbatim, including coordinate and tabs; do not add characters."
+                ) from exc
+        return answer
 
     class BoundaryModel(Model):
         def __init__(self):
@@ -319,6 +443,8 @@ def run(index, common, client, *, search=None, max_steps=4):
                 asdict(message) if is_dataclass(message) else message for message in messages
             ]
             available = [item.name for item in kwargs.get("tools_to_call_from", [])]
+            if self.steps == max_steps:
+                available = ["final_answer"]
             output = client.generate(
                 purpose="workspace_tool_harness_v1",
                 payload={
@@ -330,7 +456,7 @@ def run(index, common, client, *, search=None, max_steps=4):
                     "steps_remaining": max_steps - self.steps,
                 },
                 prompt=ANSWER_PROMPT
-                + " Choose exactly one allowed tool per step. Inspect actual observations before answering. Return final_answer with a structured final object only after evidence. Always quote full XLSX coordinate+tab+value lines. Search leads alone cannot support a legal answer. No Python/code execution is available.",
+                + " Choose exactly one allowed tool per step. Inspect actual observations before answering. For an Excel content summary or overview, call summarize_excel ONCE to cover all worksheets, then answer from its reviewed cell observations. This is a content-reading task: relevant business cells are sufficient evidence, no legal clauses or legal verification are required. Do not web_search for a content-only request. Do not refuse the supported partial summary because some fields are redacted or not every cell was read; state the coverage limits and use status answered when supported content is available. Do not let earlier legal questions override the user's current summary request. Return final_answer promptly after sufficient observations. When steps_remaining is zero only final_answer is allowed, with either supported content or a precise missing-content explanation. Copy citation_options quotations verbatim when provided; a quote may contain multiple contiguous original cell lines. For multi-sheet summaries use at most one citation per worksheet plus one header citation, never more than ten; summarize fewer facts if needed. Search leads alone cannot support a legal answer. No Python/code execution is available.",
                 schema=ToolAction,
                 mode="live",
             )
@@ -339,6 +465,8 @@ def run(index, common, client, *, search=None, max_steps=4):
             self.outputs.append(output)
             action = ToolAction.model_validate(output.parsed)
             if action.tool not in available:
+                if self.steps == max_steps:
+                    self.exhausted = True
                 raise ValueError("Model requested an unavailable tool.")
             if action.tool != "final_answer":
                 tools.trace.append({"tool": action.tool, "status": "requested"})
@@ -349,6 +477,8 @@ def run(index, common, client, *, search=None, max_steps=4):
                 arguments = {"document_id": action.document_id, "page": action.page}
                 if action.tool == "read_excel":
                     arguments["cell_range"] = action.cell_range
+            elif action.tool == "summarize_excel":
+                arguments = {"document_id": action.document_id}
             else:
                 if action.final is None:
                     raise ValueError("Final answer is missing structured evidence.")
@@ -366,7 +496,7 @@ def run(index, common, client, *, search=None, max_steps=4):
             )
 
     model = BoundaryModel()
-    allowed = [search_documents, read_document, read_excel]
+    allowed = [search_documents, read_document, read_excel, summarize_excel, final_answer]
     if os.getenv("LEXCHECK_WORKSPACE_WEB_SEARCH_ENABLED", "0") == "1":
         allowed.append(web_search)
     agent = ToolCallingAgent(
