@@ -48,19 +48,30 @@ export default function Review({
         </button>
       }
     >
-      <p className="page-description">
-        Xác nhận bối cảnh và nội dung trước khi đối chiếu. Người duyệt quyết
-        định từng phát hiện.
-      </p>
-      {!features.layer0_ready && (
-        <button
-          className="button secondary"
-          disabled={!!busy}
-          onClick={showPreview}
-        >
-          Xem finding minh hoạ (fixture)
-        </button>
-      )}
+      <div className="review-desk">
+        <div className="review-desk-copy">
+          <p className="page-description">
+            Xác nhận bối cảnh và nội dung trước khi đối chiếu. Người duyệt quyết
+            định từng phát hiện.
+          </p>
+          {!features.layer0_ready && (
+            <button
+              className="button secondary"
+              disabled={!!busy}
+              onClick={showPreview}
+            >
+              Xem finding minh hoạ (fixture)
+            </button>
+          )}
+        </div>
+        <img
+          className="review-desk-lex"
+          src="/assets/lex-hero-480.webp"
+          alt=""
+          width="168"
+          height="168"
+        />
+      </div>
       <section className="result-section" aria-live="polite">
         <h2>Kết quả · {resultLabel(result)}</h2>
         {result ? (
@@ -85,6 +96,7 @@ export default function Review({
             {result.findings.map((f) => (
               <button
                 className="review-card finding-button"
+                data-status={f.status}
                 key={f.id}
                 onClick={() =>
                   inspect({

@@ -16,14 +16,13 @@ body {
 }
 .brand {
   color: var(--brand-ink);
-  gap: 10px;
   padding-left: 2px;
   font-size: 29px;
 }
 .brand-mark {
   width: 46px;
   height: 46px;
-  margin-right: 0;
+  margin-right: 10px;
   flex-shrink: 0;
   border-radius: 50%;
   background-color: #fbf3e6;
@@ -31,8 +30,13 @@ body {
   object-fit: cover;
   box-shadow: 0 6px 14px -8px rgba(15, 48, 56, 0.55);
 }
+/* Darker than --brand-gold so the 29px dot still reaches 3:1. */
 .brand-dot {
-  color: var(--brand-gold);
+  color: #9a7230;
+}
+.workspace small,
+.profile small {
+  color: #4d6160;
 }
 .workspace {
   background-color: #fff;
@@ -87,6 +91,13 @@ body {
 /* Top bar and the check-list status line. */
 .topbar {
   background-color: var(--bg);
+}
+.breadcrumb .slash {
+  color: #5b6e6c;
+}
+.back-link {
+  color: var(--brand-scale);
+  font-weight: 650;
 }
 .demo-pill {
   background-color: #fff;

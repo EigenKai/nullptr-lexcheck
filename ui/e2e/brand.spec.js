@@ -79,6 +79,8 @@ const SCREENS = [
 async function shoot(page, name) {
   if (!SHOT_DIR) return;
   fs.mkdirSync(SHOT_DIR, { recursive: true });
+  // Fixed elements drift in full-page captures of a scrolled window.
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: path.join(SHOT_DIR, `${name}.png`),
     fullPage: true,
@@ -241,4 +243,103 @@ test("10 · the data-mode status stays visible at every width", async ({
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
   }
+});
+
+test("4 · reading sizes hold up on a projector", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await openFinding(page);
+  const size = (selector) =>
+    page
+      .locator(selector)
+      .first()
+      .evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+  expect(await size("body")).toBeGreaterThanOrEqual(16);
+  for (const selector of [
+    ".finding-button h3",
+    ".evidence .record-text",
+    ".clause blockquote",
+  ])
+    expect(await size(selector), selector).toBeGreaterThanOrEqual(20);
+});
+
+test("5 · text meets WCAG AA contrast on solid backgrounds", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await openFinding(page);
+  const failures = await page.evaluate(() => {
+    const parse = (value) => {
+      const m = value.match(/rgba?\(([^)]+)\)/);
+      if (!m) return null;
+      const [r, g, b, a = 1] = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+      return { r, g, b, a };
+    };
+    const over = (top, below) => ({
+      r: top.r * top.a + below.r * (1 - top.a),
+      g: top.g * top.a + below.g * (1 - top.a),
+      b: top.b * top.a + below.b * (1 - top.a),
+      a: 1,
+    });
+    // Composite background colours from the nearest opaque ancestor upward.
+    const backdrop = (el) => {
+      const layers = [];
+      for (let e = el; e; e = e.parentElement) {
+        const c = parse(getComputedStyle(e).backgroundColor);
+        if (c && c.a > 0) layers.push(c);
+        if (c && c.a >= 1) break;
+      }
+      let base = { r: 255, g: 255, b: 255, a: 1 };
+      for (const layer of layers.reverse()) base = over(layer, base);
+      return base;
+    };
+    const opacity = (el) => {
+      let o = 1;
+      for (let e = el; e; e = e.parentElement)
+        o *= parseFloat(getComputedStyle(e).opacity);
+      return o;
+    };
+    const lum = ({ r, g, b }) => {
+      const f = (v) => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const ownText = (e) =>
+      [...e.childNodes].some(
+        (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim(),
+      );
+    const roots = [
+      "body",
+      ".status-strip",
+      ".page-description",
+      ".badge",
+      ".button",
+      "mark",
+      ".footnote",
+    ].flatMap((s) => [...document.querySelectorAll(s)]);
+    const checked = new Set();
+    const out = [];
+    for (const root of roots)
+      for (const el of [root, ...root.querySelectorAll("*")]) {
+        if (checked.has(el) || !ownText(el) || !el.getClientRects().length)
+          continue;
+        checked.add(el);
+        const style = getComputedStyle(el);
+        const bg = backdrop(el);
+        const fg = parse(style.color);
+        const text = over({ ...fg, a: fg.a * opacity(el) }, bg);
+        const [hi, lo] = [lum(text), lum(bg)].sort((a, b) => b - a);
+        const ratio = (hi + 0.05) / (lo + 0.05);
+        const px = parseFloat(style.fontSize);
+        const large = px >= 24 || (px >= 18.66 && Number(style.fontWeight) >= 700);
+        if (ratio < (large ? 3 : 4.5))
+          out.push(
+            `${el.tagName}.${el.className} "${el.textContent.trim().slice(0, 30)}" ${ratio.toFixed(2)}`,
+          );
+      }
+    return { out, count: checked.size };
+  });
+  expect(failures.count).toBeGreaterThan(10);
+  expect(failures.out).toEqual([]);
 });
