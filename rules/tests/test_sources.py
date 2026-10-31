@@ -24,7 +24,7 @@ def clauses():
 
 def test_all_enabled_rules_have_verified_basis():
     rules, basis = catalog(), clauses()
-    assert {rule.id for rule in rules if rule.enabled} == {"R-01", "R-02", "R-03"}
+    assert {rule.id for rule in rules if rule.enabled} == {"R-01", "R-02", "R-03", "R-04"}
     for rule in rules:
         if not rule.enabled:
             continue
@@ -69,7 +69,7 @@ def test_effective_interval_boundaries():
 
 def test_other_pending_rules_and_clauses_remain_disabled():
     for rule in catalog():
-        if rule.id not in ("R-01", "R-02", "R-03"):
+        if rule.id not in ("R-01", "R-02", "R-03", "R-04"):
             assert not rule.enabled
             assert rule.verification_status == "to_be_verified"
             assert clauses()[rule.clause_version_id].verification_status == "to_be_verified"

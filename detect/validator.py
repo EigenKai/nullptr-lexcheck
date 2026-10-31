@@ -99,6 +99,14 @@ def _reason(finding, request, rules, clauses):
             return "evidence_mismatch"
         elif evidence.quote is not None:
             return "evidence_mismatch"
+    absence_field = {"warning": "warning", "confirmation": "confirmation_date"}.get(rule.check_type)
+    if absence_field and not any(
+        e.kind == "missing_field"
+        and e.field == absence_field
+        and e.record_version_id == finding.record_version_id
+        for e in finding.evidence
+    ):
+        return "evidence_mismatch"
     if rule.check_type == "uses":
         kinds = {r.id: r.kind for r in request.records}
         context = tuple(

@@ -3671,6 +3671,8 @@
             "enum": [
               "keyword",
               "plain_chat",
+              "plain_chat_web",
+              "retrieval",
               "lexcheck"
             ],
             "title": "System"

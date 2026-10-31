@@ -27,10 +27,10 @@
   "enabled_rule_ids": [
     "R-01",
     "R-02",
-    "R-03"
+    "R-03",
+    "R-04"
   ],
   "pending_rule_ids": [
-    "R-04",
     "R-05",
     "R-06",
     "R-07",
@@ -41,5 +41,6 @@
     "A missing connected confirmation is not a finding that an external procedure never happened.",
     "Scientific evidence still requires human evaluation.",
     "Authority changes and older certificate validity require separate review."
-  ]
+  ],
+  "r04_verification_provenance": "Exact second sentence already human-confirmed in CV-02-v1; original confirmation timestamp reused. Agent visually rechecked original PDF page19; no new human verification fabricated."
 }
