@@ -27,6 +27,7 @@ also requires `LEXCHECK_WORKSPACE_WEB_SEARCH_ENABLED=1`. Both new flags default
 to `0`. The default chat path never imports optional harness dependencies.
 Configure `OPENAI_API_KEY` and `OPENAI_MODEL` privately on the server. These
 flags do not activate canonical layers, generated rules or legal findings.
+Web search uses `BRAVE_SEARCH_API_KEY`, also server-side only.
 
 ## Tools and evidence
 
@@ -46,13 +47,15 @@ flags do not activate canonical layers, generated rules or legal findings.
   contiguous citation options. It exposes the selected full extraction, including
   worksheet names, or the user's optional redacted version. It does not infer
   mixed-unit totals or require legal evidence for a content summary.
-- `web_search` calls the existing `detect.client.DiscoveryTransport`, which
-  requires actual hosted web-search observations and filters official domains.
-  One search request may fetch at most two official HTTPS sources, each at most
-  2 MB with a 12-second retrieval timeout. Originals are archived privately;
-  successfully extracted text becomes an unverified legal-library document.
-  Failed or unread leads cannot support a legal answer. No OCR is invoked by
-  this tool. Search queries must contain public legal topics only.
+- `web_search` uses Brave's documented HTTP API through `rules/brave_search.py`.
+  It returns actual provider URLs, descriptions and extra snippets. Original or
+  official sources are a preference, not a government-domain restriction. There
+  is no single-search quota: the model can refine a query within the normal
+  overall agent-step budget. Returned public HTTPS links need not be legal sites.
+  Private/local addresses, file URLs and credentials remain excluded. Search
+  snippets are not a claim that full original pages were read or legal rules
+  verified. The chat adapter does not alter formal rule-source verification.
+  [Brave API reference](https://api-dashboard.search.brave.com/api-reference/web/search/get).
 
 The real OSS loop allows four model steps by default, with a hard maximum of
 six in its internal API. Exhaustion and unavailable models fail explicitly;
@@ -80,7 +83,8 @@ Old turns retain their original evidence. This remains the existing local,
 server-token workspace pilot, not production multi-user authorization.
 
 Turn provenance records the harness/version, selected tool trace, cache keys,
-agent model calls, public-search model calls/events and their total. A provider
+agent model calls, public-search model calls, Brave HTTP calls/events and their
+model-request total. Brave HTTP calls do not count as model calls. A provider
 that does not expose call events is reported with unknown search/total call
 counts rather than an invented number. Hosted search operations within one
 provider response are distinct from these model-request counts.

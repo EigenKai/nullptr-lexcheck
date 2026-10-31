@@ -14,7 +14,7 @@ from pydantic import Field
 
 from contracts.models import Contract
 from rules.discovery_models import SearchResult
-from rules.legal_sources import OFFICIAL_DOMAINS, fetch_source, validate_url
+from rules.legal_sources import fetch_source, validate_url
 from rules.workspace_chat import ANSWER_PROMPT, AnswerDraft
 
 
@@ -27,7 +27,7 @@ class ToolAction(Contract):
         "web_search",
         "final_answer",
     ]
-    query: str | None = Field(max_length=500)
+    query: str | None = Field(max_length=600)
     document_id: str | None = Field(max_length=100)
     page: int = Field(ge=1, le=250)
     cell_range: str | None = Field(max_length=30)
@@ -232,38 +232,57 @@ class WorkspaceTools:
         }
 
     def web_search(self, query):
-        # Legal topics legitimately mention tenants, addresses and personal data.
-        # Reject concrete identifiers rather than censoring those topic words.
-        if re.search(
-            r"[\w.+-]+@[\w.-]+|\d(?:[ .()-]*\d){7,}|(?:họ\s*(?:và\s*)?tên|cccd|cmnd|địa\s*chỉ|tài\s*khoản)\s*[:=]\s*\S+",
-            query,
-            re.IGNORECASE,
-        ):
-            raise ValueError("Do not send private identifiers in public search queries.")
-        if self.web_calls >= 1 or not 1 <= len(query.strip()) <= 500:
-            raise ValueError("Public search budget exhausted or invalid query.")
+        # The user authorizes all query content. Do not redact, rewrite or classify it.
+        if not isinstance(query, str) or not query.strip() or len(query) > 600:
+            raise ValueError("Invalid public search query.")
         self.web_calls += 1
         if self.search_provider is None:
-            from detect.client import DiscoveryTransport
+            from rules.brave_search import BraveSearch
 
-            self.search_provider = DiscoveryTransport(
-                cache_dir=self.index.store.folder(self.index.workspace_id) / "public-search-cache"
-            )
+            self.search_provider = BraveSearch()
         previous_events = len(getattr(self.search_provider, "events", []))
-        result = self.search_provider.complete(
-            "search",
-            {
-                "topics": [{"id": "chat", "question": query}],
-                "workspace_id": self.index.workspace_id,
-            },
-            SearchResult.model_json_schema(),
-            timeout_s=25,
-            web_search=True,
-        )
+        try:
+            result = self.search_provider.complete(
+                "search",
+                {
+                    "topics": [{"id": "chat", "question": query}],
+                    "workspace_id": self.index.workspace_id,
+                },
+                SearchResult.model_json_schema(),
+                timeout_s=25,
+                web_search=True,
+            )
+        except Exception:
+            failure_events = list(getattr(self.search_provider, "events", [])[previous_events:])
+            self.search_events.extend(failure_events)
+            self.trace.append(
+                {
+                    "tool": "web_search",
+                    "provider": "brave",
+                    "status": "provider_error",
+                    "request_sent": bool(failure_events),
+                    "provider_events": failure_events,
+                }
+            )
+            raise
         if hasattr(self.search_provider, "events"):
-            self.search_events.extend(self.search_provider.events[previous_events:])
+            new_events = list(self.search_provider.events[previous_events:])
+            self.search_events.extend(new_events)
         else:
             self.search_counts_known = False
+            new_events = []
+        if result.get("provider") == "brave":
+            self.trace.append(
+                {
+                    "tool": "web_search",
+                    "query": query,
+                    "hits": len(result["sources"]),
+                    "provider": "brave",
+                    "sources": result["sources"],
+                    "provider_events": new_events,
+                }
+            )
+            return result
         sources = []
         for lead in SearchResult.model_validate(result).sources:
             try:
@@ -272,8 +291,6 @@ class WorkspaceTools:
                 continue
             if url not in {item["url"] for item in sources}:
                 sources.append({"url": url, "verification_status": "unverified_search_lead"})
-            if len(sources) == 2:
-                break
         chunks = []
         for lead in sources:
             archive = (
@@ -402,10 +419,10 @@ def run(index, common, client, *, search=None, max_steps=4):
 
     @tool
     def web_search(query: str) -> str:
-        """Search current official Vietnamese legal websites through the configured provider.
+        """Search the public web through Brave; prefer original/official sources without excluding others.
 
         Args:
-            query: Public legal topic only, without private company/person identifiers.
+            query: The user's chosen search terms, passed unchanged to Brave.
         """
         return json.dumps(tools.web_search(query), ensure_ascii=False)
 
@@ -455,9 +472,9 @@ def run(index, common, client, *, search=None, max_steps=4):
                         "public_web_search": {
                             "enabled": "web_search"
                             in [item.name for item in kwargs.get("tools_to_call_from", [])],
-                            "scope": "official Vietnamese legal websites only",
-                            "allowed_domains": list(OFFICIAL_DOMAINS),
-                            "request_budget": 1,
+                            "scope": "public web; prefer original/official sources, other public sources allowed",
+                            "provider": "Brave Search",
+                            "overall_agent_step_budget": max_steps,
                         },
                         "document_access": "selected documents in this workspace only",
                         "native_excel_installed": find_spec("openpyxl") is not None,
@@ -527,7 +544,11 @@ def run(index, common, client, *, search=None, max_steps=4):
     draft = AnswerDraft.model_validate_json(str(result))
     agent_calls = sum(item.calls for item in model.outputs)
     search_calls = (
-        sum(not event.get("cached", False) for event in tools.search_events)
+        sum(
+            event.get("model_calls", 1)
+            for event in tools.search_events
+            if not event.get("cached", False)
+        )
         if tools.search_counts_known
         else None
     )
@@ -537,6 +558,9 @@ def run(index, common, client, *, search=None, max_steps=4):
         "model_calls": agent_calls + search_calls if search_calls is not None else None,
         "agent_model_calls": agent_calls,
         "public_search_model_calls": search_calls,
+        "public_search_http_calls": sum(
+            event.get("http_calls", 0) for event in tools.search_events
+        ),
         "public_search_events": tools.search_events,
         "index_sha256": index.fingerprint,
         "cache_keys": [item.key for item in model.outputs],

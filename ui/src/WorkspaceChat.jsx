@@ -527,8 +527,10 @@ export function WorkspaceChat({
                       </a>
                       <small>
                         {source.retrieval_status === "ingested_unverified"
-                          ? "Đã đọc nguồn · Chưa xác minh hiệu lực và áp dụng"
-                          : "Chưa đọc được nội dung nguồn · Chưa đủ bằng chứng"}
+                          ? "Đã đọc nội dung nguồn"
+                          : source.retrieval_status === "search_observation_only"
+                            ? "Kết quả tìm kiếm web · Chưa mở bản gốc"
+                            : "Chưa đọc được nội dung nguồn"}
                       </small>
                     </p>
                   ))}
@@ -560,6 +562,7 @@ export function WorkspaceChat({
               {shownTurn.provenance?.agent_model_calls !== undefined && (
                 <p>
                   Trợ lý: {shownTurn.provenance.agent_model_calls} · Tìm kiếm: {shownTurn.provenance.public_search_model_calls ?? "Chưa ghi nhận"}
+                  {shownTurn.provenance.public_search_http_calls !== undefined && ` · Brave HTTP: ${shownTurn.provenance.public_search_http_calls}`}
                 </p>
               )}
               <code>

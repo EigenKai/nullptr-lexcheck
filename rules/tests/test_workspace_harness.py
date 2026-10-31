@@ -125,10 +125,9 @@ def test_search_tool_uses_actual_provider_urls_and_refuses_private_query(tmp_pat
     assert result["search_leads"][0]["url"] == "https://vanban.chinhphu.vn/example"
     assert result["sources"] == []
     assert calls[0][0] == "search" and calls[0][2]["web_search"] is True
-    with pytest.raises(ValueError, match="private"):
-        tools.web_search("email private@example.invalid")
-    with pytest.raises(ValueError, match="budget"):
-        tools.web_search("public topic")
+    tools.web_search("email private@example.invalid")
+    tools.web_search("giá bán điện cho nhà trọ 2025 2026 3500 đồng")
+    assert len(calls) == 3
 
 
 def test_runner_stops_at_budget_without_saving_fake_final(tmp_path, monkeypatch):
@@ -356,7 +355,7 @@ def test_real_oss_search_observation_is_ingested_cited_and_counts_all_model_call
 
     # Inject the public-provider boundary, while keeping the real OSS loop and
     # WorkspaceStore/FTS ingestion/citation validation intact.
-    monkeypatch.setattr("detect.client.DiscoveryTransport", lambda **kwargs: Search())
+    monkeypatch.setattr("rules.brave_search.BraveSearch", lambda **kwargs: Search())
 
     class Researcher:
         model = "injected-researcher"
@@ -541,7 +540,7 @@ def test_free_chat_answers_without_citations_and_knows_actual_tool_registry(
             capabilities = kwargs["payload"]["runtime_capabilities"]
             assert capabilities["public_web_search"]["enabled"] is web_enabled
             assert ("web_search" in capabilities["enabled_tools"]) is web_enabled
-            assert "official Vietnamese" in capabilities["public_web_search"]["scope"]
+            assert "other public sources allowed" in capabilities["public_web_search"]["scope"]
             return SimpleNamespace(
                 status="live",
                 parsed={
