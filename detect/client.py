@@ -36,15 +36,38 @@ class ModelClient:
         group=None,
         acl_hash=None,
         pattern_version="none",
+        authorize=None,
     ):
+        self.authorize = authorize
         self.transport = transport
         self.model = model or os.getenv("OPENAI_MODEL")
         self.cache_dir = Path(cache_dir) if cache_dir else None
         self.scope = {"user": user_id, "group": group, "acl": acl_hash, "pattern": pattern_version}
 
+    def _authorized(self, payload):
+        scoped = all(self.scope[k] for k in ("user", "group", "acl"))
+        if os.getenv("LEXCHECK_LAYER3_ENABLED") == "1" and not scoped:
+            return False
+        snapshots = (payload.get("request", {}), payload.get("check", {}).get("snapshot", {}))
+        records = tuple(r for snapshot in snapshots for r in snapshot.get("records", ()))
+        group = self.scope["group"]
+        if any(
+            group not in r.get("access_groups", ())
+            if group
+            else not {"manager", "operations"}.issubset(r.get("access_groups", ()))
+            for r in records
+        ):
+            return False
+        try:
+            return self.authorize is None or bool(self.authorize(payload))
+        except Exception:  # noqa: BLE001 - authorization failure denies access
+            return False
+
     def generate(self, *, purpose, payload, prompt, schema, mode):
         if mode == "off":
             return ModelOutput("off")
+        if not self._authorized(payload):
+            return ModelOutput("unavailable", error="access_denied")
         if not self.model:
             return ModelOutput("unavailable", error="model_missing")
         key = cache_key(
@@ -100,9 +123,9 @@ class ModelClient:
         if path:
             try:
                 path.parent.mkdir(parents=True, exist_ok=True)
-                with path.open("x", encoding="utf-8") as handle:
+                descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
                     handle.write(parsed.model_dump_json())
-                path.chmod(0o600)
             except FileExistsError:
                 pass
             except OSError:
