@@ -35,7 +35,7 @@ Read your job in `docs/plan/`. Run `make fmt FORMAT_PATHS="<your owned code dire
 
 ## Layer gates and integration
 
-The full Today scope is implemented in layers: 0 (records/rules/review/change/recheck/closure/deploy), 1 (five-check validator, keyword/plain-chat baselines, cited narrow chat and assignment), 2 (preloaded verified legal change and 5–8 distinct verified rules), 3 (two demo permission groups and reviewed feedback reuse). Never start coding layer N+1 before layer N is demonstrated on main. Continue independent work within the current layer.
+The full Today scope is implemented in layers: 0 (records/rules/review/change/recheck/closure/deploy), 1 (five-check validator, keyword/plain-chat baselines, cited narrow chat and assignment), 2 (preloaded verified legal change and 5–8 distinct verified rules), 3 (two demo permission groups and reviewed feedback reuse). Once your current package is complete, start the next-layer code in your owned directories immediately, behind a default-off feature flag in a separate PR with passing tests. Gates control enabling flags, not starting code. Enable a layer only after all lower layers are green on main and smoke passes.
 
 Flags LEXCHECK_LAYER1_ENABLED, LEXCHECK_LAYER2_ENABLED and LEXCHECK_LAYER3_ENABLED default to 0. Every PR must preserve make test and make smoke on main. Enable a layer only after its explicit make smoke LAYER=N, frontend checks and deployed smoke pass on that SHA. The smoke command enables prerequisite flags only in its test subprocess. Do not skip smoke tests. At 15:30 turn unfinished layers off and update the plan's Today gap table. The human held-out run remains 15:15 on a pinned SHA; never claim later changes share its measurements.
 

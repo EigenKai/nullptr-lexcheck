@@ -1,5 +1,5 @@
 # LexCheck — kế hoạch build theo tầng, 31/10/2026
-Chốt phạm vi theo quyết định user 12:58: làm toàn bộ bảng Today, nhưng mỗi tầng phải chạy trên main trước khi bắt đầu code tầng sau. Repo là bản chính: `docs/plan/`.
+Chốt phạm vi 12:58, làm rõ gate lúc 13:23 theo user: làm toàn bộ bảng Today, nhưng gate chỉ kiểm soát việc bật flag; mỗi người xong gói của mình có thể code tầng kế ngay trong thư mục riêng, sau flag mặc định tắt và PR riêng có test xanh. Repo là bản chính: `docs/plan/`.
 Proposal final: nhận tín hiệu **12:48:37 +07** tại `plans/261031-1105-final-proposal/FINAL-READY.md`; đã đọc toàn bộ 11 trang. PDF SHA256 `3dd1967ec3633e92af207ae0b223123db88c0bcd169590e8a76b0a8f8e413d5c`. Đường dẫn PDF/DOCX gốc được lưu nội bộ trong `proposal-source.txt`, cạnh bản workspace của plan; không đưa tên nội bộ vào repo public.
 
 ## 1. Một lát cắt xuyên suốt
@@ -23,7 +23,7 @@ Mặc định mọi flag tầng 1–3 = 0. Không bật flag chỉ vì endpoint 
 - 30–50s: queue N=2 ma két; recheck: K=1 có công dụng cần chứng cứ, M-02 vẫn không bị R-02; P-02 không vào queue.
 - 50–65s: mở finding: nguyên văn marketing + clause/version + ngày + applicability; “not found in the connected records” không phải kết luận chưa từng làm.
 - 65–90s: reviewer confirm; chỉnh ma két bằng bản v2 chỉ bỏ công dụng chưa được chứng minh, giữ công dụng còn lại; recheck mới → reviewer đóng task; history hiện bản trước/sau.
-Nếu chưa có ≥3 rule thật trước 14:05: vẫn nộp WIP đúng giờ nhưng ghi gate tầng 0 chưa đạt, không bắt đầu tầng 1 và không gọi fixture là sản phẩm hoàn tất.
+Nếu chưa có ≥3 rule thật trước 14:05: vẫn nộp WIP đúng giờ nhưng ghi gate tầng 0 chưa đạt, giữ flag tầng 1 tắt và không gọi fixture là sản phẩm hoàn tất.
 
 ## 4. Kiến trúc và điểm cắm
 ```mermaid
@@ -60,12 +60,12 @@ UI package.json/package-lock.json do Khanh tạo trong PR UI đầu và cả đ�
 | **14:05** | tích hợp 1 trên main: tầng 0 thật, >=3 rule, no-key smoke, live URL; cả đội thử ở máy khác |
 | **14:15** | Khanh giữ phiên demo ổn định; Tuấn Anh chốt README/ảnh trạng thái WIP |
 | **14:25** | Tuấn Anh gửi WIP; hạn BTC 14:30; Dũng dự phòng |
-| 14:45 | gate tầng 1, bật flag nếu đầy đủ; chưa đạt thì tiếp tục sửa tầng 1, không bắt đầu code tầng 2 |
+| 14:45 | gate tầng 1, bật flag nếu đầy đủ; chưa đạt thì flag tầng 2 vẫn tắt; người xong gói của mình có thể code tầng 2 trong PR riêng |
 | 15:10 | gate tầng 2; Tuấn Anh chốt SHA/cấu hình/rule/model/dev dataset cho final; không đẩy thay đổi vào bản eval đang chạy |
 | **15:15 cố định** | Tuấn Anh human chạy held-out một lần trên SHA đã khóa; tầng 3 có thể ở branch/off-flag nhưng không đổi bản đo |
 | **15:30** | freeze; tắt mọi tầng chưa đạt; ghi chênh lệch Today và SHA demo khác SHA eval nếu có |
 | 16:00 / **16:15** / **16:30** | video/tập pitch; checklist; Tuấn Anh bấm gửi, Dũng dự phòng; hạn BTC 17:00 không dời |
-Mỗi người đi từ tầng 0 lên, gói ≤45 phút trong job. Xong báo nhóm + PR + test output, làm tiếp phần độc lập **trong cùng tầng**. Không chờ nhóm khi không có phụ thuộc. Nếu start trễ, rút phần giao diện trang trí, không rút nguồn/validator/history/smoke.
+Mỗi người đi từ tầng 0 lên, gói ≤45 phút trong job. Xong báo nhóm + PR + test output, làm tiếp gói tầng kế trong thư mục riêng sau flag tắt, PR riêng và test xanh. Không chờ nhóm khi không có phụ thuộc. Nếu start trễ, rút phần giao diện trang trí, không rút nguồn/validator/history/smoke.
 
 ## 7. Chênh lệch với bảng Today — cập nhật tại 15:30
 Đây là mục kiểm thực tế, không phải danh sách tính năng đã hoàn thành. Bootstrap hiện chưa đạt tầng 0.
@@ -83,3 +83,5 @@ Thứ tự cắt khi hết giờ: không bật tầng 3 → không bật tầng 
 - [contracts.md](contracts.md): toàn bộ model, endpoint, lỗi, auth/flags và JSON mẫu.
 - [job-1-tuan-anh.md](job-1-tuan-anh.md), [job-2-dung.md](job-2-dung.md), [job-3-khanh.md](job-3-khanh.md): gói có giờ/test, prompt Codex tự đủ.
 - [testing.md](testing.md), [data.md](data.md), [submission.md](submission.md).
+
+PR tầng kế có thể viết sớm khi gói của người đó xong; nếu cần commit chưa merge của chính mình thì ghi rõ PR phụ thuộc. Không force-push; phối hợp base/merge với người review. Các giờ trong job là cửa sổ bật/tích hợp dự kiến, không cấm hoàn thành code sớm. Mốc14:05/14:25/15:15/15:30/16:30 giữ nguyên.
