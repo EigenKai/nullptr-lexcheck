@@ -18,3 +18,9 @@ jobs:
       - run: make lint
       - run: make test
       - run: make eval
+      - uses: actions/setup-node@v4
+        if: hashFiles('ui/package-lock.json') != ''
+        with:
+          node-version: '22'
+      - run: make frontend-test && make frontend-build
+        if: hashFiles('ui/package-lock.json') != ''

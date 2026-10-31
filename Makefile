@@ -19,3 +19,12 @@ smoke:
 	$(PY) -m pytest -q tests/smoke
 audit:
 	$(PY) -m pip_audit -r requirements.txt
+
+frontend-test:
+	cd ui && npm ci && npm test -- --run
+frontend-build:
+	cd ui && npm ci && npm run build
+e2e:
+	cd ui && npm run test:e2e
+eval-final:
+	$(PY) -m eval.final --directory "$(FINAL_DIR)"

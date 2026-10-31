@@ -14,6 +14,7 @@ v0 — trước proposal final. Nguồn thực thi: `contracts/models.py`; JSON 
 - Dũng: `rules.engine.evaluate(request: CheckRequest) -> RuleEvaluation`; tự nạp `rules/catalog.json` và `rules/clauses.json`.
 - Tuấn Anh: `detect.service.suggest(request: CheckRequest, evaluation: RuleEvaluation) -> DetectionResult`; `detect.validator.validate_findings(findings, request, rules, clauses) -> ValidationResult`.
 - Khanh: `intake.router.router` được đăng ký sẵn trong `app/main.py`; `intake.service` ghép evaluate → suggest → validate, giữ snapshot qua `intake.store`.
+- `intake.router.runtime_mode()` trả fixture/live cho health, Khanh sở hữu. Khi ui/dist tồn tại, app tự phục vụ build sau API routes; UI dùng hash navigation.
 - UI gọi `/api/*` cùng origin; dev proxy Vite tới `127.0.0.1:8000`; FastAPI phục vụ `ui/dist` sau API routes.
 - Không thêm router ở file chung. Không gọi model ngoài `detect/client.py`. Không người nào sửa thư mục của người khác.
 

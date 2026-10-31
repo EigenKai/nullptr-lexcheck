@@ -10,7 +10,7 @@ v0 — trước proposal final.
 - Grounding: rule/clause lạ, quote bịa, span sai, missing field thực có, clause ngoài ngày, rule disabled; không fuzzy. `detect/tests/test_validator.py`.
 - Wording: scan response JSON và UI source cho các từ cấm, kể cả Unicode/case; validate input không để lỗi trả nguyên văn câu cấm. `tests/contracts/test_wording.py`; `ui/src/wording.test.ts` khi UI có.
 - No key: bỏ OPENAI_API_KEY, disable network/model path, chạy `tests/smoke/test_demo.py`. Fixture/cache được ghi nhãn; không chạy model khi key trống.
-- UI: Vitest rendering fixture/error/loading/evidence và Playwright browser flow khi frontend sẵn sàng. Một smoke script đủ, không dựng nhiều tầng framework.
+- UI: Vitest rendering fixture/error/loading/evidence và Playwright browser flow khi frontend sẵn sàng. Một smoke script đủ, không dựng nhiều tầng framework. Makefile đã có `make frontend-test`, `make frontend-build`, `make e2e`; CI tự bật frontend khi ui/package-lock.json xuất hiện. `make eval-final` có điểm cắm nhưng chưa chạy được trước khi job 1 viết eval/final.py.
 
 ## Chứng minh bỏ fixture
 `rules/tests/test_engine.py::test_verified_rules_change_with_input` phải thay text và nhận output khác, N chính xác; `intake/tests/test_api.py::test_live_pipeline_uses_rule_engine` phải assert mode=live, dùng engine thật, không patch engine; `test_changed_dossier_requeues_clean_prior_decision` giữ snapshot cũ. Không xóa/skip contract test để đạt xanh.
@@ -31,3 +31,5 @@ Con người tự viết và gán nhãn ở `~/nullptr-test-final/`; Codex khôn
 - 14:15: deploy dùng mode=live + badge synthetic; load/check/change/recheck giữ history; nếu thiếu báo thật trong WIP 14:25.
 - 15:15: regression dev xanh, nguồn kiểm xong; human chạy final một lần.
 - 15:30: freeze SHA; 16:15 link/public README/PDF/video/credentials scan.
+
+Contract test thích nghi với runtime_mode fixture/live để các job thay adapter trong thư mục riêng, không cần sửa test chung. Test chuyển sang live bắt buộc ở intake/tests không được condition/skip; fixture gate không thay test tính năng.

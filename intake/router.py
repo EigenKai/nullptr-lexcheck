@@ -18,6 +18,10 @@ router = APIRouter(prefix="/api")
 ERRORS = {code: {"model": ApiError} for code in (404, 409, 422, 503)}
 
 
+def runtime_mode():
+    return "fixture"
+
+
 def pending():
     raise HTTPException(status_code=503, detail="not_ready")
 

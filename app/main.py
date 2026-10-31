@@ -1,10 +1,13 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 
 from contracts.models import HealthResponse
-from intake.router import router
+from intake.router import router, runtime_mode
 
 app = FastAPI(title="LexCheck", version="0.1.0")
 app.include_router(router)
@@ -12,7 +15,7 @@ app.include_router(router)
 
 @app.get("/health", response_model=HealthResponse)
 def health():
-    return HealthResponse(mode="fixture")
+    return HealthResponse(mode=runtime_mode())
 
 
 @app.exception_handler(RequestValidationError)
@@ -34,3 +37,8 @@ async def http_error(request: Request, exc: HTTPException):
         exc.status_code, ("invalid_request", "Request could not be processed.")
     )
     return JSONResponse(status_code=exc.status_code, content={"code": code, "message": message})
+
+
+UI_DIST = Path(__file__).resolve().parents[1] / "ui/dist"
+if UI_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=UI_DIST, html=True), name="ui")
