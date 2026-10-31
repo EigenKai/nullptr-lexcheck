@@ -467,6 +467,15 @@
             "minItems": 1,
             "title": "Target Version Ids"
           },
+          "context_version_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+            },
+            "type": "array",
+            "title": "Context Version Ids",
+            "default": []
+          },
           "review_date": {
             "type": "string",
             "format": "date",

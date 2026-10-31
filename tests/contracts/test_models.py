@@ -53,3 +53,33 @@ def test_models_are_frozen():
     item = Evidence(record_version_id="RV-01-v1", kind="missing_field", field="warning")
     with pytest.raises(ValidationError):
         item.field = "other"
+
+
+def test_context_versions_must_exist():
+    from contracts.models import CheckRequest
+    from intake.fixtures import load_demo
+
+    payload = load_demo().request.model_dump(mode="json")
+    payload["context_version_ids"] = ["RV-missing"]
+    with pytest.raises(ValidationError):
+        CheckRequest.model_validate(payload)
+
+
+def test_check_never_reports_zero_rules_as_no_issue():
+    from contracts.models import CheckResult
+    from intake.fixtures import load_demo
+
+    payload = load_demo().preview.model_dump(mode="json")
+    payload.update(status="no_issue_found", summary="no issue found under 0 encoded rules")
+    with pytest.raises(ValidationError):
+        CheckResult.model_validate(payload)
+
+
+def test_context_explicitly_selects_dossier_without_mutating_record():
+    from contracts.models import CheckRequest
+    from intake.fixtures import load_demo
+
+    payload = load_demo().request.model_dump(mode="json")
+    payload["context_version_ids"] = ["RV-01-v1", "RV-04-v1"]
+    request = CheckRequest.model_validate(payload)
+    assert request.context_version_ids == ("RV-01-v1", "RV-04-v1")

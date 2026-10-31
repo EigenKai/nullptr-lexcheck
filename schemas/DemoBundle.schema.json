@@ -77,6 +77,15 @@
           "title": "Target Version Ids",
           "type": "array"
         },
+        "context_version_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Context Version Ids",
+          "type": "array"
+        },
         "review_date": {
           "format": "date",
           "title": "Review Date",

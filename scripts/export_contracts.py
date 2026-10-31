@@ -56,7 +56,7 @@ File rule/catalog và clauses là JSON array của Rule/ClauseVersion. Snapshot 
 ## Quy tắc nghiệp vụ cần hiện thực
 POST check lưu CheckResult + snapshot bất biến. Mỗi target quảng cáo chạy subset rule theo profile, ngày, nguồn. N = số rule ID duy nhất thực chạy; skipped có ID và giải thích qua applicability, không được no_issue_found. LLM findings status suggestion/needs_evidence.
 POST changes append version; tìm mọi check từng phụ thuộc dossier cũ, kể cả check không findings. Xét reference_ids và product fallback; queue unique (event_id, previous_check_id, target_version_id), không đưa sản phẩm khác vào. Event không sửa snapshot cũ.
-POST rechecks dùng snapshot cũ, thay dossier bằng v2, cập nhật reference_ids liên quan trong snapshot mới; tạo check mới có parent_check_id. History giữ cả hai. Recheck cùng item đã completed trả check cũ.
+POST rechecks dùng snapshot cũ, append dossier v2, đổi context_version_ids từ v1 sang v2, giữ nguyên text/reference_ids của mọi RecordVersion cũ; tạo check mới có parent_check_id. History giữ cả hai. Recheck cùng item đã completed trả check cũ.
 POST decisions confirm/assign không đóng task; reject cần note và task dismissed. close cần closure_check_id có parent đúng, target đúng và không còn finding liên quan/chưa rõ; trường hợp vẫn thiếu chứng cứ trả409. P0 reviewer là vai trò demo công khai, không giả là phân quyền thật.
 
 ## Toàn bộ model (khớp từng chữ với source)

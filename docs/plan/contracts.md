@@ -10,6 +10,8 @@ v0 — trước proposal final. Nguồn thực thi: `contracts/models.py`; JSON 
 - Không gửi hồ sơ cá nhân; chỉ company DEMO và product P-01/P-02 tổng hợp. Mọi fixture và màn demo mang `synthetic/staged`.
 - `mode=fixture` là preview không phải kiểm luật; job 3 thay service bằng kết quả thật và test `test_live_pipeline_uses_rule_engine` phải chứng minh.
 
+`context_version_ids` chỉ rõ dossier/chứng cứ được người duyệt chọn cho lần kiểm; không dùng ngày mới nhất làm quyền ưu tiên. `reference_ids` là liên kết nguồn của record và không đổi khi recheck.
+
 ## Điểm cắm cố định
 - Dũng: `rules.engine.evaluate(request: CheckRequest) -> RuleEvaluation`; tự nạp `rules/catalog.json` và `rules/clauses.json`.
 - Tuấn Anh: `detect.service.suggest(request: CheckRequest, evaluation: RuleEvaluation) -> DetectionResult`; `detect.validator.validate_findings(findings, request, rules, clauses) -> ValidationResult`.
@@ -46,7 +48,7 @@ File rule/catalog và clauses là JSON array của Rule/ClauseVersion. Snapshot 
 ## Quy tắc nghiệp vụ cần hiện thực
 POST check lưu CheckResult + snapshot bất biến. Mỗi target quảng cáo chạy subset rule theo profile, ngày, nguồn. N = số rule ID duy nhất thực chạy; skipped có ID và giải thích qua applicability, không được no_issue_found. LLM findings status suggestion/needs_evidence.
 POST changes append version; tìm mọi check từng phụ thuộc dossier cũ, kể cả check không findings. Xét reference_ids và product fallback; queue unique (event_id, previous_check_id, target_version_id), không đưa sản phẩm khác vào. Event không sửa snapshot cũ.
-POST rechecks dùng snapshot cũ, thay dossier bằng v2, cập nhật reference_ids liên quan trong snapshot mới; tạo check mới có parent_check_id. History giữ cả hai. Recheck cùng item đã completed trả check cũ.
+POST rechecks dùng snapshot cũ, append dossier v2, đổi context_version_ids từ v1 sang v2, giữ nguyên text/reference_ids của mọi RecordVersion cũ; tạo check mới có parent_check_id. History giữ cả hai. Recheck cùng item đã completed trả check cũ.
 POST decisions confirm/assign không đóng task; reject cần note và task dismissed. close cần closure_check_id có parent đúng, target đúng và không còn finding liên quan/chưa rõ; trường hợp vẫn thiếu chứng cứ trả409. P0 reviewer là vai trò demo công khai, không giả là phân quyền thật.
 
 ## Toàn bộ model (khớp từng chữ với source)
@@ -213,6 +215,7 @@ class CheckRequest(Contract):
     records: tuple[Record, ...] = Field(min_length=1, max_length=50)
     versions: tuple[RecordVersion, ...] = Field(min_length=1, max_length=100)
     target_version_ids: tuple[Id, ...] = Field(min_length=1, max_length=50)
+    context_version_ids: tuple[Id, ...] = ()
     review_date: date
     llm_mode: Literal["off", "cache", "live"] = "off"
 
@@ -230,6 +233,15 @@ class CheckRequest(Contract):
             raise ValueError("version references unknown record")
         if any(v not in versions for v in self.target_version_ids):
             raise ValueError("unknown target version")
+        if len(set(self.context_version_ids)) != len(self.context_version_ids):
+            raise ValueError("duplicate context version")
+        if any(v not in versions for v in self.context_version_ids):
+            raise ValueError("unknown context version")
+        if set(self.context_version_ids) & set(self.target_version_ids):
+            raise ValueError("context and targets must be distinct")
+        selected_records = tuple(versions[v].record_id for v in self.context_version_ids)
+        if len(set(selected_records)) != len(selected_records):
+            raise ValueError("choose one authoritative version per context record")
         if any(ref not in versions for v in self.versions for ref in v.reference_ids):
             raise ValueError("unknown reference version; represent absent evidence explicitly")
         return self
@@ -523,6 +535,10 @@ GET /api/demo = data/fixtures/demo.json (đầy đủ, kiểm bằng test); POST
     "RV-02-v1",
     "RV-03-v1"
   ],
+  "context_version_ids": [
+    "RV-01-v1",
+    "RV-04-v1"
+  ],
   "review_date": "2026-10-31",
   "llm_mode": "off"
 }
@@ -665,6 +681,10 @@ Response /api/check (preview):
     "target_version_ids": [
       "RV-02-v1",
       "RV-03-v1"
+    ],
+    "context_version_ids": [
+      "RV-01-v1",
+      "RV-04-v1"
     ],
     "review_date": "2026-10-31",
     "llm_mode": "off"

@@ -107,6 +107,7 @@ def build():
             "records": records,
             "versions": versions,
             "target_version_ids": ["RV-02-v1", "RV-03-v1"],
+            "context_version_ids": ["RV-01-v1", "RV-04-v1"],
             "review_date": "2026-10-31",
         }
     ).model_dump(mode="json")
@@ -193,6 +194,7 @@ def build():
         elif name == "missing-confirmation":
             case["versions"][1]["reference_ids"] = ["RV-01-v1"]
             case["versions"][2]["reference_ids"] = ["RV-01-v1"]
+            case["context_version_ids"] = ["RV-01-v1"]
             case["records"] = [r for r in case["records"] if r["id"] != "REC-04"]
             case["versions"] = [v for v in case["versions"] if v["record_id"] != "REC-04"]
         elif name == "endorsement":

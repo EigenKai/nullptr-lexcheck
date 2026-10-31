@@ -160,6 +160,7 @@ class CheckRequest(Contract):
     records: tuple[Record, ...] = Field(min_length=1, max_length=50)
     versions: tuple[RecordVersion, ...] = Field(min_length=1, max_length=100)
     target_version_ids: tuple[Id, ...] = Field(min_length=1, max_length=50)
+    context_version_ids: tuple[Id, ...] = ()
     review_date: date
     llm_mode: Literal["off", "cache", "live"] = "off"
 
@@ -177,6 +178,15 @@ class CheckRequest(Contract):
             raise ValueError("version references unknown record")
         if any(v not in versions for v in self.target_version_ids):
             raise ValueError("unknown target version")
+        if len(set(self.context_version_ids)) != len(self.context_version_ids):
+            raise ValueError("duplicate context version")
+        if any(v not in versions for v in self.context_version_ids):
+            raise ValueError("unknown context version")
+        if set(self.context_version_ids) & set(self.target_version_ids):
+            raise ValueError("context and targets must be distinct")
+        selected_records = tuple(versions[v].record_id for v in self.context_version_ids)
+        if len(set(selected_records)) != len(selected_records):
+            raise ValueError("choose one authoritative version per context record")
         if any(ref not in versions for v in self.versions for ref in v.reference_ids):
             raise ValueError("unknown reference version; represent absent evidence explicitly")
         return self
