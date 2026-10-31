@@ -18,6 +18,7 @@
             "confirm",
             "reject",
             "assign",
+            "acknowledge",
             "close"
           ],
           "title": "Action",
@@ -63,6 +64,78 @@
           ],
           "default": null,
           "title": "Closure Check Id"
+        },
+        "internal_due_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Internal Due On"
+        },
+        "legal_due_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legal Due On"
+        },
+        "legal_clause_version_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legal Clause Version Id"
+        },
+        "legal_deadline_quote": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legal Deadline Quote"
+        },
+        "closure_conditions": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Closure Conditions"
+        },
+        "closure_conditions_met": {
+          "default": false,
+          "title": "Closure Conditions Met",
+          "type": "boolean"
         }
       },
       "required": [

@@ -2276,6 +2276,7 @@
               "confirm",
               "reject",
               "assign",
+              "acknowledge",
               "close"
             ],
             "title": "Action"
@@ -2318,6 +2319,73 @@
               }
             ],
             "title": "Closure Check Id"
+          },
+          "internal_due_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Due On"
+          },
+          "legal_due_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Due On"
+          },
+          "legal_clause_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Clause Version Id"
+          },
+          "legal_deadline_quote": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Deadline Quote"
+          },
+          "closure_conditions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closure Conditions"
+          },
+          "closure_conditions_met": {
+            "type": "boolean",
+            "title": "Closure Conditions Met",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -2642,6 +2710,16 @@
           "layer3": {
             "type": "boolean",
             "title": "Layer3",
+            "default": false
+          },
+          "remediation": {
+            "type": "boolean",
+            "title": "Remediation",
+            "default": false
+          },
+          "task_dashboard": {
+            "type": "boolean",
+            "title": "Task Dashboard",
             "default": false
           }
         },
