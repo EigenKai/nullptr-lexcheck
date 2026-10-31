@@ -1,0 +1,72 @@
+[
+  {
+    "id": "R-01",
+    "version": 1,
+    "clause_version_id": "CV-01-v1",
+    "title": "warning",
+    "check_type": "warning",
+    "method": "deterministic",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  },
+  {
+    "id": "R-02",
+    "version": 1,
+    "clause_version_id": "CV-02-v1",
+    "title": "uses",
+    "check_type": "uses",
+    "method": "deterministic",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  },
+  {
+    "id": "R-03",
+    "version": 1,
+    "clause_version_id": "CV-03-v1",
+    "title": "confirmation",
+    "check_type": "confirmation",
+    "method": "deterministic",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  },
+  {
+    "id": "R-04",
+    "version": 1,
+    "clause_version_id": "CV-04-v1",
+    "title": "endorsement",
+    "check_type": "endorsement",
+    "method": "deterministic",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  },
+  {
+    "id": "R-05",
+    "version": 1,
+    "clause_version_id": "CV-05-v1",
+    "title": "medicinal",
+    "check_type": "medicinal",
+    "method": "llm",
+    "severity": "medium",
+    "verification_status": "to_be_verified",
+    "enabled": false,
+    "patterns": [],
+    "positive_examples": [],
+    "negative_examples": []
+  }
+]

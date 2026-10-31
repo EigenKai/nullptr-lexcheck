@@ -1,0 +1,242 @@
+{
+  "$defs": {
+    "CompanyProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "company_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Company Id",
+          "type": "string"
+        },
+        "product_group": {
+          "enum": [
+            "tpbvsk",
+            "other",
+            "unknown"
+          ],
+          "title": "Product Group",
+          "type": "string"
+        },
+        "activity": {
+          "enum": [
+            "advertising",
+            "label_only",
+            "unknown"
+          ],
+          "title": "Activity",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "domestic_distributor",
+            "producer",
+            "importer",
+            "unknown"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "confirmed": {
+          "title": "Confirmed",
+          "type": "boolean"
+        },
+        "synthetic": {
+          "const": true,
+          "default": true,
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company_id",
+        "product_group",
+        "activity",
+        "role",
+        "confirmed"
+      ],
+      "title": "CompanyProfile",
+      "type": "object"
+    },
+    "Record": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "company_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Company Id",
+          "type": "string"
+        },
+        "product_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Product Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "dossier",
+            "marketing",
+            "customer_script",
+            "evidence_index",
+            "scientific_evidence"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "synthetic": {
+          "const": true,
+          "default": true,
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "company_id",
+        "product_id",
+        "kind",
+        "title"
+      ],
+      "title": "Record",
+      "type": "object"
+    },
+    "RecordVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "record_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "text": {
+          "maxLength": 20000,
+          "title": "Text",
+          "type": "string"
+        },
+        "uses": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Uses",
+          "type": "array"
+        },
+        "reference_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Reference Ids",
+          "type": "array"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "version",
+        "text",
+        "received_at"
+      ],
+      "title": "RecordVersion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "profile": {
+      "$ref": "#/$defs/CompanyProfile"
+    },
+    "records": {
+      "items": {
+        "$ref": "#/$defs/Record"
+      },
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Records",
+      "type": "array"
+    },
+    "versions": {
+      "items": {
+        "$ref": "#/$defs/RecordVersion"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Versions",
+      "type": "array"
+    },
+    "target_version_ids": {
+      "items": {
+        "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+        "type": "string"
+      },
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Target Version Ids",
+      "type": "array"
+    },
+    "review_date": {
+      "format": "date",
+      "title": "Review Date",
+      "type": "string"
+    },
+    "llm_mode": {
+      "default": "off",
+      "enum": [
+        "off",
+        "cache",
+        "live"
+      ],
+      "title": "Llm Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "profile",
+    "records",
+    "versions",
+    "target_version_ids",
+    "review_date"
+  ],
+  "title": "CheckRequest",
+  "type": "object"
+}

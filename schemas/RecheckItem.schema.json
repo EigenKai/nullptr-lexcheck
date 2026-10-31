@@ -1,0 +1,64 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "event_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "previous_check_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Previous Check Id",
+      "type": "string"
+    },
+    "target_version_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Target Version Id",
+      "type": "string"
+    },
+    "reason": {
+      "enum": [
+        "direct_dependency",
+        "product_fallback"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "completed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "new_check_id": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "New Check Id"
+    }
+  },
+  "required": [
+    "id",
+    "event_id",
+    "previous_check_id",
+    "target_version_id",
+    "reason",
+    "status"
+  ],
+  "title": "RecheckItem",
+  "type": "object"
+}

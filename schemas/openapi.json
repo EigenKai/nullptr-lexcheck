@@ -1,0 +1,1552 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LexCheck",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/demo": {
+      "get": {
+        "summary": "Demo",
+        "operationId": "demo_api_demo_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoBundle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/check": {
+      "post": {
+        "summary": "Check",
+        "operationId": "check_api_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/changes": {
+      "post": {
+        "summary": "Change",
+        "operationId": "change_api_changes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeEvent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rechecks": {
+      "post": {
+        "summary": "Recheck",
+        "operationId": "recheck_api_rechecks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/decisions": {
+      "post": {
+        "summary": "Decide",
+        "operationId": "decide_api_decisions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Decision"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_history_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "not_found",
+              "conflict",
+              "invalid_request",
+              "not_ready"
+            ],
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ApiError"
+      },
+      "ChangeEvent": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "record_changed",
+            "title": "Kind",
+            "default": "record_changed"
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Record Id"
+          },
+          "previous_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Previous Version Id"
+          },
+          "new_version": {
+            "$ref": "#/components/schemas/RecordVersion"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "record_id",
+          "previous_version_id",
+          "new_version",
+          "received_at"
+        ],
+        "title": "ChangeEvent"
+      },
+      "ChangeResponse": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/ChangeEvent"
+          },
+          "queue": {
+            "items": {
+              "$ref": "#/components/schemas/RecheckItem"
+            },
+            "type": "array",
+            "title": "Queue"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event",
+          "queue",
+          "mode"
+        ],
+        "title": "ChangeResponse"
+      },
+      "CheckRequest": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/CompanyProfile"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Records"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/RecordVersion"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Versions"
+          },
+          "target_version_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Target Version Ids"
+          },
+          "review_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Review Date"
+          },
+          "llm_mode": {
+            "type": "string",
+            "enum": [
+              "off",
+              "cache",
+              "live"
+            ],
+            "title": "Llm Mode",
+            "default": "off"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile",
+          "records",
+          "versions",
+          "target_version_ids",
+          "review_date"
+        ],
+        "title": "CheckRequest"
+      },
+      "CheckResult": {
+        "properties": {
+          "rule_snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            },
+            "type": "array",
+            "title": "Rule Snapshots",
+            "default": []
+          },
+          "clause_snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/ClauseVersion"
+            },
+            "type": "array",
+            "title": "Clause Snapshots",
+            "default": []
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "needs_review",
+              "not_enough_information",
+              "no_issue_found"
+            ],
+            "title": "Status"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "rules_checked": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+            },
+            "type": "array",
+            "title": "Rules Checked"
+          },
+          "skipped_rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+            },
+            "type": "array",
+            "title": "Skipped Rule Ids"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            },
+            "type": "array",
+            "title": "Findings"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/CheckRequest"
+          },
+          "model_status": {
+            "type": "string",
+            "enum": [
+              "off",
+              "cached",
+              "live",
+              "unavailable"
+            ],
+            "title": "Model Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "parent_check_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Check Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "mode",
+          "status",
+          "summary",
+          "rules_checked",
+          "skipped_rule_ids",
+          "findings",
+          "snapshot",
+          "model_status",
+          "created_at"
+        ],
+        "title": "CheckResult"
+      },
+      "ClauseVersion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "clause_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Clause Id"
+          },
+          "document": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Document"
+          },
+          "article": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Article"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "source_url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Source Url"
+          },
+          "source_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Sha256"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "to_be_verified",
+              "verified"
+            ],
+            "title": "Verification Status",
+            "default": "to_be_verified"
+          },
+          "in_force": {
+            "type": "string",
+            "enum": [
+              "in_force",
+              "suspended",
+              "superseded",
+              "unknown"
+            ],
+            "title": "In Force",
+            "default": "unknown"
+          },
+          "verified_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified By"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified At"
+          },
+          "status_note": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Status Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "clause_id",
+          "document",
+          "article",
+          "text",
+          "source_url",
+          "retrieved_at",
+          "valid_from",
+          "status_note"
+        ],
+        "title": "ClauseVersion"
+      },
+      "CompanyProfile": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Company Id"
+          },
+          "product_group": {
+            "type": "string",
+            "enum": [
+              "tpbvsk",
+              "other",
+              "unknown"
+            ],
+            "title": "Product Group"
+          },
+          "activity": {
+            "type": "string",
+            "enum": [
+              "advertising",
+              "label_only",
+              "unknown"
+            ],
+            "title": "Activity"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "domestic_distributor",
+              "producer",
+              "importer",
+              "unknown"
+            ],
+            "title": "Role"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "const": true,
+            "title": "Synthetic",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "company_id",
+          "product_group",
+          "activity",
+          "role",
+          "confirmed"
+        ],
+        "title": "CompanyProfile"
+      },
+      "Decision": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "request": {
+            "$ref": "#/components/schemas/DecisionRequest"
+          },
+          "task_status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "assigned",
+              "dismissed",
+              "closed"
+            ],
+            "title": "Task Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "request",
+          "task_status",
+          "created_at"
+        ],
+        "title": "Decision"
+      },
+      "DecisionRequest": {
+        "properties": {
+          "check_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Check Id"
+          },
+          "finding_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Finding Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "confirm",
+              "reject",
+              "assign",
+              "close"
+            ],
+            "title": "Action"
+          },
+          "actor": {
+            "type": "string",
+            "const": "reviewer",
+            "title": "Actor"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "marketing",
+                  "legal",
+                  "document_control"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Note"
+          },
+          "closure_check_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closure Check Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "check_id",
+          "finding_id",
+          "action",
+          "actor",
+          "note"
+        ],
+        "title": "DecisionRequest"
+      },
+      "DemoBundle": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "const": "synthetic/staged",
+            "title": "Label",
+            "default": "synthetic/staged"
+          },
+          "request": {
+            "$ref": "#/components/schemas/CheckRequest"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/CheckResult"
+          },
+          "event": {
+            "$ref": "#/components/schemas/ChangeEvent"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "clauses": {
+            "items": {
+              "$ref": "#/components/schemas/ClauseVersion"
+            },
+            "type": "array",
+            "title": "Clauses"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request",
+          "preview",
+          "event",
+          "rules",
+          "clauses"
+        ],
+        "title": "DemoBundle"
+      },
+      "Evidence": {
+        "properties": {
+          "record_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Record Version Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "span",
+              "missing_field",
+              "cell",
+              "page"
+            ],
+            "title": "Kind"
+          },
+          "quote": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "sheet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sheet"
+          },
+          "cell": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cell"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "record_version_id",
+          "kind"
+        ],
+        "title": "Evidence"
+      },
+      "Finding": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Rule Id"
+          },
+          "rule_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Rule Version"
+          },
+          "clause_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Clause Version Id"
+          },
+          "record_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Record Version Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "needs_review",
+              "needs_evidence",
+              "suggestion"
+            ],
+            "title": "Status"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "rule",
+              "llm"
+            ],
+            "title": "Source"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Severity"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "clause_quote": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Clause Quote"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "rule_id",
+          "rule_version",
+          "clause_version_id",
+          "record_version_id",
+          "status",
+          "source",
+          "severity",
+          "message",
+          "clause_quote",
+          "evidence"
+        ],
+        "title": "Finding"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "title": "HealthResponse"
+      },
+      "HistoryResponse": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/CheckResult"
+            },
+            "type": "array",
+            "title": "Checks"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/Decision"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ChangeEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "queue": {
+            "items": {
+              "$ref": "#/components/schemas/RecheckItem"
+            },
+            "type": "array",
+            "title": "Queue"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "checks",
+          "decisions",
+          "events",
+          "queue",
+          "mode"
+        ],
+        "title": "HistoryResponse"
+      },
+      "RecheckItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "event_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Event Id"
+          },
+          "previous_check_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Previous Check Id"
+          },
+          "target_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Target Version Id"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "direct_dependency",
+              "product_fallback"
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "completed"
+            ],
+            "title": "Status"
+          },
+          "new_check_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Check Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "event_id",
+          "previous_check_id",
+          "target_version_id",
+          "reason",
+          "status"
+        ],
+        "title": "RecheckItem"
+      },
+      "RecheckRequest": {
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Item Id"
+          },
+          "llm_mode": {
+            "type": "string",
+            "enum": [
+              "off",
+              "cache",
+              "live"
+            ],
+            "title": "Llm Mode",
+            "default": "off"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "item_id"
+        ],
+        "title": "RecheckRequest"
+      },
+      "Record": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Company Id"
+          },
+          "product_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Product Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "dossier",
+              "marketing",
+              "customer_script",
+              "evidence_index",
+              "scientific_evidence"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "const": true,
+            "title": "Synthetic",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "product_id",
+          "kind",
+          "title"
+        ],
+        "title": "Record"
+      },
+      "RecordVersion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Record Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Text"
+          },
+          "uses": {
+            "items": {
+              "type": "string",
+              "maxLength": 20000,
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Uses",
+            "default": []
+          },
+          "reference_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+            },
+            "type": "array",
+            "title": "Reference Ids",
+            "default": []
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "record_id",
+          "version",
+          "text",
+          "received_at"
+        ],
+        "title": "RecordVersion"
+      },
+      "Rule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "clause_version_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "title": "Clause Version Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "check_type": {
+            "type": "string",
+            "enum": [
+              "warning",
+              "uses",
+              "confirmation",
+              "endorsement",
+              "medicinal"
+            ],
+            "title": "Check Type"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "deterministic",
+              "llm"
+            ],
+            "title": "Method",
+            "default": "deterministic"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Severity",
+            "default": "medium"
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "to_be_verified",
+              "verified"
+            ],
+            "title": "Verification Status",
+            "default": "to_be_verified"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          },
+          "patterns": {
+            "items": {
+              "type": "string",
+              "maxLength": 20000,
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Patterns",
+            "default": []
+          },
+          "positive_examples": {
+            "items": {
+              "type": "string",
+              "maxLength": 20000,
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Positive Examples",
+            "default": []
+          },
+          "negative_examples": {
+            "items": {
+              "type": "string",
+              "maxLength": 20000,
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Negative Examples",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "clause_version_id",
+          "title",
+          "check_type"
+        ],
+        "title": "Rule"
+      }
+    }
+  }
+}

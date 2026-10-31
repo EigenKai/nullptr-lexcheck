@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "DecisionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Check Id",
+          "type": "string"
+        },
+        "finding_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "confirm",
+            "reject",
+            "assign",
+            "close"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "actor": {
+          "const": "reviewer",
+          "title": "Actor",
+          "type": "string"
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "enum": [
+                "marketing",
+                "legal",
+                "document_control"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Owner"
+        },
+        "note": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Note",
+          "type": "string"
+        },
+        "closure_check_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Closure Check Id"
+        }
+      },
+      "required": [
+        "check_id",
+        "finding_id",
+        "action",
+        "actor",
+        "note"
+      ],
+      "title": "DecisionRequest",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "request": {
+      "$ref": "#/$defs/DecisionRequest"
+    },
+    "task_status": {
+      "enum": [
+        "open",
+        "assigned",
+        "dismissed",
+        "closed"
+      ],
+      "title": "Task Status",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "request",
+    "task_status",
+    "created_at"
+  ],
+  "title": "Decision",
+  "type": "object"
+}

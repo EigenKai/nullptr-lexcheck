@@ -1,0 +1,210 @@
+{
+  "$defs": {
+    "ChangeEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "record_changed",
+          "default": "record_changed",
+          "title": "Kind",
+          "type": "string"
+        },
+        "record_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "previous_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Previous Version Id",
+          "type": "string"
+        },
+        "new_version": {
+          "$ref": "#/$defs/RecordVersion"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "previous_version_id",
+        "new_version",
+        "received_at"
+      ],
+      "title": "ChangeEvent",
+      "type": "object"
+    },
+    "RecheckItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "previous_check_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Previous Check Id",
+          "type": "string"
+        },
+        "target_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Target Version Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "direct_dependency",
+            "product_fallback"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "completed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "new_check_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "New Check Id"
+        }
+      },
+      "required": [
+        "id",
+        "event_id",
+        "previous_check_id",
+        "target_version_id",
+        "reason",
+        "status"
+      ],
+      "title": "RecheckItem",
+      "type": "object"
+    },
+    "RecordVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "record_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "text": {
+          "maxLength": 20000,
+          "title": "Text",
+          "type": "string"
+        },
+        "uses": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Uses",
+          "type": "array"
+        },
+        "reference_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Reference Ids",
+          "type": "array"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "version",
+        "text",
+        "received_at"
+      ],
+      "title": "RecordVersion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event": {
+      "$ref": "#/$defs/ChangeEvent"
+    },
+    "queue": {
+      "items": {
+        "$ref": "#/$defs/RecheckItem"
+      },
+      "title": "Queue",
+      "type": "array"
+    },
+    "mode": {
+      "enum": [
+        "fixture",
+        "live"
+      ],
+      "title": "Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event",
+    "queue",
+    "mode"
+  ],
+  "title": "ChangeResponse",
+  "type": "object"
+}

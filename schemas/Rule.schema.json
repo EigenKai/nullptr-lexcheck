@@ -1,0 +1,109 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "clause_version_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Clause Version Id",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "check_type": {
+      "enum": [
+        "warning",
+        "uses",
+        "confirmation",
+        "endorsement",
+        "medicinal"
+      ],
+      "title": "Check Type",
+      "type": "string"
+    },
+    "method": {
+      "default": "deterministic",
+      "enum": [
+        "deterministic",
+        "llm"
+      ],
+      "title": "Method",
+      "type": "string"
+    },
+    "severity": {
+      "default": "medium",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "verification_status": {
+      "default": "to_be_verified",
+      "enum": [
+        "to_be_verified",
+        "verified"
+      ],
+      "title": "Verification Status",
+      "type": "string"
+    },
+    "enabled": {
+      "default": false,
+      "title": "Enabled",
+      "type": "boolean"
+    },
+    "patterns": {
+      "default": [],
+      "items": {
+        "maxLength": 20000,
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Patterns",
+      "type": "array"
+    },
+    "positive_examples": {
+      "default": [],
+      "items": {
+        "maxLength": 20000,
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Positive Examples",
+      "type": "array"
+    },
+    "negative_examples": {
+      "default": [],
+      "items": {
+        "maxLength": 20000,
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Negative Examples",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "clause_version_id",
+    "title",
+    "check_type"
+  ],
+  "title": "Rule",
+  "type": "object"
+}

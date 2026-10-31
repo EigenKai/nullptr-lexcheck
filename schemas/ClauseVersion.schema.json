@@ -1,0 +1,140 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "clause_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Clause Id",
+      "type": "string"
+    },
+    "document": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Document",
+      "type": "string"
+    },
+    "article": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Article",
+      "type": "string"
+    },
+    "text": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    },
+    "source_url": {
+      "format": "uri",
+      "maxLength": 2083,
+      "minLength": 1,
+      "title": "Source Url",
+      "type": "string"
+    },
+    "source_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Sha256"
+    },
+    "retrieved_at": {
+      "format": "date-time",
+      "title": "Retrieved At",
+      "type": "string"
+    },
+    "valid_from": {
+      "format": "date",
+      "title": "Valid From",
+      "type": "string"
+    },
+    "valid_to": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Valid To"
+    },
+    "verification_status": {
+      "default": "to_be_verified",
+      "enum": [
+        "to_be_verified",
+        "verified"
+      ],
+      "title": "Verification Status",
+      "type": "string"
+    },
+    "in_force": {
+      "default": "unknown",
+      "enum": [
+        "in_force",
+        "suspended",
+        "superseded",
+        "unknown"
+      ],
+      "title": "In Force",
+      "type": "string"
+    },
+    "verified_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Verified By"
+    },
+    "verified_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Verified At"
+    },
+    "status_note": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Status Note",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "clause_id",
+    "document",
+    "article",
+    "text",
+    "source_url",
+    "retrieved_at",
+    "valid_from",
+    "status_note"
+  ],
+  "title": "ClauseVersion",
+  "type": "object"
+}

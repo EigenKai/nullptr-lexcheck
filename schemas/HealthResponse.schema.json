@@ -1,0 +1,24 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "const": "ok",
+      "default": "ok",
+      "title": "Status",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "fixture",
+        "live"
+      ],
+      "title": "Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "mode"
+  ],
+  "title": "HealthResponse",
+  "type": "object"
+}

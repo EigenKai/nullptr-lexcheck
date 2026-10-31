@@ -1,0 +1,449 @@
+{
+  "label": "synthetic/staged",
+  "request": {
+    "profile": {
+      "company_id": "CO-DEMO",
+      "product_group": "tpbvsk",
+      "activity": "advertising",
+      "role": "domestic_distributor",
+      "confirmed": true,
+      "synthetic": true
+    },
+    "records": [
+      {
+        "id": "REC-01",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "dossier",
+        "title": "Synthetic dossier",
+        "synthetic": true
+      },
+      {
+        "id": "REC-02",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "marketing",
+        "title": "Synthetic marketing",
+        "synthetic": true
+      },
+      {
+        "id": "REC-03",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "marketing",
+        "title": "Synthetic marketing control",
+        "synthetic": true
+      },
+      {
+        "id": "REC-04",
+        "company_id": "CO-DEMO",
+        "product_id": "P-01",
+        "kind": "evidence_index",
+        "title": "Synthetic confirmation index; no official certificate",
+        "synthetic": true
+      },
+      {
+        "id": "REC-05",
+        "company_id": "CO-DEMO",
+        "product_id": "P-02",
+        "kind": "marketing",
+        "title": "Unrelated product control",
+        "synthetic": true
+      }
+    ],
+    "versions": [
+      {
+        "id": "RV-01-v1",
+        "record_id": "REC-01",
+        "version": 1,
+        "text": "Hỗ trợ tiêu hóa.\nHỗ trợ giảm cholesterol.",
+        "uses": [
+          "Hỗ trợ tiêu hóa.",
+          "Hỗ trợ giảm cholesterol."
+        ],
+        "reference_ids": [],
+        "received_at": "2026-10-31T05:00:00Z",
+        "supersedes": null
+      },
+      {
+        "id": "RV-02-v1",
+        "record_id": "REC-02",
+        "version": 1,
+        "text": "Hỗ trợ tiêu hóa.\nHỗ trợ giảm cholesterol.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+        "uses": [
+          "Hỗ trợ tiêu hóa.",
+          "Hỗ trợ giảm cholesterol."
+        ],
+        "reference_ids": [
+          "RV-01-v1",
+          "RV-04-v1"
+        ],
+        "received_at": "2026-10-31T05:00:00Z",
+        "supersedes": null
+      },
+      {
+        "id": "RV-03-v1",
+        "record_id": "REC-03",
+        "version": 1,
+        "text": "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+        "uses": [
+          "Hỗ trợ tiêu hóa."
+        ],
+        "reference_ids": [
+          "RV-01-v1",
+          "RV-04-v1"
+        ],
+        "received_at": "2026-10-31T05:00:00Z",
+        "supersedes": null
+      },
+      {
+        "id": "RV-04-v1",
+        "record_id": "REC-04",
+        "version": 1,
+        "text": "Synthetic index links marketing RV-02-v1. No official receipt or certificate is reproduced.",
+        "uses": [],
+        "reference_ids": [],
+        "received_at": "2026-10-31T05:00:00Z",
+        "supersedes": null
+      },
+      {
+        "id": "RV-05-v1",
+        "record_id": "REC-05",
+        "version": 1,
+        "text": "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+        "uses": [],
+        "reference_ids": [],
+        "received_at": "2026-10-31T05:00:00Z",
+        "supersedes": null
+      }
+    ],
+    "target_version_ids": [
+      "RV-02-v1",
+      "RV-03-v1"
+    ],
+    "review_date": "2026-10-31",
+    "llm_mode": "off"
+  },
+  "preview": {
+    "rule_snapshots": [],
+    "clause_snapshots": [],
+    "id": "CHK-preview",
+    "mode": "fixture",
+    "status": "not_enough_information",
+    "summary": "Synthetic fixture preview; legal rules await source verification.",
+    "rules_checked": [],
+    "skipped_rule_ids": [
+      "R-01",
+      "R-02",
+      "R-03",
+      "R-04",
+      "R-05"
+    ],
+    "findings": [],
+    "snapshot": {
+      "profile": {
+        "company_id": "CO-DEMO",
+        "product_group": "tpbvsk",
+        "activity": "advertising",
+        "role": "domestic_distributor",
+        "confirmed": true,
+        "synthetic": true
+      },
+      "records": [
+        {
+          "id": "REC-01",
+          "company_id": "CO-DEMO",
+          "product_id": "P-01",
+          "kind": "dossier",
+          "title": "Synthetic dossier",
+          "synthetic": true
+        },
+        {
+          "id": "REC-02",
+          "company_id": "CO-DEMO",
+          "product_id": "P-01",
+          "kind": "marketing",
+          "title": "Synthetic marketing",
+          "synthetic": true
+        },
+        {
+          "id": "REC-03",
+          "company_id": "CO-DEMO",
+          "product_id": "P-01",
+          "kind": "marketing",
+          "title": "Synthetic marketing control",
+          "synthetic": true
+        },
+        {
+          "id": "REC-04",
+          "company_id": "CO-DEMO",
+          "product_id": "P-01",
+          "kind": "evidence_index",
+          "title": "Synthetic confirmation index; no official certificate",
+          "synthetic": true
+        },
+        {
+          "id": "REC-05",
+          "company_id": "CO-DEMO",
+          "product_id": "P-02",
+          "kind": "marketing",
+          "title": "Unrelated product control",
+          "synthetic": true
+        }
+      ],
+      "versions": [
+        {
+          "id": "RV-01-v1",
+          "record_id": "REC-01",
+          "version": 1,
+          "text": "Hỗ trợ tiêu hóa.\nHỗ trợ giảm cholesterol.",
+          "uses": [
+            "Hỗ trợ tiêu hóa.",
+            "Hỗ trợ giảm cholesterol."
+          ],
+          "reference_ids": [],
+          "received_at": "2026-10-31T05:00:00Z",
+          "supersedes": null
+        },
+        {
+          "id": "RV-02-v1",
+          "record_id": "REC-02",
+          "version": 1,
+          "text": "Hỗ trợ tiêu hóa.\nHỗ trợ giảm cholesterol.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+          "uses": [
+            "Hỗ trợ tiêu hóa.",
+            "Hỗ trợ giảm cholesterol."
+          ],
+          "reference_ids": [
+            "RV-01-v1",
+            "RV-04-v1"
+          ],
+          "received_at": "2026-10-31T05:00:00Z",
+          "supersedes": null
+        },
+        {
+          "id": "RV-03-v1",
+          "record_id": "REC-03",
+          "version": 1,
+          "text": "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+          "uses": [
+            "Hỗ trợ tiêu hóa."
+          ],
+          "reference_ids": [
+            "RV-01-v1",
+            "RV-04-v1"
+          ],
+          "received_at": "2026-10-31T05:00:00Z",
+          "supersedes": null
+        },
+        {
+          "id": "RV-04-v1",
+          "record_id": "REC-04",
+          "version": 1,
+          "text": "Synthetic index links marketing RV-02-v1. No official receipt or certificate is reproduced.",
+          "uses": [],
+          "reference_ids": [],
+          "received_at": "2026-10-31T05:00:00Z",
+          "supersedes": null
+        },
+        {
+          "id": "RV-05-v1",
+          "record_id": "REC-05",
+          "version": 1,
+          "text": "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+          "uses": [],
+          "reference_ids": [],
+          "received_at": "2026-10-31T05:00:00Z",
+          "supersedes": null
+        }
+      ],
+      "target_version_ids": [
+        "RV-02-v1",
+        "RV-03-v1"
+      ],
+      "review_date": "2026-10-31",
+      "llm_mode": "off"
+    },
+    "model_status": "off",
+    "created_at": "2026-10-31T05:00:00Z",
+    "parent_check_id": null
+  },
+  "event": {
+    "id": "EV-01",
+    "kind": "record_changed",
+    "record_id": "REC-01",
+    "previous_version_id": "RV-01-v1",
+    "new_version": {
+      "id": "RV-01-v2",
+      "record_id": "REC-01",
+      "version": 2,
+      "text": "Hỗ trợ tiêu hóa.",
+      "uses": [
+        "Hỗ trợ tiêu hóa."
+      ],
+      "reference_ids": [],
+      "received_at": "2026-10-31T05:00:00Z",
+      "supersedes": "RV-01-v1"
+    },
+    "received_at": "2026-10-31T05:00:00Z"
+  },
+  "rules": [
+    {
+      "id": "R-01",
+      "version": 1,
+      "clause_version_id": "CV-01-v1",
+      "title": "warning",
+      "check_type": "warning",
+      "method": "deterministic",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    },
+    {
+      "id": "R-02",
+      "version": 1,
+      "clause_version_id": "CV-02-v1",
+      "title": "uses",
+      "check_type": "uses",
+      "method": "deterministic",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    },
+    {
+      "id": "R-03",
+      "version": 1,
+      "clause_version_id": "CV-03-v1",
+      "title": "confirmation",
+      "check_type": "confirmation",
+      "method": "deterministic",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    },
+    {
+      "id": "R-04",
+      "version": 1,
+      "clause_version_id": "CV-04-v1",
+      "title": "endorsement",
+      "check_type": "endorsement",
+      "method": "deterministic",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    },
+    {
+      "id": "R-05",
+      "version": 1,
+      "clause_version_id": "CV-05-v1",
+      "title": "medicinal",
+      "check_type": "medicinal",
+      "method": "llm",
+      "severity": "medium",
+      "verification_status": "to_be_verified",
+      "enabled": false,
+      "patterns": [],
+      "positive_examples": [],
+      "negative_examples": []
+    }
+  ],
+  "clauses": [
+    {
+      "id": "CV-01-v1",
+      "clause_id": "CL-01",
+      "document": "NĐ 15/2018/NĐ-CP",
+      "article": "27(3)(a)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: 27(3)(a)",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    },
+    {
+      "id": "CV-02-v1",
+      "clause_id": "CL-02",
+      "document": "NĐ 15/2018/NĐ-CP",
+      "article": "27(2), 27(4)(đ)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: 27(2), 27(4)(đ)",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    },
+    {
+      "id": "CV-03-v1",
+      "clause_id": "CL-03",
+      "document": "NĐ 15/2018/NĐ-CP",
+      "article": "26(1), 27(1), 27(6)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: 26(1), 27(1), 27(6)",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    },
+    {
+      "id": "CV-04-v1",
+      "clause_id": "CL-04",
+      "document": "NĐ 15/2018/NĐ-CP",
+      "article": "27(2)",
+      "text": "SOURCE TEXT PENDING VERIFICATION: 27(2)",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    },
+    {
+      "id": "CV-05-v1",
+      "clause_id": "CL-05",
+      "document": "Basis pending verification",
+      "article": "Exact provision pending verification",
+      "text": "SOURCE TEXT PENDING VERIFICATION: Exact provision pending verification",
+      "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+      "source_sha256": null,
+      "retrieved_at": "2026-10-31T05:00:00Z",
+      "valid_from": "2018-02-02",
+      "valid_to": null,
+      "verification_status": "to_be_verified",
+      "in_force": "unknown",
+      "verified_by": null,
+      "verified_at": null,
+      "status_note": "Source text and current applicability must be verified by rule owner before activation."
+    }
+  ]
+}

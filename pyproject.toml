@@ -1,0 +1,11 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests", "rules/tests", "detect/tests", "intake/tests", "eval/tests"]
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+[tool.coverage.run]
+source = ["contracts", "app", "intake", "rules", "detect"]
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

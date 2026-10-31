@@ -1,0 +1,1082 @@
+{
+  "$defs": {
+    "ChangeEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "record_changed",
+          "default": "record_changed",
+          "title": "Kind",
+          "type": "string"
+        },
+        "record_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "previous_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Previous Version Id",
+          "type": "string"
+        },
+        "new_version": {
+          "$ref": "#/$defs/RecordVersion"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "previous_version_id",
+        "new_version",
+        "received_at"
+      ],
+      "title": "ChangeEvent",
+      "type": "object"
+    },
+    "CheckRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "$ref": "#/$defs/CompanyProfile"
+        },
+        "records": {
+          "items": {
+            "$ref": "#/$defs/Record"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Records",
+          "type": "array"
+        },
+        "versions": {
+          "items": {
+            "$ref": "#/$defs/RecordVersion"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Versions",
+          "type": "array"
+        },
+        "target_version_ids": {
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Target Version Ids",
+          "type": "array"
+        },
+        "review_date": {
+          "format": "date",
+          "title": "Review Date",
+          "type": "string"
+        },
+        "llm_mode": {
+          "default": "off",
+          "enum": [
+            "off",
+            "cache",
+            "live"
+          ],
+          "title": "Llm Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile",
+        "records",
+        "versions",
+        "target_version_ids",
+        "review_date"
+      ],
+      "title": "CheckRequest",
+      "type": "object"
+    },
+    "CheckResult": {
+      "additionalProperties": false,
+      "properties": {
+        "rule_snapshots": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "title": "Rule Snapshots",
+          "type": "array"
+        },
+        "clause_snapshots": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ClauseVersion"
+          },
+          "title": "Clause Snapshots",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "fixture",
+            "live"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "needs_review",
+            "not_enough_information",
+            "no_issue_found"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "rules_checked": {
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Rules Checked",
+          "type": "array"
+        },
+        "skipped_rule_ids": {
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Skipped Rule Ids",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/CheckRequest"
+        },
+        "model_status": {
+          "enum": [
+            "off",
+            "cached",
+            "live",
+            "unavailable"
+          ],
+          "title": "Model Status",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "parent_check_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Check Id"
+        }
+      },
+      "required": [
+        "id",
+        "mode",
+        "status",
+        "summary",
+        "rules_checked",
+        "skipped_rule_ids",
+        "findings",
+        "snapshot",
+        "model_status",
+        "created_at"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    },
+    "ClauseVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "clause_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Id",
+          "type": "string"
+        },
+        "document": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Document",
+          "type": "string"
+        },
+        "article": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Article",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Sha256"
+        },
+        "retrieved_at": {
+          "format": "date-time",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "verification_status": {
+          "default": "to_be_verified",
+          "enum": [
+            "to_be_verified",
+            "verified"
+          ],
+          "title": "Verification Status",
+          "type": "string"
+        },
+        "in_force": {
+          "default": "unknown",
+          "enum": [
+            "in_force",
+            "suspended",
+            "superseded",
+            "unknown"
+          ],
+          "title": "In Force",
+          "type": "string"
+        },
+        "verified_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified By"
+        },
+        "verified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified At"
+        },
+        "status_note": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Status Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "clause_id",
+        "document",
+        "article",
+        "text",
+        "source_url",
+        "retrieved_at",
+        "valid_from",
+        "status_note"
+      ],
+      "title": "ClauseVersion",
+      "type": "object"
+    },
+    "CompanyProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "company_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Company Id",
+          "type": "string"
+        },
+        "product_group": {
+          "enum": [
+            "tpbvsk",
+            "other",
+            "unknown"
+          ],
+          "title": "Product Group",
+          "type": "string"
+        },
+        "activity": {
+          "enum": [
+            "advertising",
+            "label_only",
+            "unknown"
+          ],
+          "title": "Activity",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "domestic_distributor",
+            "producer",
+            "importer",
+            "unknown"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "confirmed": {
+          "title": "Confirmed",
+          "type": "boolean"
+        },
+        "synthetic": {
+          "const": true,
+          "default": true,
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company_id",
+        "product_group",
+        "activity",
+        "role",
+        "confirmed"
+      ],
+      "title": "CompanyProfile",
+      "type": "object"
+    },
+    "Decision": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/DecisionRequest"
+        },
+        "task_status": {
+          "enum": [
+            "open",
+            "assigned",
+            "dismissed",
+            "closed"
+          ],
+          "title": "Task Status",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "request",
+        "task_status",
+        "created_at"
+      ],
+      "title": "Decision",
+      "type": "object"
+    },
+    "DecisionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Check Id",
+          "type": "string"
+        },
+        "finding_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "confirm",
+            "reject",
+            "assign",
+            "close"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "actor": {
+          "const": "reviewer",
+          "title": "Actor",
+          "type": "string"
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "enum": [
+                "marketing",
+                "legal",
+                "document_control"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Owner"
+        },
+        "note": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Note",
+          "type": "string"
+        },
+        "closure_check_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Closure Check Id"
+        }
+      },
+      "required": [
+        "check_id",
+        "finding_id",
+        "action",
+        "actor",
+        "note"
+      ],
+      "title": "DecisionRequest",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "record_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "span",
+            "missing_field",
+            "cell",
+            "page"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "sheet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sheet"
+        },
+        "cell": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        }
+      },
+      "required": [
+        "record_version_id",
+        "kind"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "rule_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "minimum": 1,
+          "title": "Rule Version",
+          "type": "integer"
+        },
+        "clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Version Id",
+          "type": "string"
+        },
+        "record_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "needs_review",
+            "needs_evidence",
+            "suggestion"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "rule",
+            "llm"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "clause_quote": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Clause Quote",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "rule_id",
+        "rule_version",
+        "clause_version_id",
+        "record_version_id",
+        "status",
+        "source",
+        "severity",
+        "message",
+        "clause_quote",
+        "evidence"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "RecheckItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "previous_check_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Previous Check Id",
+          "type": "string"
+        },
+        "target_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Target Version Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "direct_dependency",
+            "product_fallback"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "completed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "new_check_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "New Check Id"
+        }
+      },
+      "required": [
+        "id",
+        "event_id",
+        "previous_check_id",
+        "target_version_id",
+        "reason",
+        "status"
+      ],
+      "title": "RecheckItem",
+      "type": "object"
+    },
+    "Record": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "company_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Company Id",
+          "type": "string"
+        },
+        "product_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Product Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "dossier",
+            "marketing",
+            "customer_script",
+            "evidence_index",
+            "scientific_evidence"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "synthetic": {
+          "const": true,
+          "default": true,
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "company_id",
+        "product_id",
+        "kind",
+        "title"
+      ],
+      "title": "Record",
+      "type": "object"
+    },
+    "RecordVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "record_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "text": {
+          "maxLength": 20000,
+          "title": "Text",
+          "type": "string"
+        },
+        "uses": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Uses",
+          "type": "array"
+        },
+        "reference_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+            "type": "string"
+          },
+          "title": "Reference Ids",
+          "type": "array"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes"
+        }
+      },
+      "required": [
+        "id",
+        "record_id",
+        "version",
+        "text",
+        "received_at"
+      ],
+      "title": "RecordVersion",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Version Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "check_type": {
+          "enum": [
+            "warning",
+            "uses",
+            "confirmation",
+            "endorsement",
+            "medicinal"
+          ],
+          "title": "Check Type",
+          "type": "string"
+        },
+        "method": {
+          "default": "deterministic",
+          "enum": [
+            "deterministic",
+            "llm"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "severity": {
+          "default": "medium",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "verification_status": {
+          "default": "to_be_verified",
+          "enum": [
+            "to_be_verified",
+            "verified"
+          ],
+          "title": "Verification Status",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "patterns": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Patterns",
+          "type": "array"
+        },
+        "positive_examples": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Positive Examples",
+          "type": "array"
+        },
+        "negative_examples": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Negative Examples",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "clause_version_id",
+        "title",
+        "check_type"
+      ],
+      "title": "Rule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/CheckResult"
+      },
+      "title": "Checks",
+      "type": "array"
+    },
+    "decisions": {
+      "items": {
+        "$ref": "#/$defs/Decision"
+      },
+      "title": "Decisions",
+      "type": "array"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/ChangeEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "queue": {
+      "items": {
+        "$ref": "#/$defs/RecheckItem"
+      },
+      "title": "Queue",
+      "type": "array"
+    },
+    "mode": {
+      "enum": [
+        "fixture",
+        "live"
+      ],
+      "title": "Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "checks",
+    "decisions",
+    "events",
+    "queue",
+    "mode"
+  ],
+  "title": "HistoryResponse",
+  "type": "object"
+}

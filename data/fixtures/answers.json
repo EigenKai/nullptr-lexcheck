@@ -1,0 +1,24 @@
+{
+  "label": "synthetic/staged; conditional on verified rules",
+  "cases": {
+    "clean": [],
+    "missing-warning": [
+      "R-01"
+    ],
+    "extra-use": [
+      "R-02"
+    ],
+    "missing-confirmation": [
+      "R-03"
+    ],
+    "endorsement": [
+      "R-04"
+    ],
+    "unknown-profile": []
+  },
+  "change_targets": [
+    "RV-02-v1",
+    "RV-03-v1"
+  ],
+  "unrelated_target": "RV-05-v1"
+}

@@ -1,0 +1,71 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "record_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Record Id",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "text": {
+      "maxLength": 20000,
+      "title": "Text",
+      "type": "string"
+    },
+    "uses": {
+      "default": [],
+      "items": {
+        "maxLength": 20000,
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Uses",
+      "type": "array"
+    },
+    "reference_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+        "type": "string"
+      },
+      "title": "Reference Ids",
+      "type": "array"
+    },
+    "received_at": {
+      "format": "date-time",
+      "title": "Received At",
+      "type": "string"
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersedes"
+    }
+  },
+  "required": [
+    "id",
+    "record_id",
+    "version",
+    "text",
+    "received_at"
+  ],
+  "title": "RecordVersion",
+  "type": "object"
+}

@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "enum": [
+        "not_found",
+        "conflict",
+        "invalid_request",
+        "not_ready"
+      ],
+      "title": "Code",
+      "type": "string"
+    },
+    "message": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "ApiError",
+  "type": "object"
+}

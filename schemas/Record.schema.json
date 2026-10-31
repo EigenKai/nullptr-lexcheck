@@ -1,0 +1,52 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "company_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Company Id",
+      "type": "string"
+    },
+    "product_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Product Id",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "dossier",
+        "marketing",
+        "customer_script",
+        "evidence_index",
+        "scientific_evidence"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "synthetic": {
+      "const": true,
+      "default": true,
+      "title": "Synthetic",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "company_id",
+    "product_id",
+    "kind",
+    "title"
+  ],
+  "title": "Record",
+  "type": "object"
+}

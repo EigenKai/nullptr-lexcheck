@@ -1,0 +1,208 @@
+{
+  "$defs": {
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "record_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "span",
+            "missing_field",
+            "cell",
+            "page"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "sheet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sheet"
+        },
+        "cell": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        }
+      },
+      "required": [
+        "record_version_id",
+        "kind"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "rule_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Rule Id",
+      "type": "string"
+    },
+    "rule_version": {
+      "minimum": 1,
+      "title": "Rule Version",
+      "type": "integer"
+    },
+    "clause_version_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Clause Version Id",
+      "type": "string"
+    },
+    "record_version_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Record Version Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "needs_review",
+        "needs_evidence",
+        "suggestion"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "rule",
+        "llm"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "message": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "clause_quote": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Clause Quote",
+      "type": "string"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "minItems": 1,
+      "title": "Evidence",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "rule_id",
+    "rule_version",
+    "clause_version_id",
+    "record_version_id",
+    "status",
+    "source",
+    "severity",
+    "message",
+    "clause_quote",
+    "evidence"
+  ],
+  "title": "Finding",
+  "type": "object"
+}

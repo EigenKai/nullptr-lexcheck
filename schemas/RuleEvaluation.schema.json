@@ -1,0 +1,534 @@
+{
+  "$defs": {
+    "ClauseVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "clause_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Id",
+          "type": "string"
+        },
+        "document": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Document",
+          "type": "string"
+        },
+        "article": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Article",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Sha256"
+        },
+        "retrieved_at": {
+          "format": "date-time",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "verification_status": {
+          "default": "to_be_verified",
+          "enum": [
+            "to_be_verified",
+            "verified"
+          ],
+          "title": "Verification Status",
+          "type": "string"
+        },
+        "in_force": {
+          "default": "unknown",
+          "enum": [
+            "in_force",
+            "suspended",
+            "superseded",
+            "unknown"
+          ],
+          "title": "In Force",
+          "type": "string"
+        },
+        "verified_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified By"
+        },
+        "verified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified At"
+        },
+        "status_note": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Status Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "clause_id",
+        "document",
+        "article",
+        "text",
+        "source_url",
+        "retrieved_at",
+        "valid_from",
+        "status_note"
+      ],
+      "title": "ClauseVersion",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "record_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "span",
+            "missing_field",
+            "cell",
+            "page"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "sheet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sheet"
+        },
+        "cell": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        }
+      },
+      "required": [
+        "record_version_id",
+        "kind"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "rule_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "minimum": 1,
+          "title": "Rule Version",
+          "type": "integer"
+        },
+        "clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Version Id",
+          "type": "string"
+        },
+        "record_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "needs_review",
+            "needs_evidence",
+            "suggestion"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "rule",
+            "llm"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "clause_quote": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Clause Quote",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "rule_id",
+        "rule_version",
+        "clause_version_id",
+        "record_version_id",
+        "status",
+        "source",
+        "severity",
+        "message",
+        "clause_quote",
+        "evidence"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "clause_version_id": {
+          "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+          "title": "Clause Version Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "check_type": {
+          "enum": [
+            "warning",
+            "uses",
+            "confirmation",
+            "endorsement",
+            "medicinal"
+          ],
+          "title": "Check Type",
+          "type": "string"
+        },
+        "method": {
+          "default": "deterministic",
+          "enum": [
+            "deterministic",
+            "llm"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "severity": {
+          "default": "medium",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "verification_status": {
+          "default": "to_be_verified",
+          "enum": [
+            "to_be_verified",
+            "verified"
+          ],
+          "title": "Verification Status",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "patterns": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Patterns",
+          "type": "array"
+        },
+        "positive_examples": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Positive Examples",
+          "type": "array"
+        },
+        "negative_examples": {
+          "default": [],
+          "items": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Negative Examples",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "clause_version_id",
+        "title",
+        "check_type"
+      ],
+      "title": "Rule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "rule_snapshots": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Rule"
+      },
+      "title": "Rule Snapshots",
+      "type": "array"
+    },
+    "clause_snapshots": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ClauseVersion"
+      },
+      "title": "Clause Snapshots",
+      "type": "array"
+    },
+    "mode": {
+      "enum": [
+        "fixture",
+        "live"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "rules_checked": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+        "type": "string"
+      },
+      "title": "Rules Checked",
+      "type": "array"
+    },
+    "skipped_rule_ids": {
+      "default": [],
+      "items": {
+        "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+        "type": "string"
+      },
+      "title": "Skipped Rule Ids",
+      "type": "array"
+    },
+    "findings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "applicability": {
+      "enum": [
+        "applies",
+        "does_not_apply",
+        "not_enough_information"
+      ],
+      "title": "Applicability",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 20000,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "mode",
+    "applicability",
+    "reason"
+  ],
+  "title": "RuleEvaluation",
+  "type": "object"
+}

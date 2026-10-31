@@ -1,0 +1,57 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "company_id": {
+      "pattern": "^[A-Z][A-Za-z0-9-]{1,79}$",
+      "title": "Company Id",
+      "type": "string"
+    },
+    "product_group": {
+      "enum": [
+        "tpbvsk",
+        "other",
+        "unknown"
+      ],
+      "title": "Product Group",
+      "type": "string"
+    },
+    "activity": {
+      "enum": [
+        "advertising",
+        "label_only",
+        "unknown"
+      ],
+      "title": "Activity",
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "domestic_distributor",
+        "producer",
+        "importer",
+        "unknown"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "confirmed": {
+      "title": "Confirmed",
+      "type": "boolean"
+    },
+    "synthetic": {
+      "const": true,
+      "default": true,
+      "title": "Synthetic",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "company_id",
+    "product_group",
+    "activity",
+    "role",
+    "confirmed"
+  ],
+  "title": "CompanyProfile",
+  "type": "object"
+}
