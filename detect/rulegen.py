@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Literal
 from uuid import uuid4
 
+from pydantic import Field
+
 from contracts.models import ClauseVersion, Contract, Evidence, Rule
 from detect.client import configured_client
 from rules.example_validation import validate_source_quote
@@ -18,7 +20,7 @@ class RuleCandidate(Contract):
 
 
 class RuleCandidateBatch(Contract):
-    candidates: tuple[RuleCandidate, ...]
+    candidates: tuple[RuleCandidate, ...] = Field(max_length=8)
 
 
 class RuleProposals(Contract):
@@ -71,7 +73,7 @@ def propose_rules(clause: ClauseVersion, *, client=None) -> RuleProposals:
         mode=output.status,
         proposals=rules,
         source_evidence=tuple(c.source_evidence for c in grounded),
-        structurally_valid=len(candidates),
+        structurally_valid=sum(c.rule.clause_version_id == clause.id for c in candidates),
         rejected=len(candidates) - len(grounded),
         cache_key=output.key,
     )

@@ -110,3 +110,22 @@ def test_no_key_returns_no_proposals(basis, monkeypatch):
     monkeypatch.setenv("LEXCHECK_LLM_MODE", "live")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     assert propose_rules(basis[1], client=ModelClient(model="test")).mode == "unavailable"
+
+
+def test_rulegen_candidate_limit(basis):
+    import pytest
+    from pydantic import ValidationError
+
+    rule, clause, _ = basis
+    candidate = RuleCandidate(
+        rule=rule,
+        source_evidence=Evidence(
+            record_version_id=clause.id,
+            kind="span",
+            quote=clause.text,
+            start=0,
+            end=len(clause.text),
+        ),
+    )
+    with pytest.raises(ValidationError):
+        RuleCandidateBatch(candidates=(candidate,) * 9)
