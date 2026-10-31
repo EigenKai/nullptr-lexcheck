@@ -1,0 +1,50 @@
+{
+  "phase": "dev",
+  "n": 15,
+  "git_sha": null,
+  "dataset_sha256": "8b6e28a8705cd8697b808ab3c194f9dd1c8062cdc488eb5926e5171d5e0e3249",
+  "model": null,
+  "rule_ids": [],
+  "systems": [
+    {
+      "system": "keyword",
+      "evaluated_cases": 0,
+      "true_positive": 0,
+      "false_positive": 0,
+      "false_negative": 0,
+      "false_flags_on_clean": 0,
+      "precision": null,
+      "recall": null,
+      "model_calls": 0,
+      "failed_calls": 0,
+      "latency_ms": null
+    },
+    {
+      "system": "plain_chat",
+      "evaluated_cases": 0,
+      "true_positive": 0,
+      "false_positive": 0,
+      "false_negative": 0,
+      "false_flags_on_clean": 0,
+      "precision": null,
+      "recall": null,
+      "model_calls": 0,
+      "failed_calls": 0,
+      "latency_ms": null
+    },
+    {
+      "system": "lexcheck",
+      "evaluated_cases": 0,
+      "true_positive": 0,
+      "false_positive": 0,
+      "false_negative": 0,
+      "false_flags_on_clean": 0,
+      "precision": null,
+      "recall": null,
+      "model_calls": 0,
+      "failed_calls": 0,
+      "latency_ms": null
+    }
+  ],
+  "note": "Draft labels require owner review. Keyword baseline includes structured uses differences. Scores cover executed rule scope only; unavailable cases excluded. Stability, queue and latency not measured."
+}

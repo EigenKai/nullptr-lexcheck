@@ -1,0 +1,156 @@
+{
+  "profile": {
+    "company_id": "CO-DEMO",
+    "product_group": "tpbvsk",
+    "activity": "advertising",
+    "role": "domestic_distributor",
+    "confirmed": true,
+    "synthetic": true
+  },
+  "records": [
+    {
+      "id": "REC-01",
+      "company_id": "CO-DEMO",
+      "product_id": "P-01",
+      "kind": "dossier",
+      "title": "Synthetic dossier",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "REC-02",
+      "company_id": "CO-DEMO",
+      "product_id": "P-01",
+      "kind": "marketing",
+      "title": "Synthetic marketing",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "REC-03",
+      "company_id": "CO-DEMO",
+      "product_id": "P-01",
+      "kind": "marketing",
+      "title": "Synthetic marketing control",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "REC-04",
+      "company_id": "CO-DEMO",
+      "product_id": "P-01",
+      "kind": "ad_confirmation",
+      "title": "Synthetic confirmation index; no official certificate",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "REC-05",
+      "company_id": "CO-DEMO",
+      "product_id": "P-02",
+      "kind": "marketing",
+      "title": "Unrelated product control",
+      "access_groups": [
+        "manager",
+        "operations"
+      ],
+      "synthetic": true
+    }
+  ],
+  "versions": [
+    {
+      "id": "RV-01-v1",
+      "record_id": "REC-01",
+      "version": 1,
+      "text": "Hỗ trợ tiêu hóa.\nHỗ trợ giảm cholesterol.",
+      "uses": [
+        "Hỗ trợ tiêu hóa.",
+        "Hỗ trợ giảm cholesterol."
+      ],
+      "reference_ids": [],
+      "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
+      "supersedes": null
+    },
+    {
+      "id": "RV-02-v1",
+      "record_id": "REC-02",
+      "version": 1,
+      "text": "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "uses": [
+        "Hỗ trợ tiêu hóa."
+      ],
+      "reference_ids": [
+        "RV-01-v1",
+        "RV-04-v1"
+      ],
+      "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
+      "supersedes": null
+    },
+    {
+      "id": "RV-03-v1",
+      "record_id": "REC-03",
+      "version": 1,
+      "text": "Hỗ trợ tiêu hóa.\nThực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "uses": [
+        "Hỗ trợ tiêu hóa."
+      ],
+      "reference_ids": [
+        "RV-01-v1",
+        "RV-04-v1"
+      ],
+      "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
+      "supersedes": null
+    },
+    {
+      "id": "RV-04-v1",
+      "record_id": "REC-04",
+      "version": 1,
+      "text": "Synthetic index links marketing RV-02-v1. No official receipt or certificate is reproduced.",
+      "uses": [],
+      "reference_ids": [],
+      "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
+      "supersedes": null
+    },
+    {
+      "id": "RV-05-v1",
+      "record_id": "REC-05",
+      "version": 1,
+      "text": "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "uses": [],
+      "reference_ids": [],
+      "received_at": "2026-10-31T05:00:00Z",
+      "confirmation_date": null,
+      "issuing_authority": "unknown",
+      "supersedes": null
+    }
+  ],
+  "target_version_ids": [
+    "RV-02-v1"
+  ],
+  "context_version_ids": [
+    "RV-01-v1",
+    "RV-04-v1"
+  ],
+  "review_date": "2026-10-31",
+  "llm_mode": "off"
+}
