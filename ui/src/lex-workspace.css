@@ -1,0 +1,98 @@
+/* Lex identity for the assistant, knowledge, history and update screens,
+   shared states, motion limits and narrow screens. */
+
+/* Assistant hero: Lex stands on a cream disc with a gold rim. */
+.mascot-wrap:before {
+  background-color: #fbf3e6;
+  border: 1px solid #ecdcc0;
+  box-shadow: inset 0 -10px 0 rgba(179, 135, 57, 0.12);
+}
+.mascot-wrap:after {
+  color: #9a7230;
+}
+.mascot {
+  filter: drop-shadow(0 12px 14px rgba(15, 48, 56, 0.25));
+}
+.hero h1 {
+  color: var(--brand-ink);
+}
+.hero h1 em {
+  color: var(--brand-scale);
+}
+.chat-availability {
+  background-color: #fbf3e6;
+  border: 1px solid #ecdcc0;
+  border-left: 4px solid var(--brand-gold);
+}
+.suggestion {
+  background-color: #fff;
+  border-color: var(--line);
+  box-shadow: 0 10px 22px -22px rgba(15, 48, 56, 0.8);
+  transition: transform 180ms ease;
+}
+.suggestion:hover:not(:disabled) {
+  background-color: #fff;
+  border-color: var(--brand-scale);
+}
+.message.assistant {
+  border-left: 3px solid var(--brand-gold);
+}
+.assistant-heading img {
+  border-radius: 50%;
+  background-color: #fbf3e6;
+  border: 1px solid var(--brand-gold);
+}
+
+/* Counters on the knowledge and history screens. */
+.metric strong {
+  color: var(--brand-ink);
+}
+.metric {
+  border-top: 2px solid rgba(179, 135, 57, 0.55);
+}
+
+/* Empty states carry a small Lex so a blank list still reads as intended. */
+.empty-state::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: #fbf3e6 url("/assets/lex-mark-96.png") center / cover no-repeat;
+  border: 2px solid var(--brand-gold);
+}
+
+/* Busy, notice and error banners. */
+.feedback {
+  background-color: #eef5f1;
+  border-left: 4px solid var(--brand-scale);
+  color: var(--brand-ink);
+}
+.feedback.error {
+  background-color: #fbefec;
+  border-left-color: #9e3f32;
+  color: #6e2a20;
+}
+
+/* Motion: short, transform/opacity only; style.css switches it all off
+   under prefers-reduced-motion. */
+.appear {
+  animation-duration: 220ms;
+}
+
+@media (max-width: 640px) {
+  .demo-pill {
+    font-size: 11px;
+    line-height: 1.35;
+    padding: 4px 9px;
+    max-width: 150px;
+  }
+  .page-title {
+    font-size: 31px;
+  }
+  .status-strip {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

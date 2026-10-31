@@ -343,3 +343,47 @@ test("5 · text meets WCAG AA contrast on solid backgrounds", async ({
   expect(failures.count).toBeGreaterThan(10);
   expect(failures.out).toEqual([]);
 });
+
+test("7 · reduced motion switches animation off; motion stays short", async ({
+  page,
+}) => {
+  // playwright.config.js emulates reducedMotion: "reduce" for every test.
+  await openFinding(page);
+  const motion = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll("*")].flatMap((e) =>
+        [null, "::before", "::after"].map((pseudo) => {
+          const s = getComputedStyle(e, pseudo);
+          const longest = (list) =>
+            Math.max(...list.split(",").map((d) => parseFloat(d) || 0));
+          return {
+            name: `${e.tagName}.${e.className}${pseudo || ""}`,
+            loader: !!e.closest(".loading-dots"),
+            animation: s.animationName !== "none" ? longest(s.animationDuration) : 0,
+            transition: longest(s.transitionDuration),
+            properties: s.transitionProperty,
+          };
+        }),
+      ),
+    );
+  const reduced = await motion();
+  expect(reduced.filter((m) => m.animation > 0 || m.transition > 0)).toEqual(
+    [],
+  );
+  expect(
+    await page
+      .locator(".evidence")
+      .evaluate((e) => getComputedStyle(e).transitionDuration),
+  ).toBe("0s");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const full = await motion();
+  expect(
+    full.filter((m) => !m.loader && (m.animation > 0.25 || m.transition > 0.25)),
+  ).toEqual([]);
+  const ours = full.filter((m) =>
+    /\b(button|nav-item|finding-button)\b/.test(m.name) && m.transition > 0,
+  );
+  expect(ours.length).toBeGreaterThan(0);
+  for (const m of ours)
+    expect(m.properties, m.name).toMatch(/^(transform|opacity)(, (transform|opacity))*$/);
+});

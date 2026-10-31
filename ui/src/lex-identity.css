@@ -68,7 +68,7 @@ body {
 }
 .nav-item {
   color: #3f5556;
-  transition: background-color 160ms ease, transform 160ms ease;
+  transition: transform 160ms ease;
 }
 .nav-item:hover {
   background-color: #e2ebe6;
@@ -179,7 +179,7 @@ body {
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.25) inset,
     0 8px 18px -12px rgba(15, 48, 56, 0.9);
-  transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  transition: transform 160ms ease;
 }
 .button:hover:not(:disabled) {
   background-color: #174a4f;

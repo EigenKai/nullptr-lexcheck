@@ -8,5 +8,6 @@ import "./prototype.css";
 import "./style.css";
 import "./lex-identity.css";
 import "./lex-review.css";
+import "./lex-workspace.css";
 import App from "./App.jsx";
 createRoot(document.getElementById("root")).render(<App />);

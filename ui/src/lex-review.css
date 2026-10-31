@@ -52,7 +52,7 @@
   border-left: 6px solid var(--status-edge);
   border-radius: 6px 16px 16px 6px;
   box-shadow: 0 14px 26px -24px rgba(15, 48, 56, 0.75);
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  transition: transform 180ms ease;
 }
 .finding-button[data-status="needs_review"] {
   --status-edge: #b3412f;
