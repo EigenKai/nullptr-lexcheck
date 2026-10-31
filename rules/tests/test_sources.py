@@ -79,3 +79,18 @@ def test_other_pending_rules_and_clauses_remain_disabled():
                 continue
             assert rule.verification_status == "to_be_verified"
             assert clauses()[rule.clause_version_id].verification_status == "to_be_verified"
+
+
+def test_annex_transcriptions_preserve_original_vietnamese():
+    basis = clauses()
+    assert basis["CV-06-v2"].text == (
+        "Giấy tiếp nhận đăng ký bản công bố sản phẩm và Bản công bố sản phẩm đã được cơ quan có thẩm quyền xác nhận "
+        "hoặc Giấy tiếp nhận bản công bố hợp quy/Giấy xác nhận công bố phù hợp quy định an toàn thực phẩm còn hiệu lực "
+        "(bản sao có xác nhận của tổ chức, cá nhân);"
+    )
+    assert basis["CV-08-v2"].text == "Mẫu nhãn sản phẩm (bản có xác nhận của tổ chức, cá nhân);"
+    for entry in catalog():
+        if entry.id in ("R-05", "R-06", "R-07", "R-08"):
+            assert all(
+                "?" not in text for text in entry.positive_examples + entry.negative_examples
+            )

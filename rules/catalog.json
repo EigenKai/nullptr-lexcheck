@@ -106,12 +106,12 @@
     "enabled": false,
     "patterns": [],
     "positive_examples": [
-      "S?n ph?m ch?a kh?i ti?u ???ng.",
-      "S?n ph?m ??c tr? vi?m kh?p."
+      "Sản phẩm chữa khỏi tiểu đường.",
+      "Sản phẩm đặc trị viêm khớp."
     ],
     "negative_examples": [
-      "Th?c ph?m n?y kh?ng ph?i l? thu?c v? kh?ng c? t?c d?ng thay th? thu?c ch?a b?nh.",
-      "H? tr? ti?u h?a. Kh?ng c? t?c d?ng ?i?u tr? b?nh."
+      "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.",
+      "Hỗ trợ tiêu hóa. Không có tác dụng điều trị bệnh."
     ]
   },
   {
@@ -129,12 +129,12 @@
     "enabled": false,
     "patterns": [],
     "positive_examples": [
-      "H? s? ??ng k? ch?a n?i gi?y ti?p nh?n c?ng b? s?n ph?m.",
-      "Gi?y ti?p nh?n ???c n?i thu?c m?t s?n ph?m kh?c."
+      "Hồ sơ đăng ký chưa nối giấy tiếp nhận công bố sản phẩm.",
+      "Giấy tiếp nhận được nối thuộc một sản phẩm khác."
     ],
     "negative_examples": [
-      "H? s? ?? n?i gi?y ti?p nh?n ??ng s?n ph?m.",
-      "H? s? ch?n b?n m?i c?a c?ng gi?y ti?p nh?n ?? n?i."
+      "Hồ sơ đã nối giấy tiếp nhận đúng sản phẩm.",
+      "Hồ sơ chọn bản mới của cùng giấy tiếp nhận đã nối."
     ]
   },
   {
@@ -175,12 +175,12 @@
     "enabled": false,
     "patterns": [],
     "positive_examples": [
-      "H? s? ??ng k? ch?a n?i m?u nh?n.",
-      "M?u nh?n ???c n?i thu?c m?t s?n ph?m kh?c."
+      "Hồ sơ đăng ký chưa nối mẫu nhãn.",
+      "Mẫu nhãn được nối thuộc một sản phẩm khác."
     ],
     "negative_examples": [
-      "H? s? ?? n?i m?u nh?n ??ng s?n ph?m.",
-      "H? s? ch?n b?n m?i c?a c?ng m?u nh?n ?? n?i."
+      "Hồ sơ đã nối mẫu nhãn đúng sản phẩm.",
+      "Hồ sơ chọn bản mới của cùng mẫu nhãn đã nối."
     ]
   }
 ]
