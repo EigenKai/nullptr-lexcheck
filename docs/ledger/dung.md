@@ -1,2 +1,4 @@
 | time (+07) | member | kind | what | result | link |
 |---|---|---|---|---|---|
+| 2026-10-31 13:46 | Dung / Codex | task | Add three developer-authored rule-generation output references with official source excerpts and 13 synthetic cases; delegate page transcription to a Codex subagent using gpt-6-luna | 9 new reference/grounding/isolation tests and 36 total tests passed; smoke/lint/fixture eval passed; no model-generation accuracy measured and no runtime rules activated | [Reference pack](../../rules/examples/generation/README.md) |
+| 2026-10-31 13:51 | Dung / Codex | review | Read PR 2 review and clarify Luna tool provenance in reference documentation | CI successful; reviewer accepts reference-only scope and requests runtime-rule work as a separate follow-up; user instruction keeps examples out of runtime | [PR review](https://github.com/EigenKai/nullptr-lexcheck/pull/2#pullrequestreview-5721689111) |
