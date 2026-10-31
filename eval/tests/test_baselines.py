@@ -40,3 +40,59 @@ def test_failed_predictions_not_negative():
     assert result.failed_calls == 2
     positive = score("keyword", [({("RV-01", "R-01")}, {("RV-01", "R-01")})], 0, 0)
     assert positive.precision == 1 and positive.recall == 1
+
+
+def test_rejected_proposals_remain_in_denominator(monkeypatch):
+    import json
+    from types import SimpleNamespace
+
+    from contracts.models import ClauseVersion, Evidence, Rule, RuleEvaluation
+    from detect.candidates import Candidate, CandidateBatch
+    from detect.client import ModelClient
+    from eval.run import ROOT, evaluate_cases
+
+    basis = json.loads((ROOT / "detect/tests/fixtures/basis.json").read_text())
+    rule = Rule.model_validate(basis["rule"])
+    clause = ClauseVersion.model_validate(basis["clause"])
+    request = load_demo().request
+    version = next(v for v in request.versions if v.id in request.target_version_ids)
+    candidate = Candidate(
+        rule_id=rule.id,
+        record_version_id=version.id,
+        clause_quote=clause.text,
+        evidence=(
+            Evidence(
+                record_version_id=version.id, kind="span", quote=version.text[:5], start=0, end=5
+            ),
+        ),
+    )
+    returned = CandidateBatch(
+        candidates=(candidate, candidate.model_copy(update={"clause_quote": "fabricated"}))
+    )
+    received = []
+
+    def engine(request):
+        return RuleEvaluation(
+            mode="live",
+            applicability="applies",
+            reason="Test only",
+            rules_checked=(rule.id,),
+            rule_snapshots=(rule,),
+            clause_snapshots=(clause,),
+        )
+
+    def transport(**kw):
+        received.append(json.loads(kw["input"]))
+        return SimpleNamespace(status="completed", output_parsed=returned)
+
+    monkeypatch.setattr("eval.run.evaluate", engine)
+    client = ModelClient(model="test", transport=transport)
+    report, trace = evaluate_cases(
+        (("test", request, {"gold": [[version.id, rule.id]]}),), mode="live", client=client
+    )
+    assert report.rule_ids == (rule.id,)
+    assert report.systems[2].evaluated_cases == 1
+    assert report.systems[2].true_positive == 1
+    assert trace[0]["rejected"] == {"quote_mismatch": 1}
+    assert received[0] == received[1]
+    assert "gold" not in str(received)

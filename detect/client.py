@@ -71,12 +71,10 @@ class ModelClient:
     def _live(self, payload, prompt, schema, key, path):
         if self.transport is None and not os.getenv("OPENAI_API_KEY"):
             return ModelOutput("unavailable", key=key, error="credentials_missing")
-        transport_errors = (TimeoutError, OSError, ValueError)
         try:
             if self.transport is None:
-                from openai import OpenAI, OpenAIError
+                from openai import OpenAI
 
-                transport_errors = (*transport_errors, OpenAIError)
                 with OpenAI(timeout=15.0, max_retries=1) as client:
                     response = client.responses.parse(
                         model=self.model,
@@ -96,7 +94,7 @@ class ModelClient:
             if response.status != "completed" or response.output_parsed is None:
                 return ModelOutput("unavailable", key=key, calls=1, error="no_complete_output")
             parsed = schema.model_validate(response.output_parsed)
-        except transport_errors:
+        except Exception:  # noqa: BLE001 - transport boundary must preserve deterministic results
             # Never expose transport exceptions containing private input or credentials.
             return ModelOutput("unavailable", key=key, calls=1, error="transport_failed")
         if path:
