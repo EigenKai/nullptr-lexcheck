@@ -61,24 +61,24 @@ def test_pending_interpretation_cannot_activate(state):
     from rules.legal import validate_activation
 
     for interpretation in ("pending", "rejected"):
-        with pytest.raises(ValueError):
+        assert (
             validate_activation(
                 state.model_copy(update={"interpretation": interpretation}), date(2026, 7, 1)
             )
+            == ()
+        )
 
 
 def test_effective_date_boundary(state):
     from rules.legal import validate_activation
 
     before = state.model_dump_json()
-    with pytest.raises(ValueError):
-        validate_activation(state, date(2026, 6, 30))
+    assert validate_activation(state, date(2026, 6, 30)) == ()
     rules = validate_activation(state, date(2026, 7, 1))
     assert isinstance(rules, tuple) and len(rules) == 1 and rules[0].enabled
     assert rules[0].clause_version_id == state.event.new_clause.id
     assert state.model_dump_json() == before and not state.event.proposed_rules[0].enabled
-    with pytest.raises(ValueError):
-        validate_activation(state, date(2028, 1, 1))
+    assert validate_activation(state, date(2028, 1, 1)) == ()
 
 
 @pytest.mark.parametrize(
@@ -91,8 +91,7 @@ def test_unverified_source_cannot_activate(state, change):
     event = state.event.model_copy(
         update={"new_clause": state.event.new_clause.model_copy(update=change)}
     )
-    with pytest.raises(ValueError):
-        validate_activation(state.model_copy(update={"event": event}), date(2026, 7, 1))
+    assert validate_activation(state.model_copy(update={"event": event}), date(2026, 7, 1)) == ()
 
 
 @pytest.mark.parametrize(
@@ -107,8 +106,7 @@ def test_unverified_source_cannot_activate(state, change):
 def test_missing_or_inconsistent_review_cannot_activate(state, change):
     from rules.legal import validate_activation
 
-    with pytest.raises(ValueError):
-        validate_activation(state.model_copy(update=change), date(2026, 7, 1))
+    assert validate_activation(state.model_copy(update=change), date(2026, 7, 1)) == ()
 
 
 def old_check(state, *, activity="ad_registration", clause_id="CV-test-v1"):
@@ -182,8 +180,7 @@ def test_preloaded_update_preserves_history():
     )
     assert state.event.new_clause.verified_by == old.verified_by == "Dung"
     assert not any(r.enabled for r in state.event.proposed_rules)
-    with pytest.raises(ValueError):
-        validate_activation(state, date(2026, 10, 31))
+    assert validate_activation(state, date(2026, 10, 31)) == ()
 
 
 @pytest.mark.parametrize("change", [{"verification_status": "to_be_verified"}, {"method": "llm"}])
@@ -192,18 +189,49 @@ def test_unverified_or_model_rule_does_not_activate(state, change):
 
     rule = state.event.proposed_rules[0].model_copy(update=change)
     event = state.event.model_copy(update={"proposed_rules": (rule,)})
-    with pytest.raises(ValueError):
-        validate_activation(state.model_copy(update={"event": event}), date(2026, 7, 1))
+    assert validate_activation(state.model_copy(update={"event": event}), date(2026, 7, 1)) == ()
 
 
 def test_ambiguous_rule_ids_and_check_ids_are_rejected(state):
     from rules.legal import affected_checks, validate_activation
 
     event = state.event.model_copy(update={"proposed_rules": state.event.proposed_rules * 2})
-    with pytest.raises(ValueError):
-        validate_activation(state.model_copy(update={"event": event}), date(2026, 7, 1))
+    assert validate_activation(state.model_copy(update={"event": event}), date(2026, 7, 1)) == ()
     check = old_check(state)
     with pytest.raises(ValueError):
         affected_checks(
             state.event, (check, check.model_copy(update={"summary": "Different snapshot"}))
         )
+
+
+@pytest.mark.parametrize("in_force,expected_status", [("unknown", 409), ("in_force", 200)])
+def test_intake_activation_handles_owner_result_without_server_error(
+    state, tmp_path, monkeypatch, in_force, expected_status
+):
+    """Route-policy regression with a test-only gate bypass, not layer2 smoke."""
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+    from intake import layer_routes
+
+    monkeypatch.setenv("LEXCHECK_STATE_FILE", str(tmp_path / "state.json"))
+    monkeypatch.setattr(layer_routes, "gate", lambda _layer: None)
+    clause = state.event.new_clause.model_copy(update={"in_force": in_force})
+    event = state.event.model_copy(update={"new_clause": clause})
+    with TestClient(create_app(), raise_server_exceptions=False) as client:
+        token = client.post("/api/session", json={"user_id": "U-MANAGER"}).json()["token"]
+        client.headers["Authorization"] = "Bearer " + token
+        assert (
+            client.post("/api/legal-changes", json=event.model_dump(mode="json")).status_code == 200
+        )
+        assert (
+            client.post(
+                f"/api/legal-changes/{event.id}/review",
+                json={"action": "accept", "note": "Synthetic review only"},
+            ).status_code
+            == 200
+        )
+        result = client.post(
+            f"/api/legal-changes/{event.id}/activate", json={"review_date": "2026-10-31"}
+        )
+        assert result.status_code == expected_status

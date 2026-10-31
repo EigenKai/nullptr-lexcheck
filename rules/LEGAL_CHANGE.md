@@ -9,7 +9,9 @@ Activation requires accepted interpretation, a ready/active state, a recorded
 human reviewer, coherent receipt/review/source-verification timestamps, verified
 source/rules, and an effective interval containing the supplied review date.
 It returns enabled copies for a runtime overlay. Intake PR13's `can_activate`
-separately checks the actual system date and authorizes the caller. Intake owns
+maps an empty tuple for a rejected activation to HTTP409; ordinary domain
+rejections return that empty tuple, preserving the existing caller contract.
+Intake's `can_activate` separately checks the actual system date and authorizes the caller. Intake owns
 the review/activation timestamps and persistence. This module grants no role.
 
 The queue depends on actual old rule/clause snapshots, includes clean checks,
@@ -47,8 +49,9 @@ Acceptance: `python -m pytest rules/tests/test_legal_change.py -q`, then
 Explicit `make smoke LAYER=2` remains a deployment gate and must not be bypassed.
 
 Delivery evidence,2026-10-31:13 initial tests failed on the missing module;
-16 final focused tests passed. Linux Python3.11: `make fmt FORMAT_PATHS=rules`,
-`make lint`, `make test` (275 passed,93% total coverage), `make eval` and current
-`make smoke` (1 passed) pass. Explicit layer2 smoke fails with “Requested live
-smoke is not implemented yet.” Therefore layer2 remains off; this PR does not
-claim full intake/deployed-layer integration or a new held-out measurement.
+18 final focused tests passed, including actual intake route success and an
+inactive-source HTTP409 regression that failed with HTTP500 before the fix.
+After integrating reviewed main063d0a7, Linux Python3.11 make fmt/lint/test/eval/
+current smoke pass (350 tests,93% total coverage; smoke1). Explicit layer2 smoke
+selects no test and fails (exit5). Therefore layer2 remains off; this PR does not
+claim full deployed-layer integration or a new held-out measurement.

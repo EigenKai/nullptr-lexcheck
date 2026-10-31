@@ -22,14 +22,17 @@ def validate_activation(state: LegalChangeState, review_date: date) -> tuple[Rul
     can_activate already does), persists activation time/queue and keeps history.
     This function does not access clocks, files, models, stores or environment.
     """
-    state = LegalChangeState.model_validate(state.model_dump(mode="json"))
+    try:
+        state = LegalChangeState.model_validate(state.model_dump(mode="json"))
+    except ValueError:
+        return ()
     event, clause = state.event, state.event.new_clause
     if state.interpretation != "accepted" or state.status not in ("ready", "active"):
-        raise ValueError("Legal interpretation has not been accepted.")
+        return ()
     if not state.reviewed_by or state.reviewed_at is None:
-        raise ValueError("An authenticated human review is required.")
+        return ()
     if state.reviewed_at < event.received_at or state.reviewed_at.date() > review_date:
-        raise ValueError("Legal receipt and review dates are inconsistent.")
+        return ()
     if (
         clause.verification_status != "verified"
         or clause.in_force != "in_force"
@@ -38,18 +41,18 @@ def validate_activation(state: LegalChangeState, review_date: date) -> tuple[Rul
         or clause.verified_at is None
         or clause.verified_at > state.reviewed_at
     ):
-        raise ValueError("The original legal source has not been verified for this review.")
+        return ()
     if event.effective_on > review_date or (
         clause.valid_to is not None and review_date >= clause.valid_to
     ):
-        raise ValueError("Legal change is outside its effective interval.")
+        return ()
     if len({rule.id for rule in event.proposed_rules}) != len(event.proposed_rules):
-        raise ValueError("Proposed rule identifiers are ambiguous.")
+        return ()
     if any(
         rule.verification_status != "verified" or rule.method != "deterministic"
         for rule in event.proposed_rules
     ):
-        raise ValueError("Every proposed rule must be verified and deterministic.")
+        return ()
     return tuple(
         Rule.model_validate({**rule.model_dump(mode="json"), "enabled": True})
         for rule in event.proposed_rules
