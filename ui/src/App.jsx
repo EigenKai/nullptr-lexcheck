@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { request as apiRequest, loadWorkspace, resultLabel } from "./api.js";
 import { Icon, Page, Badge, tabs } from "./components/shared.jsx";
 import Review from "./components/Review.jsx";
@@ -9,8 +16,92 @@ import Sources from "./components/Sources.jsx";
 import Updates from "./components/Updates.jsx";
 import Settings from "./components/Settings.jsx";
 import { N_, useLanguage } from "./i18n.jsx";
+import { researchClient } from "./research.js";
+
+const DocumentWorkspace = lazy(() =>
+  import("./DocumentWorkspace.jsx").then((module) => ({
+    default: module.DocumentWorkspace,
+  })),
+);
+const WorkspaceChat = lazy(() =>
+  import("./WorkspaceChat.jsx").then((module) => ({
+    default: module.WorkspaceChat,
+  })),
+);
+const WorkspaceConversations = lazy(() =>
+  import("./WorkspaceChat.jsx").then((module) => ({
+    default: module.WorkspaceConversations,
+  })),
+);
+const researchTabs = [
+  ["chat", N_("Trợ lý Lex")],
+  ["overview", N_("Tổng quan")],
+  ["business", N_("Tài liệu doanh nghiệp")],
+  ["legal", N_("Tài liệu luật")],
+  ["knowledge", N_("Kho tri thức")],
+  ["settings", N_("Thông tin workspace")],
+];
 export default function App() {
   const { t } = useLanguage();
+  const [researchReady, setResearchReady] = useState(false);
+  const [researchWorkspaces, setResearchWorkspaces] = useState([]);
+  const [workspaceId, setWorkspaceId] = useState(
+    () =>
+      window.location.hash.match(/^#workspace\/(WS-[a-f0-9]{24}|new)$/)?.[1] ||
+      "demo",
+  );
+  const [conversationId, setConversationId] = useState(null);
+  const [chatRefresh, setChatRefresh] = useState(0);
+  const [newConversationNonce, setNewConversationNonce] = useState(0);
+  const [chatBusy, setChatBusy] = useState(false);
+  const researchActive = researchReady && workspaceId !== "demo";
+  const currentTabs = researchActive ? researchTabs : tabs;
+  const currentWorkspace = researchWorkspaces.find(
+    (workspace) => workspace.id === workspaceId,
+  );
+  const refreshResearch = useCallback(async () => {
+    try {
+      setResearchWorkspaces(await researchClient.list());
+    } catch (error) {
+      setError(error.message);
+    }
+  }, []);
+  const refreshConversations = useCallback(
+    () => setChatRefresh((value) => value + 1),
+    [],
+  );
+  const chooseWorkspace = (id) => {
+    setWorkspaceId(id);
+    setConversationId(null);
+    setNewConversationNonce((value) => value + 1);
+    setView(id === "demo" ? "reviews" : id === "new" ? "overview" : "chat");
+    setMobile(false);
+    setPanel(false);
+    setError("");
+    window.history.replaceState(
+      null,
+      "",
+      id === "demo" ? "#reviews" : `#workspace/${id}`,
+    );
+  };
+  useEffect(() => {
+    let active = true;
+    researchClient.connect().then(async (connected) => {
+      if (!active || !connected) return;
+      try {
+        const workspaces = await researchClient.list();
+        if (active) {
+          setResearchWorkspaces(workspaces);
+          setResearchReady(true);
+        }
+      } catch {
+        /* Keep the reviewer UI unchanged when the optional API is unavailable. */
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
   const [view, setView] = useState("reviews");
   const [bundle, setBundle] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -67,7 +158,7 @@ export default function App() {
     }
   }
   const go = (next) => {
-    window.location.hash = next;
+    if (!researchActive) window.location.hash = next;
     setView(next);
     setMobile(false);
     setPanel(false);
@@ -174,6 +265,7 @@ export default function App() {
     }
   }
   function switchUser(user) {
+    if (researchActive) chooseWorkspace("demo");
     generation.current += 1;
     sessionRef.current = null;
     setSession(null);
@@ -202,14 +294,19 @@ export default function App() {
     const navigate = () => {
       const next = window.location.hash.slice(1);
       if (next === "main") return;
+      if (researchActive && next.startsWith("workspace/")) {
+        setView(workspaceId === "new" ? "overview" : "chat");
+        return;
+      }
       const allowed =
-        next === "settings" || tabs.some(([key]) => key === next);
-      setView(allowed ? next : "reviews");
+        next === "preferences" ||
+        (researchActive ? researchTabs : tabs).some(([key]) => key === next);
+      setView(allowed ? next : researchActive ? "chat" : "reviews");
     };
     navigate();
     window.addEventListener("hashchange", navigate);
     return () => window.removeEventListener("hashchange", navigate);
-  }, []);
+  }, [researchActive, workspaceId]);
   useEffect(() => {
     const escape = (e) => {
       if (e.key === "Escape") {
@@ -413,9 +510,9 @@ export default function App() {
   };
   const evidencePanel = <Evidence {...context} />;
   const viewLabel =
-    view === "settings"
+    view === "preferences"
       ? N_("Cài đặt")
-      : tabs.find(([key]) => key === view)[1];
+      : currentTabs.find(([key]) => key === view)?.[1] || "Workspace";
   // The strip only reports a problem: the API is unreachable, or the engine
   // behind it is not ready. A healthy connection needs no banner.
   const degraded = offline || (bundle && !features.layer0_ready);
@@ -424,7 +521,7 @@ export default function App() {
       <a className="skip" href="#main">
         {t("Đến nội dung chính")}
       </a>
-      <div className="app">
+      <div className={`app${researchActive ? " research-feature" : ""}`}>
         {mobile && (
           <button
             className="nav-scrim"
@@ -451,11 +548,42 @@ export default function App() {
             lexcheck
             <span className="brand-dot">.</span>
           </a>
+          {researchReady && (
+            <div className="workspace">
+              <span className="workspace-logo">N</span>
+              <label className="workspace-select">
+                <select
+                  aria-label={t("Chọn workspace")}
+                  value={workspaceId}
+                  onChange={(event) => chooseWorkspace(event.target.value)}
+                  disabled={chatBusy}
+                >
+                  <option value="demo">NULLPTR Demo · TPBVSK</option>
+                  {researchWorkspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </option>
+                  ))}
+                  <option value="new">{t("+ Tạo workspace")}</option>
+                </select>
+                <small>
+                  {researchActive
+                    ? t("Tài liệu và hội thoại riêng")
+                    : t("Rà soát hồ sơ mẫu")}
+                </small>
+              </label>
+            </div>
+          )}
           <button
             className="new-chat"
+            disabled={researchActive && chatBusy}
             onClick={() => {
               setMessages([]);
               setPrompt("");
+              if (researchActive) {
+                setConversationId(null);
+                setNewConversationNonce((value) => value + 1);
+              }
               go("chat");
             }}
           >
@@ -464,7 +592,7 @@ export default function App() {
           </button>
           <div className="nav-caption">{t("KHÔNG GIAN LÀM VIỆC")}</div>
           <nav aria-label={t("Điều hướng chính")}>
-            {tabs.map(([key, label]) => (
+            {currentTabs.map(([key, label]) => (
               <button
                 className={`nav-item ${view === key ? "active" : ""}`}
                 aria-current={view === key ? "page" : undefined}
@@ -488,11 +616,25 @@ export default function App() {
               </button>
             ))}
           </nav>
+          {researchActive && workspaceId !== "new" && (
+            <Suspense fallback={null}>
+              <WorkspaceConversations
+                workspaceId={workspaceId}
+                selectedId={conversationId}
+                refresh={chatRefresh}
+                disabled={chatBusy}
+                onSelect={(id) => {
+                  setConversationId(id);
+                  go("chat");
+                }}
+              />
+            </Suspense>
+          )}
           <div className="sidebar-bottom">
             <button
-              className={`nav-item settings-link ${view === "settings" ? "active" : ""}`}
-              aria-current={view === "settings" ? "page" : undefined}
-              onClick={() => go("settings")}
+              className={`nav-item settings-link ${view === "preferences" ? "active" : ""}`}
+              aria-current={view === "preferences" ? "page" : undefined}
+              onClick={() => go("preferences")}
             >
               <Icon name="settings" />
               {t("Cài đặt")}
@@ -550,7 +692,7 @@ export default function App() {
               </button>
             </div>
           </header>
-          {degraded && (
+          {degraded && !researchActive && (
             <div className="status-strip">
               <span>
                 {offline
@@ -577,15 +719,51 @@ export default function App() {
               {t(notice)}
             </div>
           )}
-          <div className="body-layout">
+          <div
+            className={`body-layout${researchActive ? " research-body" : ""}`}
+          >
             <main id="main" tabIndex="-1">
-              {view === "settings" ? (
+              {view === "preferences" ? (
                 <Settings
                   offline={offline}
                   features={features}
                   busy={busy}
                   reload={() => load()}
                 />
+              ) : researchActive ? (
+                <Suspense fallback={<p role="status">{t("Đang tải workspace…")}</p>}>
+                  {view === "chat" && currentWorkspace ? (
+                    <WorkspaceChat
+                      key={`${workspaceId}:${newConversationNonce}`}
+                      workspace={currentWorkspace}
+                      conversationId={conversationId}
+                      newConversationNonce={newConversationNonce}
+                      onConversationSelected={(id) => {
+                        setConversationId(id);
+                        refreshConversations();
+                      }}
+                      onTurnSaved={refreshConversations}
+                      onBusyChange={setChatBusy}
+                      onNavigate={go}
+                      onDocumentsChanged={refreshResearch}
+                    />
+                  ) : (
+                    <DocumentWorkspace
+                      key={workspaceId}
+                      id={workspaceId}
+                      view={view}
+                      onNavigate={go}
+                      onUpdated={refreshResearch}
+                      onCreated={(workspace) => {
+                        setResearchWorkspaces((previous) => [
+                          ...previous,
+                          workspace,
+                        ]);
+                        chooseWorkspace(workspace.id);
+                      }}
+                    />
+                  )}
+                </Suspense>
               ) : !bundle ? (
                 <Page title={t("Kết nối hồ sơ")}>
                   <p>{busy ? t(busy) : t("Chưa có dữ liệu.")}</p>
@@ -605,12 +783,14 @@ export default function App() {
                 </>
               )}
             </main>
-            <aside
-              className={`evidence ${panel ? "open" : ""}`}
-              aria-label={t("Tri thức và bằng chứng")}
-            >
-              {evidencePanel}
-            </aside>
+            {!researchActive && (
+              <aside
+                className={`evidence ${panel ? "open" : ""}`}
+                aria-label={t("Tri thức và bằng chứng")}
+              >
+                {evidencePanel}
+              </aside>
+            )}
           </div>
         </div>
       </div>

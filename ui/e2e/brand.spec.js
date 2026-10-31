@@ -56,7 +56,7 @@ const TITLES = {
   reviews: "Rà soát hồ sơ",
   history: "Lịch sử quyết định",
   knowledge: "Kho tri thức",
-  settings: "Cài đặt",
+  preferences: "Cài đặt",
 };
 
 // A hash-only goto keeps React state, so load a blank page first, then wait
@@ -86,7 +86,7 @@ const SCREENS = [
   ["chat", (page) => openApp(page, "chat")],
   ["history", (page) => openApp(page, "history")],
   ["knowledge", (page) => openApp(page, "knowledge")],
-  ["settings", (page) => openApp(page, "settings")],
+  ["settings", (page) => openApp(page, "preferences")],
 ];
 
 async function shoot(page, name) {

@@ -137,7 +137,7 @@ test("English mode leaves only source material in Vietnamese", async ({
     route.fulfill({ json: findingResult() }),
   );
   const leaks = {};
-  for (const hash of ["chat", "knowledge", "updates", "history", "settings"]) {
+  for (const hash of ["chat", "knowledge", "updates", "history", "preferences"]) {
     await open(page, hash);
     leaks[hash] = await vietnameseOutsideSource(page);
   }

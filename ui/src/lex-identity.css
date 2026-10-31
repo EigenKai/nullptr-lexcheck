@@ -34,8 +34,27 @@ body {
 .brand-dot {
   color: #9a7230;
 }
+.workspace small,
 .profile small {
   color: #4d6160;
+}
+/* Workspace switcher, shown only when the optional workspace API is on. */
+.workspace {
+  background-color: #fff;
+  border-color: #dfe5df;
+  box-shadow: 0 1px 0 rgba(179, 135, 57, 0.25);
+}
+/* Workspace monogram drawn as a single scale. */
+.workspace-logo {
+  width: 34px;
+  height: 36px;
+  border: 0;
+  border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
+  background-color: var(--brand-scale);
+  color: #fbf3e6;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: inset 0 -3px 0 rgba(179, 135, 57, 0.55);
 }
 .new-chat {
   margin-top: 28px;
