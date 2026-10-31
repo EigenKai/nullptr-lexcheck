@@ -54,7 +54,7 @@ export default function Chat({
             <div className="mascot-wrap">
               <img
                 className="mascot"
-                src="/assets/mascot.png"
+                src="/assets/lex-hero-480.webp"
                 alt="Lex cầm kính lúp và bảng kiểm"
                 width="240"
                 height="240"
@@ -148,7 +148,7 @@ export default function Chat({
                 <div className="message assistant">
                   <div className="assistant-heading">
                     <img
-                      src="/assets/mascot.png"
+                      src="/assets/lex-avatar-64.png"
                       alt=""
                       width="30"
                       height="30"

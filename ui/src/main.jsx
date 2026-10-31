@@ -1,7 +1,11 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource-variable/nunito-sans";
+import "@fontsource-variable/source-serif-4";
+import "@fontsource-variable/jetbrains-mono";
+import "./brand.css";
 import "./prototype.css";
 import "./style.css";
+import "./lex-identity.css";
 import App from "./App.jsx";
 createRoot(document.getElementById("root")).render(<App />);

@@ -1,0 +1,12 @@
+/* Brand tokens taken from the Lex mascot (public/assets/mascot.png).
+   prototype.css maps its older palette names onto these. */
+:root {
+  --brand-scale: #1f5a5f; /* scale teal: primary actions, theme colour */
+  --brand-ink: #0f3038; /* scale shadow: headings and strong text */
+  --brand-cream: #f3d8b4; /* belly cream: highlights and warm surfaces */
+  --brand-gold: #b38739; /* scale edges, magnifier rim: borders and rules only */
+  --brand-navy: #1b2340; /* vest: identifiers set in the mono face */
+  --brand-mint: #62b7a2; /* shield check: decorative accents only */
+  --font-serif: "Source Serif 4 Variable", Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+}

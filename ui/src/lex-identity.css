@@ -1,0 +1,210 @@
+/* Lex identity: presentation layer loaded after prototype.css and style.css.
+   Colours come from brand.css. Selectors, labels and layout rules stay as
+   the reviewer flow defines them; this file only restyles them. */
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Sidebar: solid surface with a faint pangolin-scale pattern on top. */
+.sidebar {
+  background-color: #eef3ef;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='30' viewBox='0 0 36 30'%3E%3Cg fill='none' stroke='%231f5a5f' stroke-opacity='.08' stroke-width='1.3'%3E%3Cpath d='M0 30c0-9 8-15 18-15s18 6 18 15'/%3E%3Cpath d='M-18 15c0-9 8-15 18-15s18 6 18 15M18 15c0-9 8-15 18-15s18 6 18 15'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: 0 100%;
+  border-right: 1px solid #dfe5df;
+}
+.brand {
+  color: var(--brand-ink);
+  gap: 10px;
+  padding-left: 2px;
+  font-size: 29px;
+}
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  margin-right: 0;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: #fbf3e6;
+  border: 2px solid var(--brand-gold);
+  object-fit: cover;
+  box-shadow: 0 6px 14px -8px rgba(15, 48, 56, 0.55);
+}
+.brand-dot {
+  color: var(--brand-gold);
+}
+.workspace {
+  background-color: #fff;
+  border-color: #dfe5df;
+  box-shadow: 0 1px 0 rgba(179, 135, 57, 0.25);
+}
+/* Workspace monogram drawn as a single scale. */
+.workspace-logo {
+  width: 34px;
+  height: 36px;
+  border: 0;
+  border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
+  background-color: var(--brand-scale);
+  color: #fbf3e6;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: inset 0 -3px 0 rgba(179, 135, 57, 0.55);
+}
+.new-chat {
+  background-color: var(--brand-ink);
+  color: #fff;
+}
+.new-chat:hover {
+  background-color: var(--brand-scale);
+}
+.nav-caption {
+  color: #4d6160;
+  letter-spacing: 0.12em;
+}
+.nav-item {
+  color: #3f5556;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+.nav-item:hover {
+  background-color: #e2ebe6;
+  color: var(--brand-ink);
+}
+.nav-item:active {
+  transform: translateY(1px);
+}
+.nav-item.active {
+  background-color: #fff;
+  color: var(--brand-ink);
+  box-shadow:
+    inset 3px 0 0 var(--brand-gold),
+    0 4px 12px -8px rgba(15, 48, 56, 0.45);
+}
+.memory-note {
+  background-color: #fff;
+}
+
+/* Top bar and the check-list status line. */
+.topbar {
+  background-color: var(--bg);
+}
+.demo-pill {
+  background-color: #fff;
+  color: #4a4f3f;
+  border: 1px dashed var(--brand-gold);
+}
+.status-strip {
+  background-color: #fffdf8;
+  color: #2c4447;
+  border-bottom: 1px solid var(--line);
+  box-shadow: inset 0 -2px 0 rgba(179, 135, 57, 0.18);
+}
+.status-strip > span:first-child {
+  background-color: var(--brand-scale);
+  color: #fff;
+  padding: 1px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+.status-strip button {
+  text-decoration: none;
+  background-color: #fff;
+  color: var(--brand-ink);
+  border: 1px solid #cfdcd6;
+  border-radius: 999px;
+  padding: 3px 14px;
+  font-weight: 650;
+}
+.status-strip button:hover {
+  border-color: var(--brand-scale);
+}
+
+/* Type scale: larger titles, same Nunito Sans the tests lock. */
+.page-eyebrow,
+.eyebrow {
+  color: #6b4f1d;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+.page-title {
+  color: var(--brand-ink);
+  font-size: 38px;
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.page-description {
+  color: #44595a;
+}
+.footnote {
+  color: #4f6261;
+}
+
+/* Badges: tinted, bordered, always paired with their text label. */
+.badge {
+  background-color: #e6f0eb;
+  color: #24504a;
+  border: 1px solid #c9ddd4;
+  font-weight: 650;
+}
+.badge.warn {
+  background-color: #f7ecd9;
+  color: #6f4c12;
+  border-color: #e3c99a;
+}
+.badge.off {
+  background-color: #eeefeb;
+  color: #4f5a55;
+  border-color: #dadcd6;
+}
+
+/* Buttons. */
+.button {
+  background-color: var(--brand-scale);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
+    0 8px 18px -12px rgba(15, 48, 56, 0.9);
+  transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+.button:hover:not(:disabled) {
+  background-color: #174a4f;
+  transform: translateY(-1px);
+}
+.button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px -4px rgba(15, 48, 56, 0.8);
+}
+.button.secondary {
+  background-color: #fff;
+  color: var(--brand-scale);
+  border: 1px solid #c9d8d2;
+  box-shadow: 0 1px 2px rgba(15, 48, 56, 0.06);
+}
+.button.secondary:hover:not(:disabled) {
+  background-color: #f2f7f4;
+  border-color: var(--brand-scale);
+}
+.button:disabled,
+.button.secondary:disabled {
+  opacity: 1;
+  background-color: #eceeea;
+  color: #55625c;
+  border: 1px solid #dde1dc;
+  box-shadow: none;
+}
+
+/* Focus: teal ring with a gold halo, visible on cream, white and teal. */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--brand-scale);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(179, 135, 57, 0.38);
+}
