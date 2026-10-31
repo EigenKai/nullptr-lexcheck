@@ -1,6 +1,7 @@
 """Later-layer routes stay off until prerequisites and operators enable them."""
 
 import json
+import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
@@ -32,6 +33,21 @@ from intake.store import AuditEntry, put_immutable
 
 router = APIRouter(prefix="/api")
 ERRORS = {code: {"model": ApiError} for code in (401, 403, 404, 409, 422, 503)}
+
+
+class _ChatClient:
+    """Enforce server chat mode while sharing one cache identity for live/cache."""
+
+    def __init__(self, client, mode):
+        self.client = client
+        self.mode = mode
+
+    @property
+    def scope(self):
+        return self.client.scope
+
+    def generate(self, *, mode, **kwargs):
+        return self.client.generate(mode=self.mode, **kwargs)
 
 
 def disabled():
@@ -87,9 +103,21 @@ def chat(request: ChatRequest, http_request: Request):
     store = http_request.app.state.store
     with store.lock:
         check = auth.get_check(store, request.check_id, person)
+        mode = os.getenv("LEXCHECK_LLM_MODE", "off")
+        if mode not in ("off", "cache", "live"):
+            mode = "off"
+        # The check's stored mode describes detection, independently of chat policy.
+        # Keep live/cache input identical so cache-only chat can replay a live answer.
+        context = check.model_copy(
+            update={
+                "snapshot": check.snapshot.model_copy(
+                    update={"llm_mode": "off" if mode == "off" else "live"}
+                )
+            }
+        )
         try:
             answer = service.owner_module("detect.chat").answer(
-                request, check, client=auth.model_client(person, store)
+                request, context, client=_ChatClient(auth.model_client(person, store), mode)
             )
         except HTTPException as exc:
             if exc.status_code != 503:
