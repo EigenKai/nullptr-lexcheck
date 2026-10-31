@@ -109,15 +109,15 @@ def test_default_chat_does_not_load_optional_harness(inputs, monkeypatch):
     assert turn["provenance"]["retrieval"] == "model_selected_local_tools"
 
 
-def test_fabricated_citation_is_rejected_and_not_saved_as_answer(inputs):
+def test_invalid_optional_citation_is_dropped_without_blocking_chat(inputs):
     from rules.workspace_chat import ConversationStore, answer
 
     store, workspace, _ = inputs
     history = ConversationStore(store)
     thread = history.create(workspace["id"])
-    with pytest.raises(ValueError, match="quotation"):
-        answer(store, history, workspace["id"], thread["id"], "Làm gì?", Client(bad_quote=True))
-    assert history.get(workspace["id"], thread["id"])["turns"] == []
+    turn = answer(store, history, workspace["id"], thread["id"], "Làm gì?", Client(bad_quote=True))
+    assert turn["status"] == "answered" and turn["citations"] == []
+    assert len(history.get(workspace["id"], thread["id"])["turns"]) == 1
 
 
 def test_thread_from_another_workspace_is_not_accessible(inputs):
@@ -157,5 +157,5 @@ def test_law_text_cannot_be_presented_as_company_information(tmp_path):
                 calls=1,
             )
 
-    with pytest.raises(ValueError, match="company"):
-        answer(store, history, workspace["id"], thread["id"], "Công ty làm gì?", WrongClient())
+    turn = answer(store, history, workspace["id"], thread["id"], "Công ty làm gì?", WrongClient())
+    assert turn["status"] == "answered" and turn["citations"][0]["collection"] == "legal"

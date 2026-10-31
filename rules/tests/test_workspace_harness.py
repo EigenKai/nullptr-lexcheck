@@ -24,7 +24,9 @@ def company(tmp_path):
     workbook.save(output)
     store = WorkspaceStore(tmp_path)
     workspace = store.create_blank("Synthetic company")
-    document = store.add_document(workspace["id"], "business", "billing.xlsx", output.getvalue())
+    document = store.add_document(
+        workspace["id"], "business", "billing.xlsx", output.getvalue(), redact_personal=True
+    )
     store.document_context(workspace["id"], document["id"], True)
     return store, workspace, document
 
@@ -165,16 +167,15 @@ def test_native_excel_retains_legal_collection_and_cannot_prove_company_facts(
     document = store.add_document(workspace["id"], "legal", "law.xlsx", output.getvalue())
     conversations = ConversationStore(store)
     conversation = conversations.create(workspace["id"])
-    with pytest.raises(ValueError, match="company information"):
-        answer(
-            store,
-            conversations,
-            workspace["id"],
-            conversation["id"],
-            "Unit price?",
-            ToolModel(document["id"]),
-        )
-    assert conversations.get(workspace["id"], conversation["id"])["turns"] == []
+    turn = answer(
+        store,
+        conversations,
+        workspace["id"],
+        conversation["id"],
+        "Unit price?",
+        ToolModel(document["id"]),
+    )
+    assert turn["citations"][0]["collection"] == "legal"
 
 
 def test_native_excel_limits_ranges_and_does_not_expose_unreviewed_cells(tmp_path):
@@ -446,7 +447,9 @@ def test_workbook_overview_reads_all_seven_reviewed_sheets_without_legal_evidenc
     book.save(output)
     store = WorkspaceStore(tmp_path)
     workspace = store.create_blank("Synthetic summary")
-    document = store.add_document(workspace["id"], "business", "seven.xlsx", output.getvalue())
+    document = store.add_document(
+        workspace["id"], "business", "seven.xlsx", output.getvalue(), redact_personal=True
+    )
     store.document_context(workspace["id"], document["id"], True)
 
     class SummaryModel:
@@ -513,5 +516,54 @@ def test_invalid_summary_quote_can_be_repaired_inside_remaining_agent_budget(tmp
     turn = answer(
         store, history, workspace["id"], conversation["id"], "Summarize selected workbook", client
     )
-    assert turn["status"] == "answered" and turn["provenance"]["model_calls"] == 3
-    assert turn["citations"][0]["quote"] == "A2\t3500"
+    assert turn["status"] == "answered" and turn["provenance"]["model_calls"] == 2
+    assert turn["citations"] == []
+
+
+@pytest.mark.parametrize(
+    "answer_type", ["capability", "conversation", "general_information", "company_information"]
+)
+@pytest.mark.parametrize("web_enabled", [False, True])
+def test_free_chat_answers_without_citations_and_knows_actual_tool_registry(
+    tmp_path, monkeypatch, answer_type, web_enabled
+):
+    monkeypatch.setenv("LEXCHECK_WORKSPACE_TOOL_HARNESS_ENABLED", "1")
+    monkeypatch.setenv("LEXCHECK_WORKSPACE_WEB_SEARCH_ENABLED", "1" if web_enabled else "0")
+    store = WorkspaceStore(tmp_path)
+    workspace = store.create_blank("Synthetic free chat")
+    history = ConversationStore(store)
+    conversation = history.create(workspace["id"])
+
+    class FreeModel:
+        model = "injected-free-chat"
+
+        def generate(self, **kwargs):
+            capabilities = kwargs["payload"]["runtime_capabilities"]
+            assert capabilities["public_web_search"]["enabled"] is web_enabled
+            assert ("web_search" in capabilities["enabled_tools"]) is web_enabled
+            assert "official Vietnamese" in capabilities["public_web_search"]["scope"]
+            return SimpleNamespace(
+                status="live",
+                parsed={
+                    "tool": "final_answer",
+                    "query": None,
+                    "document_id": None,
+                    "page": 1,
+                    "cell_range": None,
+                    "final": {
+                        "answer": "Trả lời trực tiếp theo chức năng hiện có.",
+                        "status": "answered",
+                        "answer_type": answer_type,
+                        "citations": [],
+                    },
+                },
+                calls=1,
+                key="free",
+            )
+
+    turn = answer(
+        store, history, workspace["id"], conversation["id"], "Bạn có thể giúp gì?", FreeModel()
+    )
+    assert turn["status"] == "answered" and turn["citations"] == []
+    assert turn["provenance"]["model_calls"] == 1
+    assert turn["provenance"]["public_search_requests"] == 0

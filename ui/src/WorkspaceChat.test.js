@@ -53,7 +53,9 @@ describe("workspace chat shell", () => {
     }));
     expect(html).toContain("billing.xlsx");
     expect(html).toContain("FILE-example");
-    expect(html).toContain("Xem và chọn bản đã che");
+    expect(html).toContain("Xem và chọn nội dung file");
+    expect(html).toContain("che thông tin cá nhân là tùy chọn");
+    expect(html).not.toContain("Mỗi câu trả lời cần căn cứ");
     expect(html).toContain("Đã có trong workspace");
   });
 });

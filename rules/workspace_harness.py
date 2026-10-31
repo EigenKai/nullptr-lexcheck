@@ -7,13 +7,14 @@ import re
 import uuid
 from dataclasses import asdict, is_dataclass
 from decimal import Decimal, InvalidOperation
+from importlib.util import find_spec
 from typing import Literal
 
 from pydantic import Field
 
 from contracts.models import Contract
 from rules.discovery_models import SearchResult
-from rules.legal_sources import fetch_source, validate_url
+from rules.legal_sources import OFFICIAL_DOMAINS, fetch_source, validate_url
 from rules.workspace_chat import ANSWER_PROMPT, AnswerDraft
 
 
@@ -103,7 +104,11 @@ class WorkspaceTools:
             ):
                 for cell in row:
                     text = reviewed.get(cell.coordinate, "")
-                    if cell.value is None or not text or "[" in text:
+                    if (
+                        cell.value is None
+                        or not text
+                        or (source.get("redact_personal", True) and "[" in text)
+                    ):
                         continue
                     matches = str(cell.value) == text
                     if not matches:
@@ -126,7 +131,7 @@ class WorkspaceTools:
             "sha256": source["sha256"],
             "version": source["version"],
             "page": page,
-            "worksheet": f"Sheet {page}",
+            "worksheet": source["worksheets"][page - 1]["label"],
             "text": "\n".join(lines),
         }
         return self._remember(
@@ -153,7 +158,7 @@ class WorkspaceTools:
                 line
                 for line in text.splitlines()
                 if re.fullmatch(r"[A-Z]+\d+\t[^\n]+", line)
-                and "[" not in line
+                and (not source.get("redact_personal", True) or "[" not in line)
                 and line in original_lines
             ]
             labels, numbers = [], []
@@ -176,7 +181,7 @@ class WorkspaceTools:
                     size += len(line) + 1
             coverage.append(
                 {
-                    "worksheet": f"Sheet {page}",
+                    "worksheet": source["worksheets"][page - 1]["label"],
                     "page": page,
                     "reviewed_cells_available": len(cells),
                     "sampled_cells": len(sampled),
@@ -197,7 +202,7 @@ class WorkspaceTools:
                         "sha256": source["sha256"],
                         "version": source["version"],
                         "page": page,
-                        "worksheet": f"Sheet {page}",
+                        "worksheet": source["worksheets"][page - 1]["label"],
                         "text": "\n".join(sampled),
                     }
                 )
@@ -222,7 +227,8 @@ class WorkspaceTools:
             "worksheets": coverage,
             "coverage": "sampled_reviewed_cells",
             "citation_options": citation_options,
-            "note": "Content summary only; no legal evidence is required. All worksheets were inspected through the reviewed projection; samples are partial, private/unknown text is withheld, and no totals across mixed units were inferred. Copy citation_options quotes verbatim; these may contain multiple contiguous original cell lines. For a multi-sheet summary use at most one citation per worksheet plus one header citation, within ten total. Use read_excel for a specific range if needed.",
+            "redact_personal": source.get("redact_personal", True),
+            "note": "Content summary only; no legal evidence is required. All worksheets were inspected through the selected extraction. Samples are bounded; full text is accessible through selected document reads/search. Redaction applies only if the user selected that mode. No totals across mixed units were inferred. Copy citation_options quotes verbatim; these may contain multiple contiguous original cell lines. For a multi-sheet summary use at most one citation per worksheet plus one header citation, within ten total. Use read_excel or read_document for more content.",
         }
 
     def web_search(self, query):
@@ -405,24 +411,13 @@ def run(index, common, client, *, search=None, max_steps=4):
 
     @tool
     def final_answer(answer: str) -> str:
-        """Return a structured answer only after checking its exact retrieved quotations.
+        """Return a structured conversational answer with optional references.
 
         Args:
             answer: JSON matching the structured AnswerDraft schema.
         """
-        draft = AnswerDraft.model_validate_json(answer)
-        for reference in draft.citations:
-            chunk = tools.retrieved.get(reference.chunk_id)
-            if chunk is None:
-                raise ValueError(
-                    "Final quote is not retrieved; use an observed citation_options entry."
-                )
-            try:
-                index.citation(chunk, reference.quote)
-            except ValueError as exc:
-                raise ValueError(
-                    "Final quote is not exact. Copy an observed citation_options quote verbatim, including coordinate and tabs; do not add characters."
-                ) from exc
+        AnswerDraft.model_validate_json(answer)
+        # The shared renderer drops invalid optional references without blocking chat.
         return answer
 
     class BoundaryModel(Model):
@@ -446,13 +441,28 @@ def run(index, common, client, *, search=None, max_steps=4):
             if self.steps == max_steps:
                 available = ["final_answer"]
             output = client.generate(
-                purpose="workspace_tool_harness_v1",
+                purpose="workspace_tool_harness_v2",
                 payload={
                     **common,
                     "index_sha256": index.fingerprint,
                     "inventory": index.inventory(),
                     "messages": serialized,
                     "tools": available,
+                    "runtime_capabilities": {
+                        "enabled_tools": [
+                            item.name for item in kwargs.get("tools_to_call_from", [])
+                        ],
+                        "public_web_search": {
+                            "enabled": "web_search"
+                            in [item.name for item in kwargs.get("tools_to_call_from", [])],
+                            "scope": "official Vietnamese legal websites only",
+                            "allowed_domains": list(OFFICIAL_DOMAINS),
+                            "request_budget": 1,
+                        },
+                        "document_access": "selected documents in this workspace only",
+                        "native_excel_installed": find_spec("openpyxl") is not None,
+                        "native_pdf_installed": find_spec("pypdf") is not None,
+                    },
                     "steps_remaining": max_steps - self.steps,
                 },
                 prompt=ANSWER_PROMPT

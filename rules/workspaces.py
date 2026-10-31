@@ -156,10 +156,11 @@ class WorkspaceStore:
         official_url=None,
         extracted_pages=None,
         refresh=False,
+        redact_personal=False,
     ):
         if collection not in ("business", "legal"):
             raise ValueError("Unknown document collection.")
-        extracted = extract_document(name, raw)
+        extracted = extract_document(name, raw, redact_personal=redact_personal)
         digest = hashlib.sha256(raw).hexdigest()
         with self._lock:
             workspace = self.get(workspace_id)
@@ -208,14 +209,19 @@ class WorkspaceStore:
             write_json(self.folder(workspace_id) / "workspace.json", workspace)
             return payload
 
-    def refresh_extraction(self, workspace_id, document_id):
+    def refresh_extraction(
+        self, workspace_id, document_id, *, redact_personal=False, retain_selection=False
+    ):
         """Create a new extraction version; retain earlier text and original bytes."""
         with self._lock:
             previous = self.document(workspace_id, document_id)
-            if previous["suffix"] != ".xlsx" or previous["collection"] != "business":
-                raise ValueError("Only company XLSX extraction refresh is supported.")
+            if previous["collection"] != "business":
+                raise ValueError("Only business document extraction refresh is supported.")
             raw = (
-                self.folder(workspace_id) / "documents" / document_id / "original.xlsx"
+                self.folder(workspace_id)
+                / "documents"
+                / document_id
+                / ("original" + previous["suffix"])
             ).read_bytes()
             current = self.add_document(
                 workspace_id,
@@ -224,16 +230,27 @@ class WorkspaceStore:
                 raw,
                 origin=previous["origin"],
                 refresh=True,
+                redact_personal=redact_personal,
             )
             if previous["context_enabled"]:
                 self.document_context(workspace_id, document_id, False)
+                if retain_selection:
+                    current = self.document_context(workspace_id, current["id"], True)
             return current
 
-    def document_context(self, workspace_id, document_id, enabled):
+    def document_context(self, workspace_id, document_id, enabled, *, redact_personal=None):
         with self._lock:
             payload = self.document(workspace_id, document_id)
             if payload["collection"] != "business":
                 raise ValueError("Only company documents are profile context.")
+            if (
+                redact_personal is not None
+                and payload.get("redact_personal", True) != redact_personal
+            ):
+                payload = self.refresh_extraction(
+                    workspace_id, document_id, redact_personal=redact_personal
+                )
+                document_id = payload["id"]
             payload["context_enabled"] = bool(enabled)
             write_json(
                 self.folder(workspace_id) / "documents" / document_id / "document.json", payload

@@ -114,14 +114,14 @@ export function createResearchClient(fetcher = fetch) {
           },
         )
       ).json(),
-    context: async (id, documentId, enabled) =>
+    context: async (id, documentId, enabled, redactPersonal) =>
       (
         await call(
           `workspaces/${encodeURIComponent(id)}/documents/${encodeURIComponent(documentId)}/context`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ enabled }),
+            body: JSON.stringify({ enabled, ...(typeof redactPersonal === "boolean" ? { redact_personal: redactPersonal } : {}) }),
           },
         )
       ).json(),

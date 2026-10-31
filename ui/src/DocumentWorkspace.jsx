@@ -268,10 +268,9 @@ export function DocumentWorkspace({
                   onUpdated();
                 })}>Cập nhật bản trích XLSX an toàn</button>}
                 <p className="document-privacy">
-                  Bản dùng cho model đã che các mẫu email, số điện thoại, mã
-                  định danh và một số cột cá nhân nhận diện được. Bạn cần xem
-                  lại vì có thể còn tên, địa chỉ hoặc dữ liệu nhạy cảm khác.
+                  Model đọc nội dung đầy đủ của file bạn chọn. Bạn có thể bật che thông tin cá nhân; file gốc và các phiên bản trích trước đó được giữ lại.
                 </p>
+                <label className="document-checkbox"><input type="checkbox" checked={preview.redact_personal !== false} disabled={busy} onChange={(event) => { const redact = event.target.checked; act(async () => { setPreview(await researchClient.context(id, preview.id, preview.context_enabled, redact)); setData(await researchClient.detail(id)); onUpdated(); }); }} />Che thông tin cá nhân (tùy chọn)</label>
                 <label className="document-checkbox">
                   <input
                     type="checkbox"
@@ -321,8 +320,7 @@ export function DocumentWorkspace({
                     });
                   }}
                 />
-                Tôi đã xem bản trích đã che và chọn dùng nội dung đó làm ngữ
-                cảnh phân tích.
+                Dùng nội dung file này làm ngữ cảnh phân tích.
               </label>
             )}
           </section>
