@@ -13,6 +13,7 @@ from typing import Literal
 from pydantic import Field
 
 from contracts.models import Contract
+from rules.chat_stream import check_cancelled
 from rules.discovery_models import SearchResult
 from rules.legal_sources import fetch_source, validate_url
 from rules.public_tools import PublicFiles
@@ -41,10 +42,26 @@ class ToolAction(Contract):
     offset: int = Field(default=0, ge=0, le=300000)
 
 
+class ProgressTrace(list):
+    def __init__(self, emit=None, cancelled=None):
+        super().__init__()
+        self.emit, self.cancelled = emit, cancelled
+
+    def append(self, item):
+        check_cancelled(self.cancelled)
+        super().append(item)
+        if self.emit:
+            status = item.get("status", "completed")
+            self.emit(
+                "progress",
+                {"tool": item["tool"], "status": status, "message": f"{item['tool']} · {status}"},
+            )
+
+
 class WorkspaceTools:
-    def __init__(self, index, *, search=None):
+    def __init__(self, index, *, search=None, emit=None, cancelled=None):
         self.index, self.search_provider = index, search
-        self.retrieved, self.trace = {}, []
+        self.retrieved, self.trace = {}, ProgressTrace(emit, cancelled)
         self.web_calls = 0
         self.search_events = []
         self.search_counts_known = True
@@ -403,7 +420,7 @@ class WorkspaceTools:
         }
 
 
-def run(index, common, client, *, search=None, max_steps=None):
+def run(index, common, client, *, search=None, max_steps=None, emit=None, cancelled=None):
     """Run the actual OSS harness with an adapter to the existing model boundary."""
     try:
         from smolagents import ChatMessage, Model, ToolCallingAgent, tool
@@ -417,7 +434,7 @@ def run(index, common, client, *, search=None, max_steps=None):
         max_steps = int(os.getenv("LEXCHECK_WORKSPACE_AGENT_MAX_STEPS", "12"))
     if not 1 <= max_steps <= 40:
         raise ValueError("Tool harness allows one to forty configurable steps.")
-    tools = WorkspaceTools(index, search=search)
+    tools = WorkspaceTools(index, search=search, emit=emit, cancelled=cancelled)
 
     @tool
     def search_documents(query: str) -> str:
@@ -514,6 +531,7 @@ def run(index, common, client, *, search=None, max_steps=None):
             self.outputs, self.steps, self.exhausted = [], 0, False
 
         def generate(self, messages, **kwargs):
+            check_cancelled(cancelled)
             from rules.workspace_index import WorkspaceIndex
 
             if WorkspaceIndex(index.store, index.workspace_id).fingerprint != index.fingerprint:
@@ -623,6 +641,7 @@ def run(index, common, client, *, search=None, max_steps=None):
             json.dumps({**common, "inventory": index.inventory()}, ensure_ascii=False)
         )
     except Exception as exc:
+        check_cancelled(cancelled)
         if model.exhausted:
             raise RuntimeError(
                 "Tool harness budget exhausted without a grounded final answer."

@@ -1,4 +1,43 @@
 // Private local research uses its own server-issued token, never the reviewer session.
+async function readMessageStream(response, onEvent) {
+  if (!response.body) throw new Error("API chưa trả về luồng phản hồi.");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let turn = null;
+  function dispatch(frame) {
+    let type = "message";
+    const lines = [];
+    for (const line of frame.split(/\r?\n/)) {
+      if (line.startsWith("event:")) type = line.slice(6).trim();
+      if (line.startsWith("data:")) lines.push(line.slice(5).trimStart());
+    }
+    if (!lines.length) return;
+    const data = JSON.parse(lines.join("\n"));
+    if (type === "error") throw new Error(data.message || "Luồng phản hồi bị gián đoạn.");
+    if (type === "done") turn = data.turn;
+    onEvent({ ...data, type });
+  }
+  try {
+    while (!turn) {
+      const chunk = await reader.read();
+      buffer += decoder.decode(chunk.value, { stream: !chunk.done });
+      let separator;
+      while ((separator = /\r?\n\r?\n/.exec(buffer))) {
+        dispatch(buffer.slice(0, separator.index));
+        buffer = buffer.slice(separator.index + separator[0].length);
+        if (turn) break;
+      }
+      if (chunk.done) break;
+    }
+    if (!turn) throw new Error("Kết nối kết thúc trước khi câu trả lời được lưu. Hãy thử lại.");
+    return turn;
+  } finally {
+    await reader.cancel().catch(() => {});
+    reader.releaseLock();
+  }
+}
+
 export function createResearchClient(fetcher = fetch) {
   let token = null;
   let profileEnabled = false;
@@ -23,11 +62,13 @@ export function createResearchClient(fetcher = fetch) {
         401: "Phiên nghiên cứu đã đổi. Tải lại trang để kết nối.",
         409: "Yêu cầu trước đang xử lý hoặc dữ liệu đã thay đổi. Chờ rồi thử lại.",
         413: "Workbook vượt giới hạn 15 MB.",
-        422: "Yêu cầu hoặc bằng chứng chưa đủ để xử lý. Kiểm tra dữ liệu rồi thử lại.",
+        422: "Dữ liệu gửi chưa đúng định dạng. Kiểm tra yêu cầu rồi thử lại.",
       };
-      throw new Error(
+      const error = new Error(
         messages[response.status] || "Chưa tải được dữ liệu workspace.",
       );
+      error.status = response.status;
+      throw error;
     }
     return response;
   }
@@ -82,6 +123,27 @@ export function createResearchClient(fetcher = fetch) {
           },
         )
       ).json(),
+    async streamMessage(id, conversationId, question, onEvent, signal) {
+      const path = `workspaces/${encodeURIComponent(id)}/conversations/${encodeURIComponent(conversationId)}/messages`;
+      const options = {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+            body: JSON.stringify({ question }),
+            signal: signal
+              ? AbortSignal.any([signal, AbortSignal.timeout(300000)])
+              : AbortSignal.timeout(300000),
+      };
+      let response;
+      try {
+        response = await call(`${path}/stream`, options);
+      } catch (error) {
+        if (error.status !== 404 && error.status !== 405) throw error;
+        const turn = await (await call(path, options)).json();
+        onEvent?.({ type: "done", turn });
+        return turn;
+      }
+      return readMessageStream(response, onEvent || (() => {}));
+    },
     ensureDemo: async () =>
       (await call("workspaces/demo", { method: "POST" })).json(),
     createWorkspace: async (name, description) =>

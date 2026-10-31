@@ -116,7 +116,10 @@ class ConversationStore:
             write_json(self._path(workspace_id, thread_id), thread)
 
 
-def answer(store, history, workspace_id, thread_id, question, client):
+def answer(store, history, workspace_id, thread_id, question, client, *, emit=None, cancelled=None):
+    from rules.chat_stream import check_cancelled
+
+    check_cancelled(cancelled)
     question = question.strip()
     if not 1 <= len(question) <= 2500:
         raise ValueError("Question is empty or too long.")
@@ -146,7 +149,9 @@ def answer(store, history, workspace_id, thread_id, question, client):
     if os.getenv("LEXCHECK_WORKSPACE_TOOL_HARNESS_ENABLED", "0") == "1":
         from rules.workspace_harness import run
 
-        draft, selected, trace, provenance = run(index, common, client)
+        draft, selected, trace, provenance = run(
+            index, common, client, emit=emit, cancelled=cancelled
+        )
     else:
         first = client.generate(
             purpose="workspace_chat_plan_v1",
@@ -278,5 +283,6 @@ def answer(store, history, workspace_id, thread_id, question, client):
         "provenance": provenance,
         "created_at": datetime.now(UTC).isoformat(),
     }
+    check_cancelled(cancelled)
     history.append(workspace_id, thread_id, turn)
     return turn

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { researchClient } from "./research.js";
+import { ChatMarkdown } from "./ChatMarkdown.jsx";
 import "./workspace-chat.css";
 
 const statusLabel = {
@@ -87,6 +88,8 @@ export function WorkspaceChat({
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState("");
+  const [streamingAnswer, setStreamingAnswer] = useState("");
+  const [toolStatus, setToolStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeTurn, setActiveTurn] = useState(null);
@@ -96,6 +99,7 @@ export function WorkspaceChat({
   const alive = useRef(true);
   const createdHere = useRef(null);
   const messagesEnd = useRef(null);
+  const streamController = useRef(null);
   const documents = workspace.documents || [];
   const companyCount = documents.filter(
     (doc) => doc.collection === "business" && doc.context_enabled,
@@ -112,6 +116,7 @@ export function WorkspaceChat({
     alive.current = true;
     return () => {
       alive.current = false;
+      streamController.current?.abort();
       onBusyChange(false);
     };
   }, [workspaceId, onBusyChange]);
@@ -155,7 +160,7 @@ export function WorkspaceChat({
       block: "nearest",
       behavior: "smooth",
     });
-  }, [turns.length, busy]);
+  }, [turns.length, busy, streamingAnswer, toolStatus]);
 
   async function send(event) {
     event.preventDefault();
@@ -167,6 +172,10 @@ export function WorkspaceChat({
     setError("");
     setQuestion("");
     setPendingQuestion(text);
+    setStreamingAnswer("");
+    setToolStatus("Đang kết nối với Lex…");
+    const controller = new AbortController();
+    streamController.current = controller;
     try {
       let target = conversation;
       if (!target) {
@@ -178,7 +187,25 @@ export function WorkspaceChat({
         setConversation(target);
         onConversationSelected(target.id);
       }
-      const turn = await researchClient.message(workspaceId, target.id, text);
+      const turn = await researchClient.streamMessage(workspaceId, target.id, text, (event) => {
+        if (!alive.current) return;
+        if (event.type === "answer_delta") {
+          setStreamingAnswer((previous) => previous + event.text);
+          setToolStatus("Đang trả lời…");
+        } else if (event.type === "progress") {
+          const labels = {
+            web_search: "Đang tìm trên web…",
+            open_url: "Đang đọc trang web…",
+            download_file: "Đang tải tài liệu…",
+            read_file: "Đang đọc nội dung file…",
+            read_excel: "Đang đọc Excel…",
+            summarize_excel: "Đang đọc các sheet Excel…",
+            search_documents: "Đang tìm trong tài liệu workspace…",
+            read_document: "Đang đọc tài liệu…",
+          };
+          setToolStatus(event.message || labels[event.tool] || "Lex đang xử lý…");
+        }
+      }, controller.signal);
       if (!alive.current) return;
       setConversation((previous) => ({
         ...target,
@@ -191,16 +218,18 @@ export function WorkspaceChat({
         ],
       }));
       setActiveTurn(turn.id);
+      setStreamingAnswer("");
+      setPendingQuestion("");
       onTurnSaved();
     } catch (e) {
       if (alive.current) {
-        setError(e.message);
+        setError(e.name === "AbortError" ? "Đã dừng phản hồi." : e.message);
         setQuestion(text);
       }
     } finally {
       if (alive.current) {
         setBusy(false);
-        setPendingQuestion("");
+        if (streamController.current === controller) streamController.current = null;
         onBusyChange(false);
       }
     }
@@ -303,7 +332,7 @@ export function WorkspaceChat({
                     {statusLabel[turn.status] || turn.status}
                   </span>
                 </div>
-                <p>{turn.answer || "API chưa trả về nội dung câu trả lời."}</p>
+                <ChatMarkdown>{turn.answer || "API chưa trả về nội dung câu trả lời."}</ChatMarkdown>
                 <div className="workspace-chat-citations">
                   {(turn.citations || []).map((citation, index) => (
                     <button
@@ -334,14 +363,13 @@ export function WorkspaceChat({
               </div>
             </article>
           ))}
-          {busy && (
+          {(busy || streamingAnswer) && (
             <div className="workspace-chat-waiting" role="status">
               <p>Bạn: {pendingQuestion}</p>
-              <b>Lex đang xử lý yêu cầu…</b>
-              <span>
-                Đang chờ kết quả tìm/đọc chỉ mục tài liệu và phản hồi từ model.
-                Dấu vết công cụ sẽ hiện khi API trả về.
-              </span>
+              <b>Lex</b>
+              {streamingAnswer && <ChatMarkdown>{streamingAnswer}</ChatMarkdown>}
+              <span>{busy ? toolStatus : "Phản hồi chưa hoàn tất."}</span>
+              {busy && <button type="button" className="button" onClick={() => streamController.current?.abort()}>Dừng</button>}
             </div>
           )}
           <div ref={messagesEnd} />
