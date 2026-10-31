@@ -28,6 +28,8 @@ def write_json(path, payload):
 class WorkspaceStore:
     def __init__(self, root):
         self.root = Path(root).resolve()
+        if any(part.lower() in ("test_final", "nullptr-test-final") for part in self.root.parts):
+            raise ValueError("Held-out evaluation paths are not workspace stores.")
         self.root.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
 

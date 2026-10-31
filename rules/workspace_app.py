@@ -87,7 +87,8 @@ def create_app(
             or urlparse(origin).netloc != request.url.netloc
         ):
             return JSONResponse({"code": "foreign_origin"}, status_code=403)
-        if request.url.path.startswith("/api/") and not secrets.compare_digest(
+        route_path = request.url.path.removeprefix(request.scope.get("root_path", ""))
+        if route_path.startswith("/api/") and not secrets.compare_digest(
             request.headers.get("X-Workspace-Token", ""), app.state.token
         ):
             return JSONResponse({"code": "session_required"}, status_code=401)
@@ -168,13 +169,18 @@ def create_app(
     app.state.start_research = start
 
     @app.get("/", response_class=HTMLResponse)
-    def index():
+    def index(request: Request):
         return (
             Path(__file__)
             .with_name("workspace.html")
             .read_text(encoding="utf-8")
             .replace("__SESSION_TOKEN__", json.dumps(app.state.token))
+            .replace("__API_ROOT__", json.dumps(request.scope.get("root_path", "")))
         )
+
+    @app.get("/session")
+    def local_session():
+        return {"token": app.state.token, "mode": "private_local_research"}
 
     @app.get("/api/workspaces")
     def list_workspaces():

@@ -1,8 +1,22 @@
 # Private workspace research pilot
 
-This package implements the user's new rental-housing example without changing another owner's UI, shared contracts or runtime TPBVSK pack. It is a **separate local UI**, not a new workspace inside the deployed reviewer app. `LEXCHECK_WORKSPACE_RESEARCH_ENABLED` defaults to `0`; the explicit local `--enable` option enables this pilot only. No production layer flag changes.
+This package implements the user's rental-housing example. The follow-up integration, explicitly requested by the user, adds a selector and native research screens to the existing React UI and mounts its private API in the main FastAPI app. It is a coordinated integration PR; shared contracts and the runtime TPBVSK pack are unchanged. `LEXCHECK_WORKSPACE_RESEARCH_ENABLED` defaults to `0`. No production layer flag changes.
 
 ## Run
+
+For the integrated demo (recommended for the current user walkthrough):
+
+```powershell
+# Build existing React UI first: cd ui; npm ci; npm run build; cd ..
+$env:LEXCHECK_WORKSPACE_RESEARCH_ENABLED = "1"
+.venv/Scripts/python.exe -X utf8 -m uvicorn app.main:app --host 127.0.0.1 --port 8002
+```
+
+Open <http://127.0.0.1:8002> and choose the housing workspace from the selector below the LexCheck logo. Existing private workspaces are read from ignored `cache/workspaces`; `LEXCHECK_WORKSPACE_DIR` can select a separate local store. A link with `#workspace/<id>` opens a specific workspace. The main sidebar exposes overview, rule/source tracing, original PDF/text pages, workbook structure and research gaps. Switching back to TPBVSK restores the existing reviewer screens. Creating another housing workspace uploads the workbook to the local API and starts research only on the explicitly labelled button. Viewing saved results makes no model calls.
+
+The main app mounts research under `/workspace-research` only when the flag is enabled; otherwise no research store is instantiated. Its loopback/Origin/token checks still apply after mounting. The server issues the research session through `/workspace-research/session`, distinct from the canonical reviewer session. This local-only integration is not production multi-company authorization. The research subapp's lifespan is managed by the parent app.
+
+The standalone pilot remains available for development:
 
 From repository root with the authorized OpenAI adapter available:
 
@@ -56,4 +70,4 @@ These are the Windows equivalents of the repository Makefile targets (`make` is 
 
 The initial actual workbook has seven sheets. A real API run autonomously found and downloaded an official PDF, OCRed eight pages, and saved three pending PCCC proposals with graph nodes in all three layers. It stopped at the five-source-attempt limit; four fetch URLs failed, many scan pages were omitted, dates remain unverified and four planned topic groups lacked proposals. This demonstrates orchestration, not legal coverage/accuracy. Results, original documents and API caches remain private and are not fixtures or evaluation results.
 
-Browser automation could not obtain an accessibility state from available Chrome windows during verification; visual/manual browser review remains outstanding. API workflow tests and JavaScript syntax checks pass independently. The deployed UI is unchanged. Integrating this pilot with that UI needs a separate coordinated PR through its owner. MiniRAG has not been installed or substituted by this package.
+Computer Use stopped Chrome verification because it could not determine the current Windows browser URL confidently enough to enforce its policy; direct visual review remains outstanding. The integrated API was exercised against the running main service, preserving the existing `/api/demo` and private workspace results. Linux `make test/lint/eval/smoke` pass; frontend unit tests and production build pass. Windows-only failures in the existing final-eval tests (`O_NOFOLLOW` and symlink privileges) were not worked around in another owner's code; the complete suite passes in Linux. Only synthetic test datasets were used. MiniRAG has not been installed or substituted by this package. No hosted deployment or layer activation is claimed.
