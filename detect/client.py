@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from openai import APITimeoutError
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 
 def cache_key(value):
@@ -126,7 +126,10 @@ class ModelClient:
                 )
             if response.status != "completed" or response.output_parsed is None:
                 return ModelOutput("unavailable", key=key, calls=1, error="no_complete_output")
-            parsed = schema.model_validate(response.output_parsed)
+            raw = response.output_parsed
+            parsed = schema.model_validate(raw.model_dump() if isinstance(raw, BaseModel) else raw)
+        except ValidationError:
+            return ModelOutput("unavailable", key=key, calls=1, error="schema_invalid")
         except APITimeoutError:
             return ModelOutput("unavailable", key=key, calls=1, error="timeout")
         except Exception:  # noqa: BLE001 - transport boundary must preserve deterministic results
