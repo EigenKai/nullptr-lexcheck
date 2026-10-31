@@ -13,10 +13,11 @@ test("live review, source versions, change queue, and responsive Vietnamese font
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  await expect(page.locator(".status-strip")).toContainText("API kết nối");
   await expect(
     page.getByRole("heading", { name: "Rà soát hồ sơ", exact: true }),
   ).toBeVisible();
+  // A healthy API connection shows no status banner.
+  await expect(page.locator(".status-strip")).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Trợ lý Lex", exact: true }),
   ).toBeVisible();

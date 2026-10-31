@@ -114,6 +114,86 @@
   animation-duration: 220ms;
 }
 
+/* Settings: language switch and the data connection. */
+.settings-group {
+  max-width: 640px;
+  margin-top: 22px;
+  padding: 20px 22px;
+  background-color: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 14px 26px -24px rgba(15, 48, 56, 0.7);
+}
+.settings-group h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  color: var(--brand-ink);
+}
+.segmented {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background-color: #f3efe6;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: #3f5556;
+  cursor: pointer;
+}
+.segment input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.segment.active {
+  background-color: var(--brand-scale);
+  color: #fff;
+  box-shadow: 0 6px 14px -10px rgba(15, 48, 56, 0.9);
+}
+.segment:has(input:focus-visible) {
+  outline: 3px solid var(--brand-scale);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(179, 135, 57, 0.38);
+}
+.settings-hint {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: #4f6261;
+}
+.settings-facts {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+.settings-facts div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+}
+.settings-facts dt {
+  padding-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b4f1d;
+}
+.settings-facts dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--brand-ink);
+}
+
 @media (max-width: 640px) {
   .demo-pill {
     font-size: 11px;

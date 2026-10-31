@@ -1,5 +1,7 @@
 import React from "react";
 import { Icon, Badge, recordNames } from "./shared.jsx";
+import { languageOf, useT } from "../i18n.jsx";
+
 export default function Chat({
   bundle,
   features = {},
@@ -14,23 +16,22 @@ export default function Chat({
   versions,
   check,
 }) {
+  const t = useT();
   const canAsk = !!features.layer1 && !!check && !offline && !busy;
   const chatNote = !features.layer1
-    ? "Khung chat đang ở chế độ xem trước. Hỏi đáp chưa được bật trên backend; chưa gửi câu hỏi hoặc gọi model."
+    ? t("Chế độ xem trước; chưa gửi câu hỏi hoặc gọi model.")
     : offline
-      ? "API mất kết nối. Câu hỏi chưa được gửi."
+      ? t("API mất kết nối; chưa gửi câu hỏi.")
       : check
-        ? `Chỉ hỏi trên snapshot ${check.id}. Trả lời không tự đóng công việc.`
-        : "Chọn một kết quả kiểm tra trong màn Rà soát trước khi hỏi.";
+        ? t("Chỉ hỏi trên snapshot {id}; trả lời không tự đóng việc.", {
+            id: check.id,
+          })
+        : t("Chọn một kết quả ở Rà soát hồ sơ trước khi hỏi.");
   return (
     <div className="chat-page">
-      <div className="eyebrow">
-        <span className="status-dot" />
-        KHÔNG GIAN DOANH NGHIỆP · CO-DEMO
-      </div>
       {(!features.layer1 || offline) && (
         <div className="chat-availability" role="status">
-          <b>Chưa kết nối chatbot</b>
+          <b>{t("Chưa kết nối chatbot")}</b>
           <p>{chatNote}</p>
         </div>
       )}
@@ -39,23 +40,18 @@ export default function Chat({
           <section className="hero">
             <div className="hero-copy">
               <h1>
-                Chào bạn,
+                {t("Chào bạn,")}
                 <br />
-                mình kiểm tra
+                {t("mình kiểm tra")}
                 <br />
-                <em>điều gì hôm nay?</em>
+                <em>{t("điều gì hôm nay?")}</em>
               </h1>
-              <p>
-                Cùng Lex tìm đúng căn cứ,
-                <br />
-                hiểu rõ hồ sơ và tiếp nối công việc.
-              </p>
             </div>
             <div className="mascot-wrap">
               <img
                 className="mascot"
                 src="/assets/lex-hero-480.webp"
-                alt="Lex cầm kính lúp và bảng kiểm"
+                alt={t("Lex cầm kính lúp và bảng kiểm")}
                 width="240"
                 height="240"
               />
@@ -63,59 +59,61 @@ export default function Chat({
           </section>
           <div className="context-line">
             <Icon name="network" />
-            <b>{versions.length} phiên bản hồ sơ</b>
+            <b>{t("{count} phiên bản hồ sơ", { count: versions.length })}</b>
             <span>·</span>
-            <button onClick={() => go("knowledge")}>Xem kho tri thức ↗</button>
+            <button onClick={() => go("knowledge")}>
+              {t("Xem kho tri thức ↗")}
+            </button>
           </div>
-          <div className="suggestion-label">BẮT ĐẦU TỪ MỘT VIỆC CỤ THỂ</div>
+          <div className="suggestion-label">{t("BẮT ĐẦU NHANH")}</div>
           <div className="suggestions">
             {[
               [
                 "check",
-                "Rà soát nội dung",
-                "Đối chiếu hồ sơ công bố",
+                t("Rà soát nội dung"),
+                t("Đối chiếu hồ sơ công bố"),
                 () => go("reviews"),
               ],
               [
                 "library",
-                "Hỏi từ kho tri thức",
-                "Tìm hồ sơ và nguồn đang có",
-                () => ask("Có hồ sơ nào trong kho?"),
+                t("Hỏi từ kho tri thức"),
+                t("Tìm hồ sơ và nguồn đang có"),
+                () => ask(t("Có hồ sơ nào trong kho?")),
                 !canAsk,
               ],
               [
                 "refresh",
-                "Có gì vừa thay đổi?",
-                "So sánh công dụng v1 / v2",
+                t("Có gì vừa thay đổi?"),
+                t("So sánh công dụng v1 / v2"),
                 () => go("updates"),
               ],
               [
                 "clock",
-                "Tiếp tục việc còn dở",
-                "Xem quyết định đã ghi nhận",
+                t("Tiếp tục việc còn dở"),
+                t("Xem quyết định đã ghi nhận"),
                 () => go("history"),
               ],
-            ].map(([i, t, sub, fn, disabled]) => (
+            ].map(([icon, title, subtitle, fn, disabled]) => (
               <button
                 className="suggestion"
-                key={t}
+                key={icon}
                 onClick={fn}
                 disabled={disabled}
               >
                 <span>
-                  <Icon name={i} />
+                  <Icon name={icon} />
                 </span>
                 <div>
-                  <b>{t}</b>
-                  <small>{sub}</small>
+                  <b>{title}</b>
+                  <small>{subtitle}</small>
                 </div>
                 <span className="arrow">↗</span>
               </button>
             ))}
           </div>
           <div className="section-head">
-            <h2>Tài liệu bạn đang làm việc</h2>
-            <button onClick={() => go("knowledge")}>Xem tất cả ↗</button>
+            <h2>{t("Tài liệu đang làm việc")}</h2>
+            <button onClick={() => go("knowledge")}>{t("Xem tất cả ↗")}</button>
           </div>
           <div className="file-list">
             {bundle.request.records.slice(0, 2).map((r) => (
@@ -128,23 +126,25 @@ export default function Chat({
                   <Icon name="file" />
                 </span>
                 <span className="file-info">
-                  <b>{recordNames[r.kind]}</b>
+                  <b>{t(recordNames[r.kind])}</b>
                   <small>
                     {r.id} · {r.product_id}
                   </small>
                 </span>
-                <Badge neutral>Mẫu</Badge>
+                <Badge neutral>{t("Mẫu")}</Badge>
               </button>
             ))}
           </div>
         </>
       ) : (
         <>
-          <h1 className="chat-title">Hỏi từ kho tri thức</h1>
+          <h1 className="chat-title">{t("Hỏi từ kho tri thức")}</h1>
           <div className="messages" aria-live="polite">
             {messages.map((m, i) => (
               <React.Fragment key={i}>
-                <div className="message user">{m.question}</div>
+                <div className="message user" lang={languageOf(m.question)}>
+                  {m.question}
+                </div>
                 <div className="message assistant">
                   <div className="assistant-heading">
                     <img
@@ -157,22 +157,22 @@ export default function Chat({
                     <Badge neutral>
                       {m.model_status} ·{" "}
                       {m.status === "needs_evidence"
-                        ? "Cần thêm chứng cứ"
-                        : "Có trích dẫn"}
+                        ? t("Cần thêm chứng cứ")
+                        : t("Có trích dẫn")}
                     </Badge>
                   </div>
-                  <p>{m.answer}</p>
+                  <p lang={languageOf(m.answer)}>{m.answer}</p>
                   {(m.citations || []).map((citation, index) => (
                     <blockquote key={index}>
                       <code>{citation.clause_version_id}</code>
-                      <p>{citation.quote}</p>
+                      <p lang="vi">{citation.quote}</p>
                     </blockquote>
                   ))}
                   <button
                     className="button secondary"
                     onClick={() => go("knowledge")}
                   >
-                    Xem hồ sơ nguồn ↗
+                    {t("Xem hồ sơ nguồn ↗")}
                   </button>
                 </div>
               </React.Fragment>
@@ -189,7 +189,7 @@ export default function Chat({
           }}
         >
           <label className="sr-only" htmlFor="prompt">
-            Nhập câu hỏi cho Lex
+            {t("Nhập câu hỏi cho Lex")}
           </label>
           <textarea
             id="prompt"
@@ -197,8 +197,8 @@ export default function Chat({
             onChange={(e) => setPrompt(e.target.value)}
             placeholder={
               features.layer1
-                ? "Hỏi về hồ sơ, công dụng hoặc việc cần xử lý…"
-                : "Chưa kết nối chatbot · chưa thể gửi câu hỏi"
+                ? t("Hỏi về hồ sơ, công dụng hoặc việc cần xử lý…")
+                : t("Chưa thể gửi câu hỏi")
             }
             rows="2"
             maxLength="1000"
@@ -208,12 +208,12 @@ export default function Chat({
           <div className="composer-bottom">
             <span className="composer-context">
               <Icon name="network" />
-              Kho tri thức CO-DEMO
+              {t("Kho tri thức CO-DEMO")}
             </span>
             <button
               className="send"
               type="submit"
-              aria-label="Gửi câu hỏi"
+              aria-label={t("Gửi câu hỏi")}
               disabled={!canAsk || !prompt.trim()}
             >
               ↑

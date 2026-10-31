@@ -1,4 +1,5 @@
 import React from "react";
+import { N_ } from "../i18n.jsx";
 const paths = {
   chat: "M5 4h14v14H9l-5 3V4ZM8 8h8M8 12h5",
   library: "M4 4h4v16H4zM11 4h4v16h-4zM18 4l3 15",
@@ -12,6 +13,8 @@ const paths = {
   file: "M5 3h9l5 5v13H5zM14 3v6h5M8 13h8M8 17h5",
   arrow: "M7 17 17 7M7 7h10v10",
   plus: "M12 5v14M5 12h14",
+  settings:
+    "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z",
 };
 export function Icon({ name }) {
   return (
@@ -21,31 +24,32 @@ export function Icon({ name }) {
   );
 }
 export const tabs = [
-  ["chat", "Trợ lý Lex"],
-  ["knowledge", "Kho tri thức"],
-  ["reviews", "Rà soát hồ sơ"],
-  ["updates", "Cập nhật nguồn"],
-  ["history", "Lịch sử quyết định"],
+  ["chat", N_("Trợ lý Lex")],
+  ["knowledge", N_("Kho tri thức")],
+  ["reviews", N_("Rà soát hồ sơ")],
+  ["updates", N_("Cập nhật nguồn")],
+  ["history", N_("Lịch sử quyết định")],
 ];
 export const recordNames = {
-  dossier: "Hồ sơ công bố",
-  marketing: "Nội dung quảng cáo",
-  evidence_index: "Mục lục chứng từ",
-  ad_confirmation: "Hồ sơ xác nhận quảng cáo",
-  customer_script: "Kịch bản chăm sóc",
-  scientific_evidence: "Tài liệu khoa học",
+  dossier: N_("Hồ sơ công bố"),
+  marketing: N_("Nội dung quảng cáo"),
+  evidence_index: N_("Mục lục chứng từ"),
+  ad_confirmation: N_("Hồ sơ xác nhận quảng cáo"),
+  customer_script: N_("Kịch bản chăm sóc"),
+  scientific_evidence: N_("Tài liệu khoa học"),
 };
 export const ruleNames = {
-  warning: "Cảnh báo bắt buộc",
-  uses: "Đối chiếu công dụng",
-  confirmation: "Bằng chứng xác nhận",
-  endorsement: "Hình ảnh / bảo chứng",
-  medicinal: "Tuyên bố chữa bệnh",
+  warning: N_("Cảnh báo bắt buộc"),
+  uses: N_("Đối chiếu công dụng"),
+  confirmation: N_("Bằng chứng xác nhận"),
+  endorsement: N_("Hình ảnh / bảo chứng"),
+  medicinal: N_("Tuyên bố chữa bệnh"),
 };
-export const date = (value) =>
+// Pass the translator as the second argument so the empty case is localised.
+export const date = (value, t = (text) => text) =>
   value
     ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
-    : "Chưa có";
+    : t("Chưa có");
 export function Page({ eyebrow, title, action, children }) {
   return (
     <div className="content-page appear">

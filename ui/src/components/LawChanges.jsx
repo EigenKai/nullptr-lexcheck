@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Badge } from "./shared.jsx";
+import { useT, N_ } from "../i18n.jsx";
 
 export default function LawChanges({
   history,
@@ -9,31 +10,29 @@ export default function LawChanges({
   session,
   busy,
 }) {
+  const t = useT();
   const [note, setNote] = useState("");
   const [reviewDate, setReviewDate] = useState(
     new Date().toISOString().slice(0, 10),
   );
   const manager = session?.group === "manager";
   const send = (path, body) =>
-    act("Đang ghi nhận diễn giải nguồn…", async () => {
+    act(N_("Đang ghi nhận…"), async () => {
       await request(path, { method: "POST", body: JSON.stringify(body) });
       await refreshHistory();
     });
   return (
     <section className="form-panel">
-      <h2>Thay đổi pháp luật · preloaded</h2>
-      <p>
-        Nguồn mới phải được kiểm chứng và có diễn giải của người có quyền. Ngày
-        ban hành, hiệu lực, nhận và kích hoạt được giữ riêng.
-      </p>
+      <h2>{t("Thay đổi pháp luật")}</h2>
+      <p>{t("Nguồn mới cần kiểm chứng và người có quyền diễn giải.")}</p>
       <button
         className="button secondary"
         disabled={!manager || !!busy}
         onClick={() =>
-          act("Đang nạp sự kiện preloaded…", async () => {
+          act(N_("Đang nạp thay đổi luật…"), async () => {
             const response = await fetch("/legal-event.json");
             if (!response.ok)
-              throw new Error("Không đọc được sự kiện preloaded.");
+              throw new Error(N_("Không đọc được sự kiện preloaded."));
             await request("/legal-changes", {
               method: "POST",
               body: JSON.stringify(await response.json()),
@@ -42,14 +41,14 @@ export default function LawChanges({
           })
         }
       >
-        Nạp thay đổi luật preloaded
+        {t("Nạp thay đổi luật preloaded")}
       </button>
       <label>
-        Ghi chú diễn giải
+        {t("Ghi chú diễn giải")}
         <textarea value={note} onChange={(e) => setNote(e.target.value)} />
       </label>
       <label>
-        Ngày rà soát
+        {t("Ngày rà soát")}
         <input
           type="date"
           value={reviewDate}
@@ -64,27 +63,31 @@ export default function LawChanges({
             {state.event.new_clause.id}
           </h3>
           <p>
-            Ban hành {state.event.issued_on} · Hiệu lực{" "}
-            {state.event.effective_on} · Nhận {state.event.received_at}
+            {t("Ban hành {issued} · Hiệu lực {effective} · Nhận {received}", {
+              issued: state.event.issued_on,
+              effective: state.event.effective_on,
+              received: state.event.received_at,
+            })}
           </p>
           <div className="diff-grid">
             <section>
-              <h3>Căn cứ trước</h3>
+              <h3>{t("Căn cứ trước")}</h3>
               <p>
-                Phiên bản {state.event.previous_clause_version_id}; xem snapshot
-                trong lịch sử để giữ đúng căn cứ cũ.
+                {t("Phiên bản {version}; xem snapshot trong lịch sử.", {
+                  version: state.event.previous_clause_version_id,
+                })}
               </p>
             </section>
             <section>
-              <h3>Điều khoản mới</h3>
-              <blockquote>{state.event.new_clause.text}</blockquote>
+              <h3>{t("Điều khoản mới")}</h3>
+              <blockquote lang="vi">{state.event.new_clause.text}</blockquote>
               <p>{state.event.new_clause.verification_status}</p>
             </section>
           </div>
           <p>
-            Diễn giải: {state.interpretation} · Người duyệt:{" "}
-            {state.reviewed_by || "Chưa có"} · Kích hoạt:{" "}
-            {state.activated_at || "Chưa kích hoạt"}
+            {t("Diễn giải")}: <span lang="vi">{state.interpretation}</span> ·{" "}
+            {t("Người duyệt")}: {state.reviewed_by || t("Chưa có")} ·{" "}
+            {t("Kích hoạt")}: {state.activated_at || t("Chưa có")}
           </p>
           <div className="action-row">
             <button
@@ -99,7 +102,7 @@ export default function LawChanges({
                 })
               }
             >
-              Ghi nhận diễn giải
+              {t("Ghi nhận diễn giải")}
             </button>
             <button
               className="button secondary"
@@ -113,7 +116,7 @@ export default function LawChanges({
                 })
               }
             >
-              Bác bỏ diễn giải
+              {t("Bác bỏ diễn giải")}
             </button>
             <button
               className="button secondary"
@@ -124,7 +127,7 @@ export default function LawChanges({
                 })
               }
             >
-              Kích hoạt theo ngày
+              {t("Kích hoạt theo ngày")}
             </button>
           </div>
         </article>

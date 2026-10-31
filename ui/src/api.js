@@ -1,3 +1,5 @@
+import { N_, translate } from "./i18n.jsx";
+
 /** HTTP failures never trigger offline fallback; only a failed network transport does. */
 export class ApiError extends Error {
   constructor(message, status = 0) {
@@ -15,16 +17,16 @@ export async function request(path, options = {}, fetcher = fetch) {
       signal: AbortSignal.timeout(15000),
     });
   } catch {
-    throw new ApiError("Không kết nối được API. Kiểm tra dịch vụ rồi thử lại.");
+    throw new ApiError(N_("Không kết nối được API. Kiểm tra dịch vụ rồi thử lại."));
   }
   if (!response.ok) {
     const messages = {
-      503: "Chức năng này chưa sẵn sàng trên backend. Chưa lưu thay đổi.",
-      409: "Phiên bản đã thay đổi. Hãy tải lại lịch sử trước khi tiếp tục.",
-      422: "Dữ liệu chưa đúng cấu trúc yêu cầu. Kiểm tra hồ sơ và thử lại.",
-      401: "Phiên demo đã hết hạn. Hãy kết nối lại tài khoản mẫu.",
-      403: "Tài khoản mẫu không có quyền thực hiện thao tác này.",
-      404: "Không tìm thấy dữ liệu hoặc tính năng chưa được bật.",
+      503: N_("Chức năng này chưa sẵn sàng trên backend. Chưa lưu thay đổi."),
+      409: N_("Phiên bản đã thay đổi. Hãy tải lại lịch sử trước khi tiếp tục."),
+      422: N_("Dữ liệu chưa đúng cấu trúc yêu cầu. Kiểm tra hồ sơ và thử lại."),
+      401: N_("Phiên demo đã hết hạn. Hãy kết nối lại tài khoản mẫu."),
+      403: N_("Tài khoản mẫu không có quyền thực hiện thao tác này."),
+      404: N_("Không tìm thấy dữ liệu hoặc tính năng chưa được bật."),
     };
     throw new ApiError(
       messages[response.status] ||
@@ -47,7 +49,7 @@ export async function loadWorkspace(fetcher = fetch, headers = {}) {
     const response = await fetcher("/demo.json");
     if (!response.ok)
       throw new ApiError(
-        "Không tải được bản mẫu ngoại tuyến.",
+        N_("Không tải được bản mẫu ngoại tuyến."),
         response.status,
       );
     return {
@@ -67,10 +69,13 @@ export async function loadWorkspace(fetcher = fetch, headers = {}) {
   };
 }
 
-export function resultLabel(result) {
-  if (!result) return "Chưa chạy kiểm tra";
+const vietnamese = (text, values) => translate("vi", text, values);
+
+/** Pass the screen's translator as `t` so the label follows the chosen language. */
+export function resultLabel(result, t = vietnamese) {
+  if (!result) return t("Chưa chạy kiểm tra");
   if (result.findings.length)
-    return `${result.findings.length} mục cần xem xét`;
+    return t("{count} mục cần xem xét", { count: result.findings.length });
   if (
     result.status === "no_issue_found" &&
     result.mode === "live" &&
@@ -79,9 +84,11 @@ export function resultLabel(result) {
     result.rules_checked.length &&
     !result.skipped_rule_ids.length
   ) {
-    return `No issue found under ${result.rules_checked.length} encoded rules`;
+    return t("No issue found under {count} encoded rules", {
+      count: result.rules_checked.length,
+    });
   }
-  return "Chưa đủ thông tin";
+  return t("Chưa đủ thông tin");
 }
 
 export function evidenceParts(text, evidence) {
