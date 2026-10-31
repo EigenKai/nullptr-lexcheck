@@ -274,3 +274,38 @@ def test_cache_publication_is_atomic(tmp_path, monkeypatch):
         == "live"
     )
     assert len(published) == 1 and len(list(tmp_path.iterdir())) == 1
+
+
+def test_tools_change_cache_key_and_reach_transport():
+    from types import SimpleNamespace
+
+    received = []
+
+    def transport(**kwargs):
+        received.append(kwargs)
+        return SimpleNamespace(status="completed", output_parsed=CandidateBatch(candidates=()))
+
+    client = ModelClient(model="test", transport=transport)
+    args = {
+        "purpose": "test",
+        "payload": {},
+        "prompt": "test",
+        "schema": CandidateBatch,
+        "mode": "live",
+    }
+    plain = client.generate(**args)
+    web = client.generate(**args, tools=[{"type": "web_search"}])
+    assert plain.key != web.key
+    assert received[1]["tools"] == [{"type": "web_search"}]
+
+
+def test_no_tools_kwarg_when_empty():
+    from types import SimpleNamespace
+
+    def transport(*, model, instructions, input, text_format, store):
+        return SimpleNamespace(status="completed", output_parsed=CandidateBatch(candidates=()))
+
+    result = ModelClient(model="test", transport=transport).generate(
+        purpose="test", payload={}, prompt="test", schema=CandidateBatch, mode="live", tools=()
+    )
+    assert result.status == "live"

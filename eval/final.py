@@ -67,10 +67,13 @@ def _manifest(inputs, mode):
         "dirty": bool(
             subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
         ),
-        "prompt_hashes": [
-            cache_key(PROMPT),
-            cache_key((ROOT / "eval/plain-chat-prompt.txt").read_text()),
-        ],
+        "prompt_hashes": {
+            "lexcheck": cache_key(PROMPT),
+            **{
+                system: cache_key((ROOT / "eval/plain-chat-prompt.txt").read_text())
+                for system in ("plain_chat", "plain_chat_web", "retrieval")
+            },
+        },
     }
 
 
@@ -138,14 +141,15 @@ def run(directory, *, mode=None, check_only=False):
     try:
         _write_exclusive(directory / "final-manifest.json", manifest)
         # No cache persistence; all input is the captured, hashed bytes above.
-        report, _ = evaluate_cases(cases, phase="held_out", mode=mode, client=ModelClient())
+        report, trace = evaluate_cases(cases, phase="held_out", mode=mode, client=ModelClient())
         output = report.model_copy(
             update={
                 "git_sha": manifest["git_sha"],
                 "dataset_sha256": manifest["dataset_sha256"],
-                "note": "Single-use measurement; only executed scope counted. Unavailable cases excluded.",
+                "note": "Single-use measurement; only executed scope counted. Unavailable cases excluded. B, B+ and R score raw model candidates; LexCheck scores validated findings.",
             }
         ).model_dump(mode="json")
+        _write_exclusive(directory / "final-diagnostics.json", trace[-1])
         _write_exclusive(directory / "final-results.json", output)
         return output, 0
     except Exception:  # noqa: BLE001 - fixed error code, no input-bearing diagnostics

@@ -16,6 +16,7 @@ from detect.validator import validate_findings
 from detect.versions import assess_basis
 from eval.baselines import keyword, score
 from eval.metrics import per_rule
+from eval.retrieval import retrieval_payload
 from rules.engine import evaluate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +30,7 @@ def load_cases(directory):
     )
 
 
-SYSTEMS = ("keyword", "plain_chat", "lexcheck")
+SYSTEMS = ("keyword", "plain_chat", "plain_chat_web", "retrieval", "lexcheck")
 
 
 def eval_workers():
@@ -51,19 +52,31 @@ def _evaluate_case(case, *, mode, active_client, prompt):
     gold_all = {tuple(pair) for pair in label["gold"]}
     gold = {(version, rule) for version, rule in gold_all if rule in scope}
     payload = model_input(request, evaluation.rule_snapshots, evaluation.clause_snapshots)
-    started = perf_counter()
-    plain = active_client.generate(
-        purpose="plain-chat-v1",
-        payload=payload,
-        prompt=prompt,
-        schema=WireCandidateBatch,
-        mode=mode,
-    )
-    plain_batch, plain_invalid = (
-        validate_candidates(plain.parsed) if plain.parsed is not None else (None, 0)
-    )
-    if plain.calls:
-        latencies["plain_chat"].append((perf_counter() - started) * 1000)
+    outputs, batches, rejections = {}, {}, {}
+    for system, purpose, model_payload, tools in (
+        ("plain_chat", "plain-chat-v1", payload, ()),
+        ("plain_chat_web", "plain-chat-web-v1", payload, ({"type": "web_search"},)),
+        ("retrieval", "retrieval-v1", retrieval_payload(payload), ()),
+    ):
+        started = perf_counter()
+        output = active_client.generate(
+            purpose=purpose,
+            payload=model_payload,
+            prompt=prompt,
+            schema=WireCandidateBatch,
+            mode=mode,
+            **({"tools": tools} if tools else {}),
+        )
+        outputs[system] = output
+        batch, invalid = (
+            validate_candidates(output.parsed) if output.parsed is not None else (None, 0)
+        )
+        batches[system] = batch
+        rejections[system] = {"schema_invalid": invalid} if invalid else {}
+        if output.calls:
+            latencies[system].append((perf_counter() - started) * 1000)
+        calls[system] = output.calls
+        failures[system] = int(output.status == "unavailable")
     started = perf_counter()
     suggestion = suggest_with_trace(request, evaluation, client=active_client)
     if suggestion.calls:
@@ -87,30 +100,22 @@ def _evaluate_case(case, *, mode, active_client, prompt):
         and evaluation.applicability == "applies"
         and basis.status == "ready"
     )
-    predictions = {name: None for name in rows}
-    if measurable:
-        rows["keyword"].append((keyword(request, scope), gold))
-        if plain.parsed is not None:
-            rows["plain_chat"].append(
-                ({(c.record_version_id, c.rule_id) for c in plain_batch.candidates}, gold)
-            )
-        if detection.model_status != "unavailable":
-            rows["lexcheck"].append(
-                ({(f.record_version_id, f.rule_id) for f in validation.findings}, gold)
-            )
+    predictions = {system: None for system in SYSTEMS}
     if measurable:
         predictions["keyword"] = sorted(keyword(request, scope))
-        if plain.parsed is not None:
-            predictions["plain_chat"] = sorted(
-                {(c.record_version_id, c.rule_id) for c in plain_batch.candidates}
-            )
+        for system, output in outputs.items():
+            if output.parsed is not None:
+                predictions[system] = sorted(
+                    {(c.record_version_id, c.rule_id) for c in batches[system].candidates}
+                )
         if detection.model_status != "unavailable":
             predictions["lexcheck"] = sorted(
                 {(f.record_version_id, f.rule_id) for f in validation.findings}
             )
-    calls["plain_chat"] += plain.calls
+    for system, predicted in predictions.items():
+        if predicted is not None:
+            rows[system].append((set(predicted), gold))
     calls["lexcheck"] += suggestion.calls
-    failures["plain_chat"] += int(plain.status == "unavailable")
     failures["lexcheck"] += int(detection.model_status == "unavailable")
     trace = {
         "case": name,
@@ -118,17 +123,22 @@ def _evaluate_case(case, *, mode, active_client, prompt):
         "basis_status": basis.status,
         "scope": sorted(scope),
         "input_hash": cache_key(payload),
-        "prompt_hashes": {"plain_chat": cache_key(prompt), "lexcheck": cache_key(PROMPT)},
-        "plain_status": plain.status,
+        "prompt_hashes": {
+            **{system: cache_key(prompt) for system in outputs},
+            "lexcheck": cache_key(PROMPT),
+        },
+        "plain_status": outputs["plain_chat"].status,
+        "plain_chat_web_status": outputs["plain_chat_web"].status,
+        "retrieval_status": outputs["retrieval"].status,
         "lexcheck_status": detection.model_status,
         "rejected": dict(
             Counter(r.reason for r in validation.rejected) + Counter(dict(suggestion.rejected))
         ),
-        "errors": {"plain_chat": plain.error, "lexcheck": suggestion.error},
-        "rejected_by_system": {
-            "plain_chat": {"schema_invalid": plain_invalid} if plain_invalid else {},
-            "lexcheck": dict(suggestion.rejected),
+        "errors": {
+            **{system: output.error for system, output in outputs.items()},
+            "lexcheck": suggestion.error,
         },
+        "rejected_by_system": {**rejections, "lexcheck": dict(suggestion.rejected)},
         "unmeasured_gold_pairs": len(gold_all - gold),
     }
     return rows, calls, failures, latencies, trace, scope
@@ -173,7 +183,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
             )
             for s in rows
         ),
-        note="Draft labels require owner review. Keyword baseline includes structured uses differences. Scores cover executed rule scope only; unavailable cases excluded. Latency measures logical transport calls when available; queue metrics not measured.",
+        note="B, B+ and R score raw model candidates; LexCheck scores validated findings. Draft labels require owner review. Keyword baseline includes structured uses differences. Scores cover executed rule scope only; unavailable cases excluded. Latency measures logical transport calls when available; queue metrics not measured.",
     )
     trace.append(
         {

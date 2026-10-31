@@ -91,8 +91,8 @@ def test_rejected_proposals_remain_in_denominator(monkeypatch):
         (("test", request, {"gold": [[version.id, rule.id]]}),), mode="live", client=client
     )
     assert report.rule_ids == (rule.id,)
-    assert report.systems[2].evaluated_cases == 1
-    assert report.systems[2].true_positive == 1
+    assert report.systems[-1].evaluated_cases == 1
+    assert report.systems[-1].true_positive == 1
     assert trace[0]["rejected"] == {"quote_mismatch": 1}
     assert received[0] == received[1]
     assert "gold" not in str(received)
@@ -113,3 +113,72 @@ def test_plain_input_excludes_patterns_and_examples():
         and "negative_examples" not in rule
         for rule in payload["rules"]
     )
+
+
+def _baseline_run(transport):
+    from detect.client import ModelClient
+    from eval.run import ROOT, evaluate_cases, load_cases
+
+    return evaluate_cases(
+        load_cases(ROOT / "data/dev")[:1],
+        mode="live",
+        client=ModelClient(model="test", transport=transport),
+    )
+
+
+def test_bplus_same_prompt_and_input_as_plain_plus_web_search():
+    from types import SimpleNamespace
+
+    from detect.candidates import CandidateBatch
+
+    received = []
+
+    def transport(**kwargs):
+        received.append(kwargs)
+        return SimpleNamespace(status="completed", output_parsed=CandidateBatch(candidates=()))
+
+    _baseline_run(transport)
+    plain, web = received[:2]
+    assert web["instructions"] == plain["instructions"]
+    assert web["input"] == plain["input"]
+    assert "tools" not in plain
+    assert web["tools"] == [{"type": "web_search"}]
+
+
+def test_retrieval_top3_deterministic():
+    from eval.retrieval import retrieve
+
+    first = retrieve("khuyến cáo thuốc chữa bệnh màu tương phản")
+    assert len(first) == 3 and first == retrieve("khuyến cáo thuốc chữa bệnh màu tương phản")
+    assert first != retrieve("Giấy xác nhận đăng ký nội dung quảng cáo")
+    assert [p["id"] for p in retrieve("")] == sorted(p["id"] for p in retrieve(""))
+
+
+def test_retrieval_payload_replaces_clauses_only():
+    from eval.retrieval import retrieval_payload, retrieve
+
+    bundle = load_demo()
+    payload = model_input(bundle.request, bundle.rules, bundle.clauses)
+    result = retrieval_payload(payload)
+    assert {k: v for k, v in result.items() if k != "clauses"} == {
+        k: v for k, v in payload.items() if k != "clauses"
+    }
+    query = "\n".join(
+        v.text for v in bundle.request.versions if v.id in bundle.request.target_version_ids
+    )
+    assert result["clauses"] == list(retrieve(query))
+    assert len(result["clauses"]) == 3 and result["clauses"] != payload["clauses"]
+    assert payload["clauses"] == [c.model_dump(mode="json") for c in bundle.clauses]
+
+
+def test_new_baseline_failure_is_unavailable_not_negative():
+    def failed(**kwargs):
+        raise RuntimeError("unsupported tools or private failure")
+
+    report, trace = _baseline_run(failed)
+    for name in ("plain_chat_web", "retrieval"):
+        score = next(s for s in report.systems if s.system == name)
+        assert score.evaluated_cases == 0 and score.false_negative == 0
+        assert score.model_calls == 1 and score.failed_calls == 1
+        assert trace[0]["predictions"][name] is None
+        assert trace[-1]["errors"][name] == {"transport_failed": 1}

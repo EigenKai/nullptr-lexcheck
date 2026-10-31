@@ -17,7 +17,7 @@ def test_offline_eval_system(monkeypatch):
     path = ROOT / "eval/results/latest.json"
     report = EvaluationReport.model_validate_json(path.read_text())
     assert report.n == 15
-    assert len(report.systems) == 3
+    assert len(report.systems) == 5
     before = path.read_bytes()
     main()
     assert before == path.read_bytes()
@@ -113,6 +113,19 @@ def test_parallel_workers_overlap(monkeypatch):
     assert report.systems[1].model_calls == 4
 
 
+def test_report_has_five_systems_in_order():
+    from eval.run import evaluate_cases, load_cases
+
+    report, _ = evaluate_cases(load_cases(ROOT / "data/dev"))
+    assert [s.system for s in report.systems] == [
+        "keyword",
+        "plain_chat",
+        "plain_chat_web",
+        "retrieval",
+        "lexcheck",
+    ]
+
+
 def test_plain_wire_rejections_keep_call_and_denominator_live():
     from types import SimpleNamespace
 
@@ -143,6 +156,6 @@ def test_plain_wire_rejections_keep_call_and_denominator_live():
     )
     assert all(s.failed_calls == 0 for s in report.systems)
     assert report.systems[1].evaluated_cases == 1 and report.systems[1].true_positive == 1
-    for system in ("plain_chat", "lexcheck"):
+    for system in ("plain_chat", "plain_chat_web", "retrieval", "lexcheck"):
         assert trace[0]["rejected_by_system"][system] == {"schema_invalid": 1}
         assert trace[-1]["rejected_by_system"][system] == {"schema_invalid": 1}
