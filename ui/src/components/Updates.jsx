@@ -2,6 +2,7 @@ import React from "react";
 import { Icon, Page, Badge, recordNames, ruleNames, date } from "./shared.jsx";
 import { resultLabel, evidenceParts } from "../api.js";
 import LawChanges from "./LawChanges.jsx";
+import ChangeImpact from "./ChangeImpact.jsx";
 export default function Updates({
   bundle,
   setDraft,
@@ -91,6 +92,7 @@ export default function Updates({
         </article>
       )}
       <h2>Hàng đợi kiểm tra lại</h2>
+      {features.task_dashboard && <ChangeImpact history={history} />}
       {features.layer2 && (
         <LawChanges
           history={history}

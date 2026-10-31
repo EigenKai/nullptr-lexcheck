@@ -3,6 +3,7 @@ import { Icon, Page, Badge, recordNames, ruleNames, date } from "./shared.jsx";
 import { resultLabel, evidenceParts } from "../api.js";
 import Evaluation from "./Evaluation.jsx";
 import Patterns from "./Patterns.jsx";
+import TaskDashboard from "./TaskDashboard.jsx";
 export default function History({
   history,
   busy,
@@ -43,6 +44,9 @@ export default function History({
         <p>Chưa lấy được lịch sử từ API.</p>
       ) : (
         <>
+          {features.task_dashboard && (
+            <TaskDashboard history={history} inspect={inspect} />
+          )}
           <div className="metrics">
             <div className="metric">
               <strong>{history.checks.length}</strong>
