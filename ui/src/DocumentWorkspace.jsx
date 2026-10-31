@@ -26,7 +26,6 @@ export function DocumentWorkspace({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [preview, setPreview] = useState(null);
-  const [rawPreview, setRawPreview] = useState(false);
   const [ruleId, setRuleId] = useState(null);
   const isNew = id === "new";
 
@@ -266,26 +265,13 @@ export function DocumentWorkspace({
                   const detail = await researchClient.detail(id);
                   setData(detail);
                   onUpdated();
-                })}>Cập nhật bản trích XLSX an toàn</button>}
+                })}>Cập nhật bản trích XLSX</button>}
                 <p className="document-privacy">
-                  Bản dùng cho model đã che các mẫu email, số điện thoại, mã
-                  định danh và một số cột cá nhân nhận diện được. Bạn cần xem
-                  lại vì có thể còn tên, địa chỉ hoặc dữ liệu nhạy cảm khác.
+                  Model đọc toàn bộ nội dung file bạn chọn. File gốc và các phiên bản trích trước đó được giữ lại.
                 </p>
-                <label className="document-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={rawPreview}
-                    onChange={(event) => setRawPreview(event.target.checked)}
-                  />
-                  Xem bản trích gốc cục bộ
-                </label>
               </>
             )}
-            {(kind === "business" && !rawPreview
-              ? preview.model_pages
-              : preview.pages
-            ).map((text, index) => (
+            {preview.pages.map((text, index) => (
               <details key={index} open={index === 0}>
                 <summary>Trang/sheet {index + 1}</summary>
                 <pre>
@@ -304,7 +290,7 @@ export function DocumentWorkspace({
                   type="checkbox"
                   checked={preview.context_enabled}
                   disabled={
-                    busy || preview.method === "xlsx-cell-text-limited" || !preview.model_pages.some((text) => text.trim())
+                    busy || !preview.pages.some((text) => text.trim())
                   }
                   onChange={(event) => {
                     const enabled = event.target.checked;
@@ -313,6 +299,7 @@ export function DocumentWorkspace({
                         id,
                         preview.id,
                         enabled,
+                        false,
                       );
                       setPreview(value);
                       const detail = await researchClient.detail(id);
@@ -321,8 +308,7 @@ export function DocumentWorkspace({
                     });
                   }}
                 />
-                Tôi đã xem bản trích đã che và chọn dùng nội dung đó làm ngữ
-                cảnh phân tích.
+                Dùng nội dung file này làm ngữ cảnh phân tích.
               </label>
             )}
           </section>

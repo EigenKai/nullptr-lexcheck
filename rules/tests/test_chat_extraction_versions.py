@@ -8,7 +8,7 @@ from rules.workspace_index import WorkspaceIndex
 from rules.workspaces import WorkspaceStore
 
 
-def test_same_sha_new_extraction_version_rebuilds_index_and_excludes_stale_history(
+def test_same_sha_new_extraction_version_rebuilds_index_and_marks_historical_sources(
     tmp_path, monkeypatch
 ):
     store = WorkspaceStore(tmp_path)
@@ -27,10 +27,10 @@ def test_same_sha_new_extraction_version_rebuilds_index_and_excludes_stale_histo
     assert after.search("xe đạp")[0]["version"] == 2
     client = Client()
     answer(store, history, workspace["id"], thread["id"], "Nhắc lại?", client)
-    assert (
-        client.calls[0]["payload"]["history"][0]["answer"]
-        == "Earlier sources are no longer selected."
-    )
+    prior = client.calls[0]["payload"]["history"][0]
+    assert prior["answer"] == "Doanh nghiệp sửa chữa xe đạp."
+    assert prior["source_status"] == "changed"
+    assert client.calls[1]["payload"]["sources"][0]["version"] == 2
     assert history.get(workspace["id"], thread["id"])["turns"][0]["citations"][0]["version"] == 1
 
 

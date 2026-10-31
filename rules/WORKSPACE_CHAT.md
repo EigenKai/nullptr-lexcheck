@@ -1,5 +1,9 @@
 # Indexed workspace conversations
 
+An optional model-selected OSS tool loop, native Excel reading and bounded
+official-source web search are described in [WORKSPACE_TOOLS.md](WORKSPACE_TOOLS.md).
+Both additional flags default off; the original path below remains the default.
+
 This local pilot restores the preview's assistant screen beside the separate
 business and legal document libraries. The same screen and retrieval code serve
 every workspace; there are no industry-specific answers or sample fallbacks.
@@ -24,8 +28,9 @@ authorization.
 
 `WorkspaceIndex` maintains a persistent SQLite FTS5 index per workspace. Only
 selected business text, legal documents, the user's workspace description and
-derived inventory metadata are searchable. Business model text uses the reviewed
-redacted extraction. Filenames and legal text never establish company activity.
+derived inventory metadata are searchable. Business model text uses full selected
+native content by default, with personal-field redaction as an explicit option.
+Filenames and legal text never establish company activity.
 
 The existing `detect.client.ModelClient` first returns a structured retrieval
 plan. The host runs actual `search_documents` and `read_document` tools against
@@ -34,11 +39,12 @@ nine retrieved passages. This is bounded host orchestration, not a native SDK
 function-call loop, external web research, or automatic legal-rule activation.
 The prompt and cache input include the conversation, workspace and index version.
 
-Each cited quote must occur exactly in the retrieved passage and original
-extracted page. Saved evidence retains document ID, version, raw source hash,
-page and Unicode code-point offsets. A company-information answer requires a
-business source. Sources changed/revoked during generation cause rejection.
-Model failures and unsupported quotes never produce a substitute sample answer.
+Chat citations are optional. Each displayed quote must occur exactly in the
+retrieved passage and original extracted page. Invalid optional quotes are omitted
+without blocking the answer. Saved references retain document ID, version, raw
+source hash, page and Unicode code-point offsets. Conversation, capability and
+general questions can be answered directly. Sources changed/revoked during
+generation still cause rejection. Model failures never produce a sample answer.
 
 Conversation manifests reference separate immutable turn files. Previous answers
 whose cited sources were deselected/changed are excluded from subsequent model
@@ -65,7 +71,13 @@ smoke used the configured model on synthetic company text; it is integration
 evidence, not a measured legal or retrieval accuracy score. Browser visual review
 remains pending because Computer Use stopped on an unknown browser URL.
 
-## Existing Excel documents
+## Existing Excel documents and earlier extraction versions
+
+New v3 extractions preserve native cell text and worksheet names without a
+recognized-label whitelist. The default model mode is full selected content;
+`Che thông tin cá nhân` is optional and creates a new extraction version. Original
+bytes and earlier text remain intact. Only selected workspace documents enter
+model input. The v2 behavior below describes earlier retained snapshots.
 
 Chat lists existing business filenames, IDs, versions and model selection states.
 Open the redacted extraction directly there and select it for chat; an existing

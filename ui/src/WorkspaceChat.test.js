@@ -2,8 +2,17 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { WorkspaceChat, WorkspaceConversations } from "./WorkspaceChat.jsx";
+import { ChatMarkdown } from "./ChatMarkdown.jsx";
 
 describe("workspace chat shell", () => {
+  it("renders Markdown emphasis, lists, tables and code as elements", () => {
+    const html = renderToStaticMarkup(React.createElement(ChatMarkdown, null,
+      '**Nội dung**\n\n- Một mục\n\n| Cột | Giá |\n| --- | --- |\n| A | 3 |\n\n```js\nconst price = 3;\n```'));
+    expect(html).toContain("<strong>Nội dung</strong>");
+    expect(html).toContain("<li>Một mục</li>");
+    expect(html).toContain("<table>");
+    expect(html).toContain('class="language-js"');
+  });
   it("restores greeting, composer, document links and evidence column without a canned answer", () => {
     const html = renderToStaticMarkup(
       React.createElement(WorkspaceChat, {
@@ -53,7 +62,10 @@ describe("workspace chat shell", () => {
     }));
     expect(html).toContain("billing.xlsx");
     expect(html).toContain("FILE-example");
-    expect(html).toContain("Xem và chọn bản đã che");
+    expect(html).toContain("Xem và chọn nội dung file");
+    expect(html).toContain("Model đọc toàn bộ nội dung file được chọn");
+    expect(html).not.toContain("Che thông tin cá nhân");
+    expect(html).not.toContain("Mỗi câu trả lời cần căn cứ");
     expect(html).toContain("Đã có trong workspace");
   });
 });

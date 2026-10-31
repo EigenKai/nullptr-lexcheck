@@ -1,9 +1,12 @@
 """Local-only, default-off workspace research pilot; does not mount into shared API."""
 
 import argparse
+import asyncio
 import hashlib
 import json
+import logging
 import os
+import queue
 import secrets
 import threading
 import time
@@ -13,7 +16,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import Field
 
 from contracts.models import Contract
@@ -43,6 +46,7 @@ class WorkspaceCreate(Contract):
 
 class DocumentContext(Contract):
     enabled: bool
+    redact_personal: bool | None = None
 
 
 class ProfileStart(Contract):
@@ -268,6 +272,106 @@ def create_app(
         finally:
             lock.release()
 
+    @app.post("/api/workspaces/{workspace_id}/conversations/{conversation_id}/messages/stream")
+    async def chat_message_stream(
+        workspace_id: str, conversation_id: str, payload: ConversationMessage, request: Request
+    ):
+        if os.getenv("LEXCHECK_WORKSPACE_CHAT_ENABLED", "0") != "1":
+            raise HTTPException(503, "Workspace chat is disabled.")
+        conversations.get(workspace_id, conversation_id)
+        with chat_lock_guard:
+            lock = chat_locks.setdefault((workspace_id, conversation_id), threading.Lock())
+        if not lock.acquire(blocking=False):
+            raise HTTPException(409, "Conversation already has a pending response.")
+        from detect.client import ModelClient
+        from rules.chat_stream import StreamCancelled, StreamingModelClient, check_cancelled
+        from rules.workspace_chat import answer
+
+        events = queue.Queue()
+        cancelled = threading.Event()
+
+        def emit(kind, data):
+            check_cancelled(cancelled)
+            events.put((kind, data))
+
+        load_local_env()
+        base = (
+            chat_client_factory(workspace_id)
+            if chat_client_factory
+            else ModelClient(
+                cache_dir=store.folder(workspace_id) / "chat-cache",
+                user_id="local-session",
+                group="manager",
+                acl_hash=workspace_id,
+            )
+        )
+        client = StreamingModelClient(base, emit, cancelled)
+
+        def work():
+            try:
+                emit(
+                    "progress",
+                    {"tool": "assistant", "status": "started", "message": "Đã nhận yêu cầu…"},
+                )
+                turn = answer(
+                    store,
+                    conversations,
+                    workspace_id,
+                    conversation_id,
+                    payload.question,
+                    client,
+                    emit=emit,
+                    cancelled=cancelled,
+                )
+                emit("done", {"turn": turn})
+            except StreamCancelled:
+                pass
+            except Exception as exc:  # noqa: BLE001 - never expose private provider payloads or credentials
+                kinds = []
+                cause = exc
+                while cause is not None and len(kinds) < 6:
+                    kinds.append(type(cause).__name__)
+                    cause = cause.__cause__ or cause.__context__
+                logging.getLogger(__name__).warning(
+                    "Workspace stream failed: %s", " -> ".join(kinds)
+                )
+                if not cancelled.is_set():
+                    events.put(
+                        (
+                            "error",
+                            {"message": f"Không thể hoàn tất phản hồi ({kinds[-1]}). Hãy thử lại."},
+                        )
+                    )
+            finally:
+                lock.release()
+                events.put((None, None))
+
+        threading.Thread(target=work, daemon=True, name="workspace-chat-stream").start()
+
+        async def generate_events():
+            try:
+                while not cancelled.is_set():
+                    if await request.is_disconnected():
+                        break
+                    try:
+                        kind, data = events.get_nowait()
+                    except queue.Empty:
+                        await asyncio.sleep(0.03)
+                        continue
+                    if kind is None:
+                        break
+                    yield f"event: {kind}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+                    if kind in ("done", "error"):
+                        break
+            finally:
+                client.cancel()
+
+        return StreamingResponse(
+            generate_events(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
+        )
+
     @app.get("/api/workspaces")
     def list_workspaces():
         return [store.migrate_documents(workspace["id"]) for workspace in store.list()]
@@ -375,7 +479,16 @@ def create_app(
 
     @app.patch("/api/workspaces/{workspace_id}/documents/{document_id}/context")
     def document_model_context(workspace_id: str, document_id: str, selection: DocumentContext):
-        return store.document_context(workspace_id, document_id, selection.enabled)
+        mode = (
+            selection.redact_personal
+            if selection.redact_personal is not None
+            else False
+            if selection.enabled
+            else None
+        )
+        return store.document_context(
+            workspace_id, document_id, selection.enabled, redact_personal=mode
+        )
 
     @app.post("/api/workspaces/{workspace_id}/documents/{document_id}/extract")
     def document_extract(workspace_id: str, document_id: str):

@@ -351,6 +351,15 @@
   border-bottom: 1px solid #dce3d1;
   font-size: 12px;
 }
+
+.workspace-chat-source-link {
+  overflow-wrap: anywhere;
+}
+
+.workspace-chat-source-link small {
+  display: block;
+  margin-top: 6px;
+}
 .workspace-chat-trace summary {
   cursor: pointer;
 }
@@ -504,5 +513,22 @@
 .chat-document-preview pre { max-height: 240px; overflow: auto; white-space: pre-wrap; background: #f8f9f5; padding: 12px; font-size: 12px; }
 .chat-document-preview details { margin: 10px 0; }
 @media (max-width: 640px) { .chat-document-row { align-items: flex-start; flex-direction: column; } }
+
+.chat-markdown { line-height: 1.75; overflow-wrap: anywhere; min-width: 0; }
+.chat-markdown > :first-child { margin-top: 0; }
+.chat-markdown > :last-child { margin-bottom: 0; }
+.chat-markdown p { white-space: normal; margin: .65em 0; }
+.chat-markdown ul, .chat-markdown ol { padding-left: 1.5em; margin: .65em 0; }
+.chat-markdown li { margin: .2em 0; }
+.chat-markdown h1, .chat-markdown h2, .chat-markdown h3 { font-size: 1.15em; margin: 1em 0 .5em; }
+.chat-markdown pre { overflow: auto; max-width: 100%; padding: 14px; border-radius: 8px; background: #f1f3ed; }
+.chat-markdown code { font-family: ui-monospace, monospace; font-size: .88em; }
+.chat-markdown :not(pre) > code { padding: .1em .3em; background: #f1f3ed; border-radius: 3px; }
+.chat-markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: .8em 0; }
+.chat-markdown th, .chat-markdown td { border: 1px solid #d5ddcd; padding: 7px 10px; text-align: left; }
+.chat-markdown th { background: #f1f3ed; }
+.chat-markdown blockquote { margin: .7em 0; padding-left: 14px; border-left: 3px solid #a5b895; color: #59644f; }
+.chat-markdown a { color: #3f6b37; text-decoration: underline; }
+.workspace-chat-waiting .chat-markdown { color: #283224; font-weight: 400; }
 
 }

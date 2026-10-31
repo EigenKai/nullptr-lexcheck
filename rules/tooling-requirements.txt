@@ -1,0 +1,4 @@
+# Optional isolated tool-runner environment; repository defaults need none of these.
+smolagents==1.26.0
+openpyxl==3.1.5
+pypdf==6.21.4

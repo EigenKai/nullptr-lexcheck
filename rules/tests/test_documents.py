@@ -44,6 +44,7 @@ def test_redacted_preview_is_local_and_model_context_is_opt_in(tmp_path):
         "business",
         "record.txt",
         "Họ tên: PRIVATE PERSON\nEmail: private@example.invalid\nĐiện thoại: 0912345678\nHoạt động: cho thuê phòng".encode(),
+        redact_personal=True,
     )
     assert "PRIVATE PERSON" in doc["pages"][0]
     assert "PRIVATE PERSON" not in doc["model_pages"][0]

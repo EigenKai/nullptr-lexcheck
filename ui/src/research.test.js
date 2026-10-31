@@ -2,7 +2,28 @@ import { describe, it, expect, vi } from "vitest";
 import { createResearchClient } from "./research.js";
 
 describe("private research client", () => {
-  it("scopes conversations and sends messages with a 90-second timeout", async () => {
+  it("delivers live SSE progress and Unicode answer chunks before the completed turn", async () => {
+    let source;
+    const stream = new ReadableStream({ start(controller) { source = controller; } });
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ token: "stream-session" }) })
+      .mockResolvedValueOnce({ ok: true, body: stream });
+    const client = createResearchClient(fetcher);
+    await client.connect();
+    const events = [];
+    const pending = client.streamMessage("WS-test", "CONV-test", "Question", (event) => events.push(event));
+    const encoder = new TextEncoder();
+    source.enqueue(encoder.encode('event: progress\r\ndata: {"tool":"open_url"}\r\n\r\n'));
+    await vi.waitFor(() => expect(events).toHaveLength(1));
+    expect(events[0]).toMatchObject({ type: "progress", tool: "open_url" });
+    const bytes = encoder.encode('event: answer_delta\ndata: {"text":"Điện **mới**"}\n\nevent: done\ndata: {"turn":{"id":"TURN-one","answer":"Điện **mới**"}}\n\n');
+    for (let offset = 0; offset < bytes.length; offset += 3) source.enqueue(bytes.slice(offset, offset + 3));
+    source.close();
+    expect(await pending).toMatchObject({ id: "TURN-one", answer: "Điện **mới**" });
+    expect(events[1]).toMatchObject({ type: "answer_delta", text: "Điện **mới**" });
+    expect(fetcher.mock.calls[1][1].headers["X-Workspace-Token"]).toBe("stream-session");
+  });
+  it("scopes conversations and allows a five-minute tool-assisted answer", async () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
     const fetcher = vi
       .fn()
@@ -30,7 +51,7 @@ describe("private research client", () => {
     expect(JSON.parse(fetcher.mock.calls[4][1].body)).toEqual({
       question: "Question from user",
     });
-    expect(timeout).toHaveBeenCalledWith(90000);
+    expect(timeout).toHaveBeenCalledWith(300000);
     timeout.mockRestore();
   });
   it("keeps both document collections on the same workspace API without starting research", async () => {

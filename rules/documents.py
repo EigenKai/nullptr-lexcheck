@@ -1,6 +1,7 @@
 """Local document text extraction and reviewable model-context redaction."""
 
 import io
+import posixpath
 import re
 import zipfile
 from pathlib import PurePosixPath
@@ -146,7 +147,7 @@ def _zip(raw):
     return archive
 
 
-def extract_document(name, raw):
+def extract_document(name, raw, *, redact_personal=False):
     name = name.replace("\\", "/").rsplit("/", 1)[-1].replace("\0", "")
     suffix = PurePosixPath(name).suffix.lower()
     if not name or len(name) > 180 or suffix not in SUPPORTED or not raw or len(raw) > 15_000_000:
@@ -191,8 +192,7 @@ def extract_document(name, raw):
             method = "docx-native-text"
         elif suffix == ".xlsx":
             pages, safe_pages = _xlsx(raw)
-            method = "xlsx-redacted-cells-v2"
-            warnings.append("xlsx_unknown_free_text_withheld_review_original_locally")
+            method = "xlsx-native-cells-v3" if not redact_personal else "xlsx-personal-redaction-v3"
         elif suffix == ".html":
             from rules.legal_sources import _Text
 
@@ -218,7 +218,9 @@ def extract_document(name, raw):
         remaining = max(0, remaining - len(text))
     if sum(map(len, pages)) > MAX_TEXT:
         warnings.append("text_budget_truncated")
-    if suffix != ".xlsx":
+    if not redact_personal:
+        safe_pages = list(trimmed)
+    elif suffix != ".xlsx":
         safe_pages = [redacted(text) for text in trimmed]
     else:
         safe_pages = [redacted(text)[:MAX_TEXT] for text in safe_pages]
@@ -233,10 +235,33 @@ def extract_document(name, raw):
         "method": method,
         "status": "needs_ocr" if not any(t.strip() for t in trimmed) else "extracted",
         "warnings": warnings,
+        "redact_personal": redact_personal,
     }
     if suffix == ".xlsx":
+        labels = {}
+        if not redact_personal:
+            with _zip(raw) as archive:
+                ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+                relations = {
+                    item.get("Id"): item.get("Target", "")
+                    for item in ET.fromstring(archive.read("xl/_rels/workbook.xml.rels"))
+                    if item.get("TargetMode") != "External"
+                }
+                for sheet in ET.fromstring(archive.read("xl/workbook.xml")).findall(
+                    "s:sheets/s:sheet", ns
+                ):
+                    target = relations.get(
+                        sheet.get(
+                            "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"
+                        ),
+                        "",
+                    )
+                    path = posixpath.normpath(
+                        target.lstrip("/") if target.startswith("/") else "xl/" + target
+                    )
+                    labels[path] = sheet.get("name", "")[:200]
         result["worksheets"] = [
-            {"page": index, "label": f"Sheet {index}", "path": path}
+            {"page": index, "label": labels.get(path) or f"Sheet {index}", "path": path}
             for index, path in enumerate(_xlsx_paths(raw), 1)
         ]
     return result
@@ -295,27 +320,13 @@ def _xlsx(raw):
                     if text:
                         cells.append((coordinate, column, number, text))
             pages.append("\n".join(f"{coordinate}\t{text}" for coordinate, _, _, text in cells))
-            operational_columns = {
-                column
-                for _, column, _, text in cells
-                if OPERATIONAL_LABEL.search(text) and _spreadsheet_model_value(text) == text
-            }
-            operational_rows = {
-                number
-                for _, _, number, text in cells
-                if OPERATIONAL_LABEL.search(text) and _spreadsheet_model_value(text) == text
-            }
             safe_pages.append(
                 "\n".join(
                     f"{coordinate}\t"
                     + (
                         "[dữ liệu cá nhân đã che]"
                         if column in private_columns and number > private_columns[column]
-                        else "[số liệu chưa rõ nhãn; giữ cục bộ]"
-                        if re.fullmatch(r"[\d\s.,%+−*/=():;-]+", text)
-                        and column not in operational_columns
-                        and number not in operational_rows
-                        else _spreadsheet_model_value(text)
+                        else text
                     )
                     for coordinate, column, number, text in cells
                 )
