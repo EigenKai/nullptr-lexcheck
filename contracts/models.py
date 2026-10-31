@@ -538,7 +538,7 @@ class PatternResponse(Contract):
 
 
 class SystemScore(Contract):
-    system: Literal["keyword", "plain_chat", "lexcheck"]
+    system: Literal["keyword", "plain_chat", "plain_chat_web", "retrieval", "lexcheck"]
     evaluated_cases: int = Field(ge=0)
     true_positive: int = Field(ge=0)
     false_positive: int = Field(ge=0)

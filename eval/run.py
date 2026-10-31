@@ -3,6 +3,7 @@
 import json
 import os
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from time import perf_counter
 
@@ -28,100 +29,129 @@ def load_cases(directory):
     )
 
 
+SYSTEMS = ("keyword", "plain_chat", "lexcheck")
+
+
+def eval_workers():
+    try:
+        value = int(os.getenv("LEXCHECK_EVAL_WORKERS", "6"))
+    except ValueError:
+        return 6
+    return value if 1 <= value <= 64 else 6
+
+
+def _evaluate_case(case, *, mode, active_client, prompt):
+    name, original, label = case
+    rows = {system: [] for system in SYSTEMS}
+    calls, failures = Counter(), Counter()
+    latencies = {system: [] for system in SYSTEMS}
+    request = original.model_copy(update={"llm_mode": mode})
+    evaluation = evaluate(request)
+    scope = set(evaluation.rules_checked)
+    gold_all = {tuple(pair) for pair in label["gold"]}
+    gold = {(version, rule) for version, rule in gold_all if rule in scope}
+    payload = model_input(request, evaluation.rule_snapshots, evaluation.clause_snapshots)
+    started = perf_counter()
+    plain = active_client.generate(
+        purpose="plain-chat-v1",
+        payload=payload,
+        prompt=prompt,
+        schema=CandidateBatch,
+        mode=mode,
+    )
+    if plain.calls:
+        latencies["plain_chat"].append((perf_counter() - started) * 1000)
+    started = perf_counter()
+    suggestion = suggest_with_trace(request, evaluation, client=active_client)
+    if suggestion.calls:
+        latencies["lexcheck"].append((perf_counter() - started) * 1000)
+    detection = suggestion.result
+    validation = validate_findings(
+        evaluation.findings + detection.findings,
+        request,
+        evaluation.rule_snapshots,
+        evaluation.clause_snapshots,
+    )
+    basis = assess_basis(
+        request,
+        evaluation.rule_snapshots,
+        evaluation.clause_snapshots,
+        rules_checked=evaluation.rules_checked,
+    )
+    measurable = (
+        evaluation.mode == "live"
+        and bool(scope)
+        and evaluation.applicability == "applies"
+        and basis.status == "ready"
+    )
+    predictions = {name: None for name in rows}
+    if measurable:
+        rows["keyword"].append((keyword(request, scope), gold))
+        if plain.parsed is not None:
+            rows["plain_chat"].append(
+                ({(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}, gold)
+            )
+        if detection.model_status != "unavailable":
+            rows["lexcheck"].append(
+                ({(f.record_version_id, f.rule_id) for f in validation.findings}, gold)
+            )
+    if measurable:
+        predictions["keyword"] = sorted(keyword(request, scope))
+        if plain.parsed is not None:
+            predictions["plain_chat"] = sorted(
+                {(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}
+            )
+        if detection.model_status != "unavailable":
+            predictions["lexcheck"] = sorted(
+                {(f.record_version_id, f.rule_id) for f in validation.findings}
+            )
+    calls["plain_chat"] += plain.calls
+    calls["lexcheck"] += suggestion.calls
+    failures["plain_chat"] += int(plain.status == "unavailable")
+    failures["lexcheck"] += int(detection.model_status == "unavailable")
+    trace = {
+        "case": name,
+        "predictions": predictions,
+        "basis_status": basis.status,
+        "scope": sorted(scope),
+        "input_hash": cache_key(payload),
+        "prompt_hashes": {"plain_chat": cache_key(prompt), "lexcheck": cache_key(PROMPT)},
+        "plain_status": plain.status,
+        "lexcheck_status": detection.model_status,
+        "rejected": dict(
+            Counter(r.reason for r in validation.rejected) + Counter(dict(suggestion.rejected))
+        ),
+        "errors": {"plain_chat": plain.error, "lexcheck": suggestion.error},
+        "unmeasured_gold_pairs": len(gold_all - gold),
+    }
+    return rows, calls, failures, latencies, trace, scope
+
+
 def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
-    rows = {name: [] for name in ("keyword", "plain_chat", "lexcheck")}
-    calls = Counter()
-    failures = Counter()
-    latencies = {name: [] for name in rows}
-    trace = []
+    cases = tuple(sorted(cases, key=lambda case: case[0]))
+    rows = {system: [] for system in SYSTEMS}
+    calls, failures = Counter(), Counter()
+    latencies = {system: [] for system in SYSTEMS}
+    trace, scope_union = [], set()
     active_client = client or configured_client(
         user_id="U-eval", group="manager", acl_hash="synthetic-dev"
     )
-    scope_union = set()
     prompt = Path(__file__).with_name("plain-chat-prompt.txt").read_text()
-    for name, original, label in cases:
-        request = original.model_copy(update={"llm_mode": mode})
-        evaluation = evaluate(request)
-        scope = set(evaluation.rules_checked)
-        scope_union.update(scope)
-        gold_all = {tuple(pair) for pair in label["gold"]}
-        gold = {(version, rule) for version, rule in gold_all if rule in scope}
-        payload = model_input(request, evaluation.rule_snapshots, evaluation.clause_snapshots)
-        started = perf_counter()
-        plain = active_client.generate(
-            purpose="plain-chat-v1",
-            payload=payload,
-            prompt=prompt,
-            schema=CandidateBatch,
-            mode=mode,
-        )
-        if plain.calls:
-            latencies["plain_chat"].append((perf_counter() - started) * 1000)
-        started = perf_counter()
-        suggestion = suggest_with_trace(request, evaluation, client=active_client)
-        if suggestion.calls:
-            latencies["lexcheck"].append((perf_counter() - started) * 1000)
-        detection = suggestion.result
-        validation = validate_findings(
-            evaluation.findings + detection.findings,
-            request,
-            evaluation.rule_snapshots,
-            evaluation.clause_snapshots,
-        )
-        basis = assess_basis(
-            request,
-            evaluation.rule_snapshots,
-            evaluation.clause_snapshots,
-            rules_checked=evaluation.rules_checked,
-        )
-        measurable = (
-            evaluation.mode == "live"
-            and bool(scope)
-            and evaluation.applicability == "applies"
-            and basis.status == "ready"
-        )
-        predictions = {name: None for name in rows}
-        if measurable:
-            rows["keyword"].append((keyword(request, scope), gold))
-            if plain.parsed is not None:
-                rows["plain_chat"].append(
-                    ({(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}, gold)
-                )
-            if detection.model_status != "unavailable":
-                rows["lexcheck"].append(
-                    ({(f.record_version_id, f.rule_id) for f in validation.findings}, gold)
-                )
-        if measurable:
-            predictions["keyword"] = sorted(keyword(request, scope))
-            if plain.parsed is not None:
-                predictions["plain_chat"] = sorted(
-                    {(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}
-                )
-            if detection.model_status != "unavailable":
-                predictions["lexcheck"] = sorted(
-                    {(f.record_version_id, f.rule_id) for f in validation.findings}
-                )
-        calls["plain_chat"] += plain.calls
-        calls["lexcheck"] += suggestion.calls
-        failures["plain_chat"] += int(plain.status == "unavailable")
-        failures["lexcheck"] += int(detection.model_status == "unavailable")
-        trace.append(
-            {
-                "case": name,
-                "predictions": predictions,
-                "basis_status": basis.status,
-                "scope": sorted(scope),
-                "input_hash": cache_key(payload),
-                "prompt_hashes": {"plain_chat": cache_key(prompt), "lexcheck": cache_key(PROMPT)},
-                "plain_status": plain.status,
-                "lexcheck_status": detection.model_status,
-                "rejected": dict(
-                    Counter(r.reason for r in validation.rejected)
-                    + Counter(dict(suggestion.rejected))
-                ),
-                "unmeasured_gold_pairs": len(gold_all - gold),
-            }
-        )
+
+    def run_case(case):
+        return _evaluate_case(case, mode=mode, active_client=active_client, prompt=prompt)
+
+    with ThreadPoolExecutor(max_workers=eval_workers()) as executor:
+        for case_rows, case_calls, case_failures, case_latencies, entry, scope in executor.map(
+            run_case, cases
+        ):
+            for system in SYSTEMS:
+                rows[system].extend(case_rows[system])
+                latencies[system].extend(case_latencies[system])
+            calls.update(case_calls)
+            failures.update(case_failures)
+            trace.append(entry)
+            scope_union.update(scope)
     report = EvaluationReport(
         phase=phase,
         n=len(cases),
@@ -140,6 +170,10 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
     )
     trace.append(
         {
+            "errors": {
+                s: dict(Counter(t["errors"].get(s) for t in trace if t["errors"].get(s)))
+                for s in SYSTEMS
+            },
             "per_rule": {s: per_rule(rows[s]) for s in rows},
             "false_clean": {
                 s: sum(bool(gold and not predicted) for predicted, gold in rows[s]) for s in rows
