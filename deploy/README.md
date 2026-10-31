@@ -1,12 +1,23 @@
 # Deployment
 
 Public reviewer UI: https://nullptr-lexcheck.onrender.com/.
-Deployed reviewed main SHA: `27b8a1f` (PR #13), pinned using Render's specific
-commit deployment on 2026-10-31. Build is `bash deploy/build.sh`; start is one
-Uvicorn worker. Render marks deployment `dep-dbiqdqavcj2c73e9ejg0` live.
-Health reports live, root UI returns 200, and a public API check ran R-01..R-04.
-The same main SHA passed real smoke0 and seven Chromium flows locally before
-deployment. Teammate-device verification is still requested separately.
+Deployed reviewed main SHA: `fd6cb9f63afae15ce0387a0eccb3073c891c6f10`
+(through PR #41), pinned on 2026-10-31. Build is `bash deploy/build.sh`; start is
+one Uvicorn worker. Render marks `dep-dbirajrbc2fs73b4252g` live after correcting
+the hosting flags. At 16:28 the public gate found layer1/remediation/dashboard
+unexpectedly enabled; this session set those three env values to `0` and used
+Save and deploy, retaining the same reviewed commit. It did not read or change
+the configured OpenAI credential.
+
+The exact SHA passed local smoke0, smoke1, 26 frontend tests, 21 Chromium E2E,
+production build and GitHub Linux CI. The public gate at 16:32 confirmed root UI
+asset `index-BpoZ6AY1.js`, health live, four verified rules and all later/task
+flags off. A synthetic request with isolated IDs completed dossier change,
+recheck, human decision, stale-closure rejection (409), fixed-version recheck
+and closure while preserving the old check and decision. Chat returns 404 while
+layer1 is off; no real model request was made by this gate. These are integration
+checks, not held-out evaluation results. Physical second-device confirmation is
+still requested separately.
 Specific-commit deployment disabled Render Auto-Deploy; later deployments must
 explicitly select the reviewed/tested main SHA.
 
