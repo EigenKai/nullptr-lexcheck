@@ -302,3 +302,49 @@ def test_scientific_document_still_requires_human_review(request_data, basis):
         (clause,),
     )
     assert result.findings == (candidate,)
+
+
+@pytest.mark.parametrize("separator", ["  ", "\t", "\r\n", "\u00a0\u2003", "\v\f"])
+@pytest.mark.parametrize("suffix", ["", "."])
+def test_warning_whitespace_runs_count_as_present(request_data, basis, separator, suffix):
+    import unicodedata
+
+    from detect.validator import WARNING
+
+    text = separator.join(unicodedata.normalize("NFD", WARNING).split()) + suffix
+    request = request_data.model_copy(
+        update={
+            "versions": tuple(
+                v.model_copy(update={"text": text}) if v.id == basis[2].record_version_id else v
+                for v in request_data.versions
+            )
+        }
+    )
+    missing = Evidence(
+        record_version_id=basis[2].record_version_id, kind="missing_field", field="warning"
+    )
+    result = check(request, basis, evidence=(missing,))
+    assert result.findings == ()
+    assert [r.reason for r in result.rejected] == ["missing_field_present"]
+
+
+@pytest.mark.parametrize("product_id,present", [("P-01", True), ("P-02", False)])
+def test_linked_confirmation_must_match_target_product(request_data, basis, product_id, present):
+    rule, clause, finding = basis
+    confirmation_basis = (rule.model_copy(update={"check_type": "confirmation"}), clause, finding)
+    request = request_data.model_copy(
+        update={
+            "records": tuple(
+                r.model_copy(update={"product_id": product_id})
+                if r.kind == "ad_confirmation"
+                else r
+                for r in request_data.records
+            )
+        }
+    )
+    missing = Evidence(
+        record_version_id=finding.record_version_id, kind="missing_field", field="confirmation_date"
+    )
+    result = check(request, confirmation_basis, evidence=(missing,))
+    assert bool(result.findings) is not present
+    assert [r.reason for r in result.rejected] == (["missing_field_present"] if present else [])
