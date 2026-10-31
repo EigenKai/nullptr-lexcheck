@@ -1,4 +1,4 @@
-"""Ground findings against the exact supplied snapshot, without text normalization."""
+"""Ground quotes and spans verbatim; normalize only warning presence."""
 
 import unicodedata
 
@@ -12,13 +12,13 @@ from contracts.models import (
 )
 
 WARNING = "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh"
-# Closed field map: structured fields use presence; warning is an exact text substring.
+# Closed field map: only warning presence uses NFC and collapsed whitespace.
 FIELD_PRESENT = {
     "uses": lambda v: bool(v.uses),
     "reference_ids": lambda v: bool(v.reference_ids),
     "confirmation_date": lambda v: v.confirmation_date is not None,
     "issuing_authority": lambda v: v.issuing_authority != "unknown",
-    "warning": lambda v: WARNING in unicodedata.normalize("NFC", v.text),
+    "warning": lambda v: WARNING in " ".join(unicodedata.normalize("NFC", v.text).split()),
     "text": lambda v: bool(v.text.strip()),
 }
 
@@ -28,10 +28,12 @@ def _field_present(evidence, versions, request, rule):
     # the selected connected records. Confirmation rules check document kind,
     # since an undated confirmation is still a connected document.
     if evidence.field == "confirmation_date" and rule.check_type == "confirmation":
-        kinds = {r.id: r.kind for r in request.records}
+        records = {r.id: r for r in request.records}
+        target = versions[evidence.record_version_id]
         return any(
-            kinds[v.record_id] == "ad_confirmation"
-            and v.id in versions[evidence.record_version_id].reference_ids
+            records[v.record_id].kind == "ad_confirmation"
+            and v.id in target.reference_ids
+            and records[v.record_id].product_id == records[target.record_id].product_id
             for v in versions.values()
         )
     local_fields = ("warning", "text")

@@ -4,6 +4,7 @@ import json
 import os
 from collections import Counter
 from pathlib import Path
+from time import perf_counter
 
 from contracts.models import CheckRequest, EvaluationReport
 from detect.candidates import CandidateBatch
@@ -13,6 +14,7 @@ from detect.service import PROMPT, suggest_with_trace
 from detect.validator import validate_findings
 from detect.versions import assess_basis
 from eval.baselines import keyword, score
+from eval.metrics import per_rule
 from rules.engine import evaluate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +32,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
     rows = {name: [] for name in ("keyword", "plain_chat", "lexcheck")}
     calls = Counter()
     failures = Counter()
+    latencies = {name: [] for name in rows}
     trace = []
     active_client = client or configured_client(
         user_id="U-eval", group="manager", acl_hash="synthetic-dev"
@@ -44,6 +47,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
         gold_all = {tuple(pair) for pair in label["gold"]}
         gold = {(version, rule) for version, rule in gold_all if rule in scope}
         payload = model_input(request, evaluation.rule_snapshots, evaluation.clause_snapshots)
+        started = perf_counter()
         plain = active_client.generate(
             purpose="plain-chat-v1",
             payload=payload,
@@ -51,7 +55,12 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
             schema=CandidateBatch,
             mode=mode,
         )
+        if plain.calls:
+            latencies["plain_chat"].append((perf_counter() - started) * 1000)
+        started = perf_counter()
         suggestion = suggest_with_trace(request, evaluation, client=active_client)
+        if suggestion.calls:
+            latencies["lexcheck"].append((perf_counter() - started) * 1000)
         detection = suggestion.result
         validation = validate_findings(
             evaluation.findings + detection.findings,
@@ -71,6 +80,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
             and evaluation.applicability == "applies"
             and basis.status == "ready"
         )
+        predictions = {name: None for name in rows}
         if measurable:
             rows["keyword"].append((keyword(request, scope), gold))
             if plain.parsed is not None:
@@ -81,6 +91,16 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
                 rows["lexcheck"].append(
                     ({(f.record_version_id, f.rule_id) for f in validation.findings}, gold)
                 )
+        if measurable:
+            predictions["keyword"] = sorted(keyword(request, scope))
+            if plain.parsed is not None:
+                predictions["plain_chat"] = sorted(
+                    {(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}
+                )
+            if detection.model_status != "unavailable":
+                predictions["lexcheck"] = sorted(
+                    {(f.record_version_id, f.rule_id) for f in validation.findings}
+                )
         calls["plain_chat"] += plain.calls
         calls["lexcheck"] += suggestion.calls
         failures["plain_chat"] += int(plain.status == "unavailable")
@@ -88,6 +108,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
         trace.append(
             {
                 "case": name,
+                "predictions": predictions,
                 "basis_status": basis.status,
                 "scope": sorted(scope),
                 "input_hash": cache_key(payload),
@@ -107,8 +128,23 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
         model=active_client.model,
         dataset_sha256=cache_key([(n, r.model_dump(mode="json"), g) for n, r, g in cases]),
         rule_ids=tuple(sorted(scope_union)),
-        systems=tuple(score(s, rows[s], calls[s], failures[s]) for s in rows),
-        note="Draft labels require owner review. Keyword baseline includes structured uses differences. Scores cover executed rule scope only; unavailable cases excluded. Stability, queue and latency not measured.",
+        systems=tuple(
+            score(s, rows[s], calls[s], failures[s]).model_copy(
+                update={
+                    "latency_ms": sum(latencies[s]) / len(latencies[s]) if latencies[s] else None
+                }
+            )
+            for s in rows
+        ),
+        note="Draft labels require owner review. Keyword baseline includes structured uses differences. Scores cover executed rule scope only; unavailable cases excluded. Latency measures logical transport calls when available; queue metrics not measured.",
+    )
+    trace.append(
+        {
+            "per_rule": {s: per_rule(rows[s]) for s in rows},
+            "false_clean": {
+                s: sum(bool(gold and not predicted) for predicted, gold in rows[s]) for s in rows
+            },
+        }
     )
     return report, trace
 
