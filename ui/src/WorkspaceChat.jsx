@@ -487,6 +487,14 @@ export function WorkspaceChat({
                     {citation.cells?.length ? ` · Ô ${citation.cells.join(", ")}` : ""}
                   </p>
                   <blockquote>{citation.quote}</blockquote>
+                  {/^https:\/\//.test(citation.official_url || "") && (
+                    <p className="workspace-chat-source-link">
+                      <a href={citation.official_url} target="_blank" rel="noopener noreferrer">
+                        Mở nguồn chính thức ↗
+                      </a>
+                      <small>Chưa xác minh hiệu lực và phạm vi áp dụng</small>
+                    </p>
+                  )}
                   <code>
                     Đoạn [{citation.start}, {citation.end}) · Unicode
                     <br />
@@ -512,6 +520,18 @@ export function WorkspaceChat({
                   <b>{tool.tool}</b>
                   {tool.query && <p>{tool.query}</p>}
                   {tool.document_id && <code>{tool.document_id}</code>}
+                  {(tool.sources || []).filter((source) => /^https:\/\//.test(source.url || "")).map((source) => (
+                    <p className="workspace-chat-source-link" key={source.url}>
+                      <a href={source.url} target="_blank" rel="noopener noreferrer">
+                        {source.url}
+                      </a>
+                      <small>
+                        {source.retrieval_status === "ingested_unverified"
+                          ? "Đã đọc nguồn · Chưa xác minh hiệu lực và áp dụng"
+                          : "Chưa đọc được nội dung nguồn · Chưa đủ bằng chứng"}
+                      </small>
+                    </p>
+                  ))}
                   {tool.hits !== undefined && (
                     <small>
                       {Array.isArray(tool.hits)
@@ -537,6 +557,11 @@ export function WorkspaceChat({
                 Lượt gọi model:{" "}
                 {shownTurn.provenance?.model_calls ?? "Chưa ghi nhận"}
               </p>
+              {shownTurn.provenance?.agent_model_calls !== undefined && (
+                <p>
+                  Trợ lý: {shownTurn.provenance.agent_model_calls} · Tìm kiếm: {shownTurn.provenance.public_search_model_calls ?? "Chưa ghi nhận"}
+                </p>
+              )}
               <code>
                 Index: {shownTurn.provenance?.index_sha256 || "Chưa ghi nhận"}
               </code>

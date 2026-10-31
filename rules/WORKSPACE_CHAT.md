@@ -1,5 +1,9 @@
 # Indexed workspace conversations
 
+An optional model-selected OSS tool loop, native Excel reading and bounded
+official-source web search are described in [WORKSPACE_TOOLS.md](WORKSPACE_TOOLS.md).
+Both additional flags default off; the original path below remains the default.
+
 This local pilot restores the preview's assistant screen beside the separate
 business and legal document libraries. The same screen and retrieval code serve
 every workspace; there are no industry-specific answers or sample fallbacks.
