@@ -17,7 +17,16 @@ from contracts.models import (
 from detect.validator import WARNING
 
 CATALOG_DIR = Path(__file__).resolve().parent
-CHECK_TYPES = ("warning", "uses", "confirmation", "endorsement")
+CHECK_TYPES = (
+    "warning",
+    "uses",
+    "confirmation",
+    "endorsement",
+    "medicinal",
+    "receipt",
+    "authority_review",
+    "label_copy",
+)
 
 
 def _pending(reason="Rule implementation and source verification pending."):
@@ -51,24 +60,30 @@ def _active(rule, clause, clauses, review_date):
     )
 
 
-def _finding(rule, clause, evidence):
+def _finding(rule, clause, evidence, target_id=None):
     messages = {
         "warning": "Mandatory warning not found in the advertising record.",
         "uses": "Claimed use is outside the connected dossier; supporting evidence needs human review.",
         "confirmation": "Advertising confirmation not found in the connected records.",
         "endorsement": "Medical endorsement or medical identity in advertising text needs human review.",
+        "medicinal": "Medicinal language in supplement advertising needs human review.",
+        "receipt": "Product declaration receipt not found in the connected records.",
+        "authority_review": "Issuing authority needs human review, including transitional provisions; an older confirmation is not declared void.",
+        "label_copy": "Product label copy not found in the connected records.",
     }
-    identity = json.dumps(
-        [rule.id, rule.version, clause.id, evidence.model_dump(mode="json")], sort_keys=True
-    )
+    identity_parts = [rule.id, rule.version, clause.id, evidence.model_dump(mode="json")]
+    if target_id is not None and target_id != evidence.record_version_id:
+        identity_parts.append(target_id)
+    identity = json.dumps(identity_parts, sort_keys=True)
     return Finding(
         id="F-" + hashlib.sha256(identity.encode()).hexdigest()[:32],
         rule_id=rule.id,
         rule_version=rule.version,
         clause_version_id=clause.id,
-        record_version_id=evidence.record_version_id,
+        record_version_id=target_id or evidence.record_version_id,
         status="needs_review"
-        if rule.check_type in ("warning", "endorsement")
+        if rule.check_type in ("warning", "endorsement", "medicinal")
+        or (rule.check_type == "authority_review" and evidence.kind == "span")
         else "needs_evidence",
         source="rule",
         severity=rule.severity,
@@ -118,6 +133,19 @@ def _use_evidence(version, request, records, selected):
 
 
 def _evidence(rule, version, request, records, selected):
+    if rule.check_type in ("medicinal", "receipt", "authority_review", "label_copy"):
+        from rules.additional import attachment, authority, medicinal
+
+        if rule.check_type == "medicinal":
+            return medicinal(version)
+        if rule.check_type == "authority_review":
+            return authority(version, request, records, selected)
+        kind, field = (
+            ("registration_receipt", "registration_receipt")
+            if rule.check_type == "receipt"
+            else ("label", "label_copy")
+        )
+        return attachment(version, request, records, selected, kind, field)
     if rule.check_type == "endorsement":
         from rules.endorsement import spans
 
@@ -162,7 +190,9 @@ def _execute(request, rules, clauses, targets, records, selected):
             evidence, complete = _evidence(rule, version, request, records, selected)
             incomplete |= not complete
             executed |= complete
-            findings.extend(_finding(rule, clauses[rule.clause_version_id], e) for e in evidence)
+            findings.extend(
+                _finding(rule, clauses[rule.clause_version_id], e, version.id) for e in evidence
+            )
         if executed:
             checked.append(rule)
     return tuple(checked), tuple(findings), incomplete
@@ -192,10 +222,10 @@ def evaluate(
     if not (
         profile.confirmed
         and profile.product_group == "tpbvsk"
-        and profile.activity == "advertising"
+        and profile.activity in ("advertising", "ad_registration")
         and profile.role != "unknown"
     ):
-        return _pending("A confirmed advertising profile is required.")
+        return _pending("A confirmed supported advertising activity profile is required.")
     active = tuple(
         rule
         for rule in rules
@@ -214,10 +244,13 @@ def evaluate(
         v
         for v in selected
         if v.id in request.target_version_ids
-        and records[v.record_id].kind in ("marketing", "customer_script")
+        and (
+            profile.activity == "ad_registration"
+            or records[v.record_id].kind in ("marketing", "customer_script")
+        )
     )
     if not targets:
-        return _pending("No selected advertising record to check.")
+        return _pending("No selected record for the confirmed activity to check.")
     checked, findings, incomplete = _execute(
         request, active, clause_map, targets, records, selected
     )
@@ -231,9 +264,9 @@ def evaluate(
         mode="live",
         pattern_ids_used=pattern_ids,
         applicability="not_enough_information" if incomplete else "applies",
-        reason="Connected dossier or exact use text is missing or ambiguous."
+        reason="Required connected records, authority/date facts or exact source text are missing or ambiguous."
         if incomplete
-        else "Verified advertising checks executed on the selected records.",
+        else "Verified checks executed on the selected records for the confirmed activity.",
         rules_checked=tuple(r.id for r in checked),
         skipped_rule_ids=tuple(
             r.id

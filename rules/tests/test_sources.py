@@ -71,5 +71,11 @@ def test_other_pending_rules_and_clauses_remain_disabled():
     for rule in catalog():
         if rule.id not in ("R-01", "R-02", "R-03", "R-04"):
             assert not rule.enabled
+            if rule.id == "R-07":
+                # Reuse the owner's source verification, without approving a
+                # runtime interpretation or enabling the authority check.
+                assert rule.verification_status == "verified"
+                assert clauses()[rule.clause_version_id].verified_by == "Dung"
+                continue
             assert rule.verification_status == "to_be_verified"
             assert clauses()[rule.clause_version_id].verification_status == "to_be_verified"

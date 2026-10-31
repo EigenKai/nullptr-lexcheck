@@ -93,25 +93,31 @@
   },
   {
     "id": "R-05",
-    "version": 1,
-    "clause_version_id": "CV-05-v1",
+    "version": 2,
+    "clause_version_id": "CV-05-v2",
     "title": "medicinal",
     "check_type": "medicinal",
     "activities": [
       "advertising"
     ],
-    "method": "llm",
+    "method": "deterministic",
     "severity": "medium",
     "verification_status": "to_be_verified",
     "enabled": false,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "S?n ph?m ch?a kh?i ti?u ???ng.",
+      "S?n ph?m ??c tr? vi?m kh?p."
+    ],
+    "negative_examples": [
+      "Th?c ph?m n?y kh?ng ph?i l? thu?c v? kh?ng c? t?c d?ng thay th? thu?c ch?a b?nh.",
+      "H? tr? ti?u h?a. Kh?ng c? t?c d?ng ?i?u tr? b?nh."
+    ]
   },
   {
     "id": "R-06",
-    "version": 1,
-    "clause_version_id": "CV-06-v1",
+    "version": 2,
+    "clause_version_id": "CV-06-v2",
     "title": "receipt",
     "check_type": "receipt",
     "activities": [
@@ -122,13 +128,19 @@
     "verification_status": "to_be_verified",
     "enabled": false,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "H? s? ??ng k? ch?a n?i gi?y ti?p nh?n c?ng b? s?n ph?m.",
+      "Gi?y ti?p nh?n ???c n?i thu?c m?t s?n ph?m kh?c."
+    ],
+    "negative_examples": [
+      "H? s? ?? n?i gi?y ti?p nh?n ??ng s?n ph?m.",
+      "H? s? ch?n b?n m?i c?a c?ng gi?y ti?p nh?n ?? n?i."
+    ]
   },
   {
     "id": "R-07",
-    "version": 1,
-    "clause_version_id": "CV-07-v1",
+    "version": 2,
+    "clause_version_id": "CV-07-v2",
     "title": "authority_review",
     "check_type": "authority_review",
     "activities": [
@@ -136,16 +148,22 @@
     ],
     "method": "deterministic",
     "severity": "medium",
-    "verification_status": "to_be_verified",
+    "verification_status": "verified",
     "enabled": false,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "Hồ sơ mới sau01/07/2026 ghi cơ quan trung ương: cần người kiểm tra thẩm quyền.",
+      "Hồ sơ mới sau01/07/2026 chưa rõ cơ quan: cần bổ sung thông tin."
+    ],
+    "negative_examples": [
+      "Giấy trước01/07/2026 không tự mất giá trị.",
+      "Quảng cáo thông thường không phải hồ sơ ad_registration."
+    ]
   },
   {
     "id": "R-08",
-    "version": 1,
-    "clause_version_id": "CV-08-v1",
+    "version": 2,
+    "clause_version_id": "CV-08-v2",
     "title": "label_copy",
     "check_type": "label_copy",
     "activities": [
@@ -156,7 +174,13 @@
     "verification_status": "to_be_verified",
     "enabled": false,
     "patterns": [],
-    "positive_examples": [],
-    "negative_examples": []
+    "positive_examples": [
+      "H? s? ??ng k? ch?a n?i m?u nh?n.",
+      "M?u nh?n ???c n?i thu?c m?t s?n ph?m kh?c."
+    ],
+    "negative_examples": [
+      "H? s? ?? n?i m?u nh?n ??ng s?n ph?m.",
+      "H? s? ch?n b?n m?i c?a c?ng m?u nh?n ?? n?i."
+    ]
   }
 ]
