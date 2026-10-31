@@ -680,6 +680,17 @@ export default function App() {
               <b>{t(viewLabel)}</b>
             </div>
             <div className="top-actions">
+              <button
+                className="button secondary"
+                onClick={() =>
+                  researchActive
+                    ? refreshResearch().catch((error) => setError(error.message))
+                    : load()
+                }
+                disabled={!!busy || chatBusy}
+              >
+                {t("Tải lại")}
+              </button>
               <span className="demo-pill">
                 {offline ? t("Bản mẫu ngoại tuyến") : t("Dữ liệu tổng hợp")}
               </span>
@@ -699,9 +710,6 @@ export default function App() {
                   ? t("API mất kết nối · Chỉ xem bản mẫu đi kèm")
                   : t("Engine chưa sẵn sàng · đang dùng fixture")}
               </span>
-              <button onClick={() => load()} disabled={!!busy}>
-                {t("Tải lại")}
-              </button>
             </div>
           )}
           {busy && (
