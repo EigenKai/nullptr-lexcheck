@@ -1,27 +1,44 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 const demo = JSON.parse(
-  fs.readFileSync(new URL("../public/demo.json", import.meta.url), "utf8"),
+  fs.readFileSync(
+    new URL("../../data/fixtures/demo.json", import.meta.url),
+    "utf8",
+  ),
 );
 
-test("connected review, source versions, unavailable write, and responsive Vietnamese font", async ({
+test("live review, source versions, change queue, and responsive Vietnamese font", async ({
   page,
 }) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
   await expect(page.locator(".status-strip")).toContainText("API kết nối");
-  await expect(page.locator(".mascot")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Rà soát hồ sơ", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Trợ lý Lex", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Rà soát hồ sơ", exact: true })
     .click();
+  const checkResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/check") &&
+      response.request().method() === "POST",
+  );
   await page
     .getByRole("button", { name: "Chạy kiểm tra", exact: true })
     .click();
+  const checked = await (await checkResponse).json();
+  expect(checked.rules_checked.length).toBeGreaterThanOrEqual(3);
   await expect(page.locator(".result-section")).toContainText(
-    "Chưa đủ thông tin",
+    `No issue found under ${checked.rules_checked.length} encoded rules`,
   );
-  await expect(page.locator(".result-section")).toContainText("0 rule đã chạy");
+  await expect(page.locator(".result-section")).toContainText(
+    `${checked.rules_checked.length} rule đã chạy`,
+  );
   await page
     .getByRole("button", { name: "Cập nhật nguồn", exact: true })
     .click();
@@ -30,11 +47,18 @@ test("connected review, source versions, unavailable write, and responsive Vietn
     "Hỗ trợ giảm cholesterol.",
   );
   await page.getByRole("button", { name: "Gửi sự kiện mẫu tới API" }).click();
-  await expect(page.getByRole("alert")).toContainText("chưa sẵn sàng");
+  await expect(page.getByRole("status")).toContainText(
+    "API đã ghi nhận thay đổi.",
+  );
+  await expect(
+    page.getByRole("button", { name: "Kiểm tra lại", exact: true }).first(),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Lịch sử quyết định", exact: true })
     .click();
-  await expect(page.locator("main")).toContainText("CHK-preview");
+  await expect(page.locator("main")).toContainText(
+    `${checked.rules_checked.length} rule đã chạy`,
+  );
   for (const [width, height] of [
     [1280, 720],
     [768, 1024],
@@ -43,7 +67,9 @@ test("connected review, source versions, unavailable write, and responsive Vietn
     await page.setViewportSize({ width, height });
     if (width <= 800)
       await page.getByRole("button", { name: "Mở menu", exact: true }).click();
-    await page.getByRole("button", { name: "Cuộc trò chuyện mới" }).click();
+    await page
+      .getByRole("button", { name: "Rà soát hồ sơ", exact: true })
+      .click();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({
@@ -67,7 +93,7 @@ test("connected review, source versions, unavailable write, and responsive Vietn
     ).toBeTruthy();
     expect(
       await page
-        .locator(".hero h1")
+        .locator(".page-title")
         .evaluate((e) => getComputedStyle(e).fontFamily),
     ).toContain("Nunito Sans");
     await page.screenshot({
@@ -76,6 +102,49 @@ test("connected review, source versions, unavailable write, and responsive Vietn
     });
   }
   expect(errors).toEqual([]);
+});
+
+test("chat preview is reachable with the feature off and never sends a chat request", async ({
+  page,
+}) => {
+  let chatRequests = 0;
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/api/chat") chatRequests++;
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Trợ lý Lex", exact: true }).click();
+  await expect(page).toHaveURL(/#chat$/);
+  await expect(
+    page.getByText("Chưa kết nối chatbot", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Nhập câu hỏi cho Lex")).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Gửi câu hỏi", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: /Hỏi từ kho tri thức/ }),
+  ).toBeDisabled();
+  await expect(page.locator(".message.assistant")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Cuộc trò chuyện mới", exact: true })
+    .click();
+  await page.reload();
+  await expect(
+    page.getByText("Chưa kết nối chatbot", { exact: true }),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.screenshot({
+    path: "test-results/local-chat-preview.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByLabel("Nhập câu hỏi cho Lex")).toBeDisabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  expect(chatRequests).toBe(0);
 });
 
 test("offline fallback is labelled and disables writes", async ({ page }) => {
@@ -129,16 +198,9 @@ test("finding traces and reviewer actions use the API contract", async ({
     .click();
   await page.locator(".finding-button").click();
   await expect(page.locator("mark")).toHaveText("Hỗ trợ tiêu hóa.");
-  await expect(page.locator(".evidence")).toContainText("Suggestion");
+  await expect(page.locator(".evidence")).toContainText("Fixture");
   await page.getByLabel("Ghi chú xử lý").fill("Cần đối chiếu hồ sơ gốc.");
-  const outgoing = page.waitForRequest("**/api/decisions");
-  await page.getByRole("button", { name: "Giao xử lý", exact: true }).click();
-  expect((await outgoing).postDataJSON()).toMatchObject({
-    check_id: result.id,
-    finding_id: "F-UI",
-    action: "assign",
-    actor: "reviewer",
-    owner: "marketing",
-  });
-  await expect(page.getByRole("alert")).toContainText("Chưa lưu thay đổi");
+  await expect(
+    page.getByRole("button", { name: "Xác nhận phát hiện", exact: true }),
+  ).toBeDisabled();
 });

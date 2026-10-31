@@ -4,7 +4,7 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:4173",
     browserName: "chromium",
-    channel: process.env.CI ? undefined : "msedge",
+    channel: process.env.PW_CHANNEL || undefined,
     reducedMotion: "reduce",
   },
   webServer: {
