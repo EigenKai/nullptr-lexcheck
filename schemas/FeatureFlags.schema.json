@@ -20,6 +20,16 @@
       "default": false,
       "title": "Layer3",
       "type": "boolean"
+    },
+    "remediation": {
+      "default": false,
+      "title": "Remediation",
+      "type": "boolean"
+    },
+    "task_dashboard": {
+      "default": false,
+      "title": "Task Dashboard",
+      "type": "boolean"
     }
   },
   "title": "FeatureFlags",

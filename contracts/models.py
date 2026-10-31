@@ -296,11 +296,17 @@ class CheckResult(Contract):
 class DecisionRequest(Contract):
     check_id: Id
     finding_id: Id
-    action: Literal["confirm", "reject", "assign", "close"]
+    action: Literal["confirm", "reject", "assign", "acknowledge", "close"]
     actor: Literal["reviewer"]
     owner: Literal["marketing", "legal", "document_control"] | None = None
     note: Text
     closure_check_id: Id | None = None
+    internal_due_on: date | None = None
+    legal_due_on: date | None = None
+    legal_clause_version_id: Id | None = None
+    legal_deadline_quote: Text | None = None
+    closure_conditions: Text | None = None
+    closure_conditions_met: bool = False
 
     @model_validator(mode="after")
     def validate_action(self):
@@ -308,6 +314,13 @@ class DecisionRequest(Contract):
             raise ValueError("assignment requires owner")
         if self.action == "close" and self.closure_check_id is None:
             raise ValueError("closure requires a fresh check")
+        legal = (self.legal_due_on, self.legal_clause_version_id, self.legal_deadline_quote)
+        if any(value is not None for value in legal) and not all(
+            value is not None for value in legal
+        ):
+            raise ValueError("legal deadline requires a date, clause version and quote")
+        if self.closure_conditions_met and self.action != "close":
+            raise ValueError("closure conditions can only be confirmed while closing")
         return self
 
 
@@ -401,6 +414,8 @@ class FeatureFlags(Contract):
     layer1: bool = False
     layer2: bool = False
     layer3: bool = False
+    remediation: bool = False
+    task_dashboard: bool = False
 
     @model_validator(mode="after")
     def validate_order(self):
@@ -408,6 +423,8 @@ class FeatureFlags(Contract):
             (self.layer1 and not self.layer0_ready)
             or (self.layer2 and not self.layer1)
             or (self.layer3 and not self.layer2)
+            or (self.remediation and not self.layer0_ready)
+            or (self.task_dashboard and not self.remediation)
         ):
             raise ValueError("later layers require all prior layers")
         return self
