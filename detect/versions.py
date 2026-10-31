@@ -9,11 +9,15 @@ class BasisAssessment:
     pending_clause_ids: tuple[str, ...] = ()
 
 
-def assess_basis(request, rules, clauses):
+def assess_basis(request, rules, clauses, *, rules_checked=None):
+    selected = tuple(r for r in rules if rules_checked is None or r.id in rules_checked)
+    referenced = {r.clause_version_id for r in selected}
+    families = {c.clause_id for c in clauses if c.id in referenced}
     effective = tuple(
         c
         for c in clauses
-        if c.valid_from <= request.review_date
+        if c.clause_id in families
+        and c.valid_from <= request.review_date
         and (c.valid_to is None or request.review_date < c.valid_to)
     )
     latest = tuple(
@@ -25,7 +29,7 @@ def assess_basis(request, rules, clauses):
         )
     )
     active = {
-        r.clause_version_id for r in rules if r.enabled and r.verification_status == "verified"
+        r.clause_version_id for r in selected if r.enabled and r.verification_status == "verified"
     }
     pending = tuple(
         sorted(
@@ -34,7 +38,7 @@ def assess_basis(request, rules, clauses):
             if c.id not in active or c.verification_status != "verified" or c.in_force != "in_force"
         )
     )
-    return BasisAssessment("needs_evidence" if pending else "ready", pending)
+    return BasisAssessment("needs_evidence" if pending or not selected else "ready", pending)
 
 
 def replay_check(check):

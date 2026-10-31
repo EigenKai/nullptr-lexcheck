@@ -59,7 +59,12 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
             evaluation.rule_snapshots,
             evaluation.clause_snapshots,
         )
-        basis = assess_basis(request, evaluation.rule_snapshots, evaluation.clause_snapshots)
+        basis = assess_basis(
+            request,
+            evaluation.rule_snapshots,
+            evaluation.clause_snapshots,
+            rules_checked=evaluation.rules_checked,
+        )
         measurable = (
             evaluation.mode == "live"
             and bool(scope)

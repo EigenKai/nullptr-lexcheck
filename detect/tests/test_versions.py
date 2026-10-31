@@ -80,3 +80,15 @@ def test_pending_update_never_reports_ready(request_data, basis):
         validate_findings((finding,), request_data, (rule,), (clause, new)).rejected[0].reason
         == "inactive_clause"
     )
+
+
+def test_basis_ready_with_three_rules_and_eight_clauses(request_data, basis):
+    rule, clause, _ = basis
+    clauses = tuple(
+        clause.model_copy(update={"id": f"CV-{i}", "clause_id": f"CL-{i}"}) for i in range(1, 9)
+    )
+    rules = tuple(
+        rule.model_copy(update={"id": f"R-{i}", "clause_version_id": f"CV-{i}"})
+        for i in range(1, 4)
+    )
+    assert assess_basis(request_data, rules, clauses).status == "ready"
