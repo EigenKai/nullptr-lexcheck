@@ -1,0 +1,87 @@
+{
+  "previous_clause": {
+    "id": "CV-07-v1",
+    "clause_id": "CL-07",
+    "document": "NĐ 15/2018/NĐ-CP",
+    "article": "27(5)(a)",
+    "text": "Tổ chức, cá nhân có sản phẩm quảng cáo gửi hồ sơ đăng ký xác nhận nội dung quảng cáo đến cơ quan cấp Giấy tiếp nhận bản đăng ký công bố sản phẩm;",
+    "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+    "source_sha256": "a6435d8e778117111bb165d52badb125b7afbe2430334b0f53ec0ea42a3c1ea5",
+    "retrieved_at": "2026-10-31T07:54:34.369313Z",
+    "valid_from": "2018-02-02",
+    "valid_to": "2026-07-01",
+    "verification_status": "verified",
+    "in_force": "superseded",
+    "verified_by": "Dung",
+    "verified_at": "2026-10-31T08:30:24.854598Z",
+    "status_note": "Human rule owner Dung explicitly confirmed this original ND15 Article27(5)(a) excerpt, old/new sources, dates and demo applicability in this session. Agent visually compared signed PDF page20. This is an authority-procedure interval only; no old confirmation is declared void. Snapshot does not rewrite the disabled bootstrap catalog clause."
+  },
+  "state": {
+    "event": {
+      "id": "LAW-NQ21-2026-preloaded",
+      "kind": "law_changed",
+      "label": "preloaded",
+      "previous_clause_version_id": "CV-07-v1",
+      "new_clause": {
+        "id": "CV-07-v2",
+        "clause_id": "CL-07",
+        "document": "NQ 21/2026/NQ-CP",
+        "article": "2(1)(a); effective date6(2)",
+        "text": "Việc cấp giấy xác nhận nội dung quảng cáo đối với thực phẩm bảo vệ sức khỏe được quy định tại khoản 5 Điều 27 Nghị định số 15/2018/NĐ-CP quy định chi tiết thi hành một số điều của Luật An toàn thực phẩm thuộc thẩm quyền của Chủ tịch Ủy ban nhân dân cấp tỉnh;",
+        "source_url": "https://xdcs.cdnchinhphu.vn/446259493575335936/2026/5/5/21-nqcp-signed-1777970679563128188225.pdf",
+        "source_sha256": "50567cf02fd3aeaae318ae61913a0c6a529e1cab2098aa3b145a4478bef2e51b",
+        "retrieved_at": "2026-10-31T08:28:49.400343Z",
+        "valid_from": "2026-07-01",
+        "valid_to": "2028-01-01",
+        "verification_status": "verified",
+        "in_force": "in_force",
+        "verified_by": "Dung",
+        "verified_at": "2026-10-31T08:30:24.854598Z",
+        "status_note": "Human rule owner Dung explicitly confirmed both original clauses, dates and applicability for the demo in this session; confirmation recorded at verified_at. Agent visually compared signed PDF pages1,10. Issued2026-04-29; Article2 effective2026-07-01 under6(2). Article6(1) ends2028-01-01, subject to earlier changes under6(4); transitional applications under6(5) require human review. No automatic invalidation of older certificates. Source verification is distinct from runtime interpretation review and activation."
+      },
+      "proposed_rules": [
+        {
+          "id": "R-07",
+          "version": 2,
+          "clause_version_id": "CV-07-v2",
+          "title": "authority_review",
+          "check_type": "authority_review",
+          "activities": [
+            "ad_registration"
+          ],
+          "method": "deterministic",
+          "severity": "medium",
+          "verification_status": "verified",
+          "enabled": false,
+          "patterns": [],
+          "positive_examples": [
+            "Hồ sơ mới sau01/07/2026 ghi cơ quan trung ương: cần người kiểm tra thẩm quyền.",
+            "Hồ sơ mới sau01/07/2026 chưa rõ cơ quan: cần bổ sung thông tin."
+          ],
+          "negative_examples": [
+            "Giấy trước01/07/2026 không tự mất giá trị.",
+            "Quảng cáo thông thường không phải hồ sơ ad_registration."
+          ]
+        }
+      ],
+      "issued_on": "2026-04-29",
+      "effective_on": "2026-07-01",
+      "received_at": "2026-10-31T08:28:49.400343Z"
+    },
+    "interpretation": "pending",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "activated_at": null,
+    "status": "pending"
+  },
+  "source_review": {
+    "human_confirmed_by": "Dung",
+    "confirmation_recorded_at": "2026-10-31T08:30:24.854598+00:00",
+    "original_pdf_pages": [
+      1,
+      10
+    ],
+    "effective_date_quote": "Quy định tại Điều 2 Nghị quyết này có hiệu lực kể từ ngày 01 tháng 7 năm 2026.",
+    "warning": "Preloaded source evidence only. Runtime review/activation dates are null; canonical layer2 stays off. R-07 evaluation remains roadmap and cannot be demonstrated as an implemented audit."
+  }
+}
