@@ -14,9 +14,15 @@ export async function request(path, options = {}, fetcher = fetch) {
     response = await fetcher(`/api${path}`, {
       ...options,
       headers: { "Content-Type": "application/json", ...options.headers },
-      signal: AbortSignal.timeout(15000),
+      // Chat may use two model attempts, each configured up to 180 seconds.
+      signal: AbortSignal.timeout(path === "/chat" ? 390000 : 15000),
     });
-  } catch {
+  } catch (error) {
+    if (error?.name === "TimeoutError") {
+      throw new ApiError(
+        N_("API phản hồi quá thời gian chờ. Hãy tải lại trạng thái trước khi thử lại."),
+      );
+    }
     throw new ApiError(N_("Không kết nối được API. Kiểm tra dịch vụ rồi thử lại."));
   }
   if (!response.ok) {

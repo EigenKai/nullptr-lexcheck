@@ -81,6 +81,8 @@ export default {
   // API messages (api.js)
   "Không kết nối được API. Kiểm tra dịch vụ rồi thử lại.":
     "Cannot reach the API. Check the service and try again.",
+  "API phản hồi quá thời gian chờ. Hãy tải lại trạng thái trước khi thử lại.":
+    "The API timed out. Reload the state before trying again.",
   "Chức năng này chưa sẵn sàng trên backend. Chưa lưu thay đổi.":
     "This feature is not ready on the backend. Nothing was saved.",
   "Phiên bản đã thay đổi. Hãy tải lại lịch sử trước khi tiếp tục.":
