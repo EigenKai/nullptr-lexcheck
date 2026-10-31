@@ -8,7 +8,7 @@ from pathlib import Path
 from time import perf_counter
 
 from contracts.models import CheckRequest, EvaluationReport
-from detect.candidates import CandidateBatch
+from detect.candidates import WireCandidateBatch, validate_candidates
 from detect.client import cache_key, configured_client
 from detect.inputs import model_input
 from detect.service import PROMPT, suggest_with_trace
@@ -56,8 +56,11 @@ def _evaluate_case(case, *, mode, active_client, prompt):
         purpose="plain-chat-v1",
         payload=payload,
         prompt=prompt,
-        schema=CandidateBatch,
+        schema=WireCandidateBatch,
         mode=mode,
+    )
+    plain_batch, plain_invalid = (
+        validate_candidates(plain.parsed) if plain.parsed is not None else (None, 0)
     )
     if plain.calls:
         latencies["plain_chat"].append((perf_counter() - started) * 1000)
@@ -89,7 +92,7 @@ def _evaluate_case(case, *, mode, active_client, prompt):
         rows["keyword"].append((keyword(request, scope), gold))
         if plain.parsed is not None:
             rows["plain_chat"].append(
-                ({(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}, gold)
+                ({(c.record_version_id, c.rule_id) for c in plain_batch.candidates}, gold)
             )
         if detection.model_status != "unavailable":
             rows["lexcheck"].append(
@@ -99,7 +102,7 @@ def _evaluate_case(case, *, mode, active_client, prompt):
         predictions["keyword"] = sorted(keyword(request, scope))
         if plain.parsed is not None:
             predictions["plain_chat"] = sorted(
-                {(c.record_version_id, c.rule_id) for c in plain.parsed.candidates}
+                {(c.record_version_id, c.rule_id) for c in plain_batch.candidates}
             )
         if detection.model_status != "unavailable":
             predictions["lexcheck"] = sorted(
@@ -122,6 +125,10 @@ def _evaluate_case(case, *, mode, active_client, prompt):
             Counter(r.reason for r in validation.rejected) + Counter(dict(suggestion.rejected))
         ),
         "errors": {"plain_chat": plain.error, "lexcheck": suggestion.error},
+        "rejected_by_system": {
+            "plain_chat": {"schema_invalid": plain_invalid} if plain_invalid else {},
+            "lexcheck": dict(suggestion.rejected),
+        },
         "unmeasured_gold_pairs": len(gold_all - gold),
     }
     return rows, calls, failures, latencies, trace, scope
@@ -173,6 +180,14 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
             "errors": {
                 s: dict(Counter(t["errors"].get(s) for t in trace if t["errors"].get(s)))
                 for s in SYSTEMS
+            },
+            "rejected_by_system": {
+                system: dict(
+                    sum(
+                        (Counter(t["rejected_by_system"].get(system, {})) for t in trace), Counter()
+                    )
+                )
+                for system in SYSTEMS
             },
             "per_rule": {s: per_rule(rows[s]) for s in rows},
             "false_clean": {

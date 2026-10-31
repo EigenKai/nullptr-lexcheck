@@ -35,7 +35,7 @@ def suggest_with_trace(request, evaluation, *, client=None):
         )
     ):
         return SuggestionTrace(DetectionResult(model_status="off"))
-    from detect.candidates import CandidateBatch, materialize
+    from detect.candidates import WireCandidateBatch, materialize, validate_candidates
     from detect.client import configured_client
     from detect.inputs import model_input
 
@@ -44,7 +44,7 @@ def suggest_with_trace(request, evaluation, *, client=None):
         purpose="detect-v1",
         payload=model_input(request, evaluation.rule_snapshots, evaluation.clause_snapshots),
         prompt=PROMPT,
-        schema=CandidateBatch,
+        schema=WireCandidateBatch,
         mode=request.llm_mode,
     )
     if output.parsed is None:
@@ -53,16 +53,19 @@ def suggest_with_trace(request, evaluation, *, client=None):
             calls=output.calls,
             error=output.error,
         )
+    batch, schema_invalid = validate_candidates(output.parsed)
     validation = validate_findings(
-        materialize(output.parsed, evaluation.rule_snapshots),
+        materialize(batch, evaluation.rule_snapshots),
         request,
         evaluation.rule_snapshots,
         evaluation.clause_snapshots,
     )
     rejected = Counter(r.reason for r in validation.rejected)
     unknown = sum(
-        c.rule_id not in {r.id for r in evaluation.rule_snapshots} for c in output.parsed.candidates
+        c.rule_id not in {r.id for r in evaluation.rule_snapshots} for c in batch.candidates
     )
+    if schema_invalid:
+        rejected["schema_invalid"] += schema_invalid
     if unknown:
         rejected["unknown_rule"] += unknown
     return SuggestionTrace(
