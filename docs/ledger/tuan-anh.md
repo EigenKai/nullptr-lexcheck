@@ -4,6 +4,7 @@
 | 14:11 | Tuấn Anh | task | Structured proposals, scoped cache, snapshot citations and draft development evaluation | 91 tests; 55 owned tests; runtime detect/eval coverage 93%; 15 draft cases, executed scope empty, scores unmeasured; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/5 |
 | 14:14 | Tuấn Anh | task | Single-use final evaluation CLI with private aggregate output | 98 tests; 62 owned tests; runtime detect/eval coverage 93%; temporary dev copies only; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/6 |
 | 14:19 | Tuấn Anh | task | Version-aware basis assessment and final-run preflight | Preflight preserves run allowance; effective pending clauses require evidence; old checks replay stored basis; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/6 |
+| 14:48 | Tuấn Anh | task | Deterministic verified warning, uses and linked-confirmation checks | 189 tests; 47 engine tests; engine statement/branch coverage 100%; fmt/test/lint/smoke/eval and dependency audit passed; disabled catalog unchanged; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/15 |
 
 Final operator commands (credentials and model supplied by the owner; layer 3 remains off):
 
