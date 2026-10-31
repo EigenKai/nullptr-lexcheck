@@ -155,6 +155,7 @@ class WorkspaceStore:
         origin="upload",
         official_url=None,
         extracted_pages=None,
+        refresh=False,
     ):
         if collection not in ("business", "legal"):
             raise ValueError("Unknown document collection.")
@@ -167,7 +168,7 @@ class WorkspaceStore:
                 (d for d in documents if d["collection"] == collection and d["sha256"] == digest),
                 None,
             )
-            if duplicate:
+            if duplicate and not refresh:
                 return self.document(workspace_id, duplicate["id"])
             previous = [
                 d
@@ -206,6 +207,27 @@ class WorkspaceStore:
             workspace["documents"] = documents
             write_json(self.folder(workspace_id) / "workspace.json", workspace)
             return payload
+
+    def refresh_extraction(self, workspace_id, document_id):
+        """Create a new extraction version; retain earlier text and original bytes."""
+        with self._lock:
+            previous = self.document(workspace_id, document_id)
+            if previous["suffix"] != ".xlsx" or previous["collection"] != "business":
+                raise ValueError("Only company XLSX extraction refresh is supported.")
+            raw = (
+                self.folder(workspace_id) / "documents" / document_id / "original.xlsx"
+            ).read_bytes()
+            current = self.add_document(
+                workspace_id,
+                "business",
+                previous["name"],
+                raw,
+                origin=previous["origin"],
+                refresh=True,
+            )
+            if previous["context_enabled"]:
+                self.document_context(workspace_id, document_id, False)
+            return current
 
     def document_context(self, workspace_id, document_id, enabled):
         with self._lock:

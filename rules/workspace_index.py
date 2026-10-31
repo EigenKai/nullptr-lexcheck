@@ -21,6 +21,7 @@ class WorkspaceIndex:
         workspace = store.migrate_documents(workspace_id)
         self.sources = {}
         metadata = store.documents(workspace_id)
+        self.documents = metadata
         for doc in metadata:
             if doc["collection"] == "business" and not doc["context_enabled"]:
                 continue
@@ -46,6 +47,16 @@ class WorkspaceIndex:
                 "company_documents_enabled_for_model": sum(
                     d["collection"] == "business" and d["context_enabled"] for d in metadata
                 ),
+                "documents": [
+                    {
+                        "document_id": d["id"],
+                        "title": d["name"],
+                        "type": d.get("suffix"),
+                        "collection": d["collection"],
+                        "selected": d["collection"] == "legal" or d["context_enabled"],
+                    }
+                    for d in metadata
+                ],
             },
             ensure_ascii=False,
         )
@@ -101,6 +112,9 @@ class WorkspaceIndex:
                             "version": doc["version"],
                             "page": number,
                             "text": content,
+                            "worksheet": f"Sheet {number}"
+                            if doc.get("suffix") == ".xlsx"
+                            else None,
                         }
                         db.execute(
                             "INSERT INTO passages VALUES (?,?)",
@@ -115,11 +129,23 @@ class WorkspaceIndex:
         return [
             {
                 "document_id": doc["id"],
+                "title": doc["name"],
+                "collection": doc["collection"],
+                "type": doc.get("suffix"),
+                "selected": doc["collection"] == "legal" or doc["context_enabled"],
+                "pages": doc["page_count"],
+            }
+            for doc in self.documents
+        ] + [
+            {
+                "document_id": doc["id"],
                 "title": doc["title"],
                 "collection": doc["collection"],
                 "pages": len(doc["model_pages"]),
+                "selected": True,
             }
             for doc in self.sources.values()
+            if doc["id"] not in {item["id"] for item in self.documents}
         ]
 
     def search(self, query, limit=6):
@@ -154,7 +180,18 @@ class WorkspaceIndex:
         start = original.find(quote)
         if start < 0:
             raise ValueError("Model quotation is not in the original extracted text.")
-        return {
+        citation = {
             key: chunk[key]
             for key in ("document_id", "title", "collection", "page", "sha256", "version")
         } | {"quote": quote, "start": start, "end": start + len(quote)}
+        if source.get("suffix") == ".xlsx":
+            # Coordinates come from original extracted lines, never model guesses.
+            line_start = original.rfind("\n", 0, start) + 1
+            lines = original[line_start : start + len(quote)].splitlines()
+            citation["worksheet"] = f"Sheet {chunk['page']}"
+            citation["cells"] = list(
+                dict.fromkeys(
+                    match.group(1) for line in lines if (match := re.match(r"([A-Z]+\d+)\t", line))
+                )
+            )
+        return citation

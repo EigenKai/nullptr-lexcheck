@@ -494,3 +494,12 @@
     margin-top: 0;
   }
 }
+.chat-document-selection { margin: 12px 0; padding: 14px; border: 1px solid var(--line, #dedfd8); border-radius: 12px; background: #fafbf7; }
+.chat-document-selection summary { cursor: pointer; font-weight: 700; }
+.chat-document-row { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 12px; }
+.chat-document-row span { min-width: 0; overflow-wrap: anywhere; }
+.chat-document-row small { display: block; margin-top: 4px; color: #6b7068; }
+.chat-document-preview { margin: 12px 0; padding: 16px; border: 1px solid #d5ddcd; border-radius: 12px; }
+.chat-document-preview pre { max-height: 240px; overflow: auto; white-space: pre-wrap; background: #f8f9f5; padding: 12px; font-size: 12px; }
+.chat-document-preview details { margin: 10px 0; }
+@media (max-width: 640px) { .chat-document-row { align-items: flex-start; flex-direction: column; } }

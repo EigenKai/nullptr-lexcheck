@@ -261,6 +261,12 @@ export function DocumentWorkspace({
             </p>
             {kind === "business" && (
               <>
+                {preview.method === "xlsx-cell-text-limited" && <button className="button" disabled={busy} onClick={() => act(async () => {
+                  setPreview(await researchClient.refreshExtraction(id, preview.id));
+                  const detail = await researchClient.detail(id);
+                  setData(detail);
+                  onUpdated();
+                })}>Cập nhật bản trích XLSX an toàn</button>}
                 <p className="document-privacy">
                   Bản dùng cho model đã che các mẫu email, số điện thoại, mã
                   định danh và một số cột cá nhân nhận diện được. Bạn cần xem
@@ -298,7 +304,7 @@ export function DocumentWorkspace({
                   type="checkbox"
                   checked={preview.context_enabled}
                   disabled={
-                    busy || !preview.model_pages.some((text) => text.trim())
+                    busy || preview.method === "xlsx-cell-text-limited" || !preview.model_pages.some((text) => text.trim())
                   }
                   onChange={(event) => {
                     const enabled = event.target.checked;

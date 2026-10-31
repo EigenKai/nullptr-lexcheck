@@ -125,6 +125,10 @@ export function createResearchClient(fetcher = fetch) {
           },
         )
       ).json(),
+    refreshExtraction: async (id, documentId) =>
+      (await call(`workspaces/${encodeURIComponent(id)}/documents/${encodeURIComponent(documentId)}/extract`, {
+        method: "POST",
+      })).json(),
     original: async (id, documentId) =>
       (
         await call(

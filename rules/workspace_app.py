@@ -377,6 +377,10 @@ def create_app(
     def document_model_context(workspace_id: str, document_id: str, selection: DocumentContext):
         return store.document_context(workspace_id, document_id, selection.enabled)
 
+    @app.post("/api/workspaces/{workspace_id}/documents/{document_id}/extract")
+    def document_extract(workspace_id: str, document_id: str):
+        return store.refresh_extraction(workspace_id, document_id)
+
     @app.post("/api/workspaces/{workspace_id}/profile")
     def profile(workspace_id: str, options: ProfileStart):
         if not options.live or os.getenv("LEXCHECK_WORKSPACE_PROFILE_ENABLED", "0") != "1":
