@@ -1,15 +1,16 @@
 :root {
-  --bg: #f9f9f5;
+  /* Older palette names now resolve to the Lex brand tokens (brand.css). */
+  --bg: #f8f3ea;
   --paper: #fff;
-  --ink: #203c38;
-  --text: #334b46;
-  --muted: #75817b;
-  --line: #e4e8df;
-  --green: #236459;
-  --deep: #184b44;
-  --mint: #eaf1e9;
-  --gold: #b38739;
-  --sand: #f5efe1;
+  --ink: var(--brand-ink);
+  --text: #2c4447;
+  --muted: #5b6e6c;
+  --line: #e6dfd1;
+  --green: var(--brand-scale);
+  --deep: #164449;
+  --mint: #e6f0eb;
+  --gold: var(--brand-gold);
+  --sand: #f7ecd9;
   --red: #9e5142;
   --radius: 14px;
   --font: "Nunito Sans Variable", "Segoe UI", sans-serif;
