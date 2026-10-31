@@ -64,3 +64,37 @@ Tests inject model responses and use synthetic documents only. A separate live
 smoke used the configured model on synthetic company text; it is integration
 evidence, not a measured legal or retrieval accuracy score. Browser visual review
 remains pending because Computer Use stopped on an unknown browser URL.
+
+## Existing Excel documents
+
+Chat lists existing business filenames, IDs, versions and model selection states.
+Open the redacted extraction directly there and select it for chat; an existing
+unselected file does not need another upload. The model receives that inventory
+with selected/unselected states, not only counts.
+
+Older XLSX extractions can be refreshed locally from retained original bytes.
+Refresh creates a new document/extraction version with the same original hash;
+earlier text snapshots remain readable. It deselects the refreshed old version,
+and the new version needs selection after review. Other documents/workspaces are
+not automatically selected.
+
+The v2 local XLSX projection reads all worksheets within extraction budgets,
+retains cell coordinates, masks recognized personal columns even when their
+headers occur after row ten, and withholds unknown free text and long numeric
+identifiers. Only recognized operational labels and associated numeric cells
+enter this conservative projection. This is a privacy filter, not LLM company
+classification or proof of legal activity. Unknown text, formulas without cached
+values, and unsupported units may require reading the local original. Review the
+projection before selection; it is deliberately incomplete.
+
+Excel citations carry generic worksheet/page labels and original cell references
+alongside exact original quote offsets, version and original-byte hash. Internal
+chunk identifiers become numbered citations in answer prose. Business tariff
+data does not establish whether a price is permitted by law; an unrelated legal
+PDF cannot supply missing electricity-law evidence.
+
+Index cache identity and eligible prior-answer evidence include extraction version
+and citation title as well as source-byte hash. A same-byte extraction update
+cannot silently reuse old citation metadata. Repeated spreadsheet values need an
+unambiguous original cell quote; include the coordinate and value. Old stored
+turns retain their original evidence and are not rewritten.

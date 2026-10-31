@@ -45,4 +45,15 @@ describe("workspace chat shell", () => {
     expect(html).toContain("TRÒ CHUYỆN GẦN ĐÂY");
     expect(html).toContain("Chưa có hội thoại đã lưu");
   });
+  it("shows an existing unselected workbook with a direct review and context action", () => {
+    const html = renderToStaticMarkup(React.createElement(WorkspaceChat, {
+      workspace: {id: "WS-one", name: "Company", documents: [
+        {id: "FILE-example", name: "billing.xlsx", collection: "business", context_enabled: false},
+      ]}, onBusyChange() {}, onNavigate() {},
+    }));
+    expect(html).toContain("billing.xlsx");
+    expect(html).toContain("FILE-example");
+    expect(html).toContain("Xem và chọn bản đã che");
+    expect(html).toContain("Đã có trong workspace");
+  });
 });

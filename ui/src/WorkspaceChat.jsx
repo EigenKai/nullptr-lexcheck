@@ -80,6 +80,7 @@ export function WorkspaceChat({
   onTurnSaved,
   onBusyChange,
   onNavigate,
+  onDocumentsChanged = () => {},
 }) {
   const workspaceId = workspace.id;
   const [conversation, setConversation] = useState(null);
@@ -90,6 +91,8 @@ export function WorkspaceChat({
   const [error, setError] = useState("");
   const [activeTurn, setActiveTurn] = useState(null);
   const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [documentPreview, setDocumentPreview] = useState(null);
+  const [documentBusy, setDocumentBusy] = useState(false);
   const alive = useRef(true);
   const createdHere = useRef(null);
   const messagesEnd = useRef(null);
@@ -218,6 +221,20 @@ export function WorkspaceChat({
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch (e) {
       if (alive.current) setError(e.message);
+    }
+  }
+
+  async function documentAction(callback) {
+    setDocumentBusy(true);
+    setError("");
+    try {
+      const value = await callback();
+      if (alive.current) setDocumentPreview(value);
+      await onDocumentsChanged();
+    } catch (e) {
+      if (alive.current) setError(e.message);
+    } finally {
+      if (alive.current) setDocumentBusy(false);
     }
   }
 
@@ -350,6 +367,31 @@ export function WorkspaceChat({
               , xem bản trích đã che dữ liệu cá nhân và chọn làm ngữ cảnh model.
             </p>
           )}
+          {documents.some((doc) => doc.collection === "business") && (
+            <details className="chat-document-selection" open={!companyCount}>
+              <summary>Đã có trong workspace · chọn tài liệu cho chat</summary>
+              {documents.filter((doc) => doc.collection === "business").map((doc) => (
+                <div className="chat-document-row" key={doc.id}>
+                  <span><b>{doc.name}</b><small>{doc.id} · v{doc.version} · {doc.context_enabled ? "Đã chọn" : "Chưa chọn cho model"}</small></span>
+                  <button className="button" disabled={busy || documentBusy} onClick={() => documentAction(() => researchClient.document(workspaceId, doc.id))}>
+                    Xem và chọn bản đã che
+                  </button>
+                </div>
+              ))}
+              <p className="research-note">File đã được lưu; không cần tải lên lại. Chỉ bản đã che và được chọn mới được model đọc.</p>
+            </details>
+          )}
+          {documentPreview && (
+            <section className="chat-document-preview" aria-label="Duyệt tài liệu cho model">
+              <div className="section-head"><h3>{documentPreview.name} · v{documentPreview.version}</h3><button className="button" onClick={() => setDocumentPreview(null)}>Đóng</button></div>
+              <p>Bản trích đã che. XLSX chỉ giữ số liệu và nhãn vận hành nhận diện được; văn bản tự do giữ cục bộ. Hãy đối chiếu trước khi chọn.</p>
+              {documentPreview.method === "xlsx-cell-text-limited" && <button className="button" disabled={busy || documentBusy} onClick={() => documentAction(() => researchClient.refreshExtraction(workspaceId, documentPreview.id))}>Cập nhật bản trích XLSX an toàn</button>}
+              {(documentPreview.model_pages || []).map((text, index) => <details key={index}><summary>Trang / Sheet {index + 1}</summary><pre>{text || "Chưa có text để đọc"}</pre></details>)}
+              <button className="button primary" disabled={busy || documentBusy || !documentPreview.model_pages?.some((text) => text.trim()) || documentPreview.method === "xlsx-cell-text-limited"} onClick={() => documentAction(() => researchClient.context(workspaceId, documentPreview.id, !documentPreview.context_enabled))}>
+                {documentBusy ? "Đang lưu…" : documentPreview.context_enabled ? "Bỏ chọn khỏi model" : "Tôi đã xem · Dùng bản đã che cho chat"}
+              </button>
+            </section>
+          )}
           <form className="composer" onSubmit={send}>
             <textarea
               aria-label="Câu hỏi cho Lex"
@@ -358,7 +400,7 @@ export function WorkspaceChat({
               placeholder="Hỏi Lex từ những tài liệu workspace đã lưu…"
               maxLength={2500}
               rows={3}
-              disabled={busy || loading || !researchClient.chatEnabled()}
+              disabled={busy || documentBusy || loading || !researchClient.chatEnabled()}
               onKeyDown={(event) => {
                 if (
                   event.key === "Enter" &&
@@ -441,7 +483,8 @@ export function WorkspaceChat({
                   </small>
                   <h3>{citation.title}</h3>
                   <p>
-                    Trang {citation.page} · Phiên bản {citation.version}
+                    {citation.worksheet || `Trang ${citation.page}`} · Phiên bản {citation.version}
+                    {citation.cells?.length ? ` · Ô ${citation.cells.join(", ")}` : ""}
                   </p>
                   <blockquote>{citation.quote}</blockquote>
                   <code>

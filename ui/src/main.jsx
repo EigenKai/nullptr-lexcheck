@@ -716,6 +716,7 @@ function App() {
                     onTurnSaved={refreshConversations}
                     onBusyChange={setChatBusy}
                     onNavigate={go}
+                    onDocumentsChanged={loadResearchWorkspaces}
                   />
                 ) : effectiveWorkspaceId ? (
                   <DocumentWorkspace
