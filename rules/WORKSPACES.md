@@ -1,6 +1,7 @@
 # Private workspace research pilot
 
 **Current shared document UI:** see [DOCUMENT_WORKSPACES.md](DOCUMENT_WORKSPACES.md).
+**Indexed conversations:** see [WORKSPACE_CHAT.md](WORKSPACE_CHAT.md).
 It replaces the industry-specific screens with the same overview and separate
 business/legal libraries for every workspace. The standalone XLSX/housing flow
 described below is historical development documentation, not the current upload

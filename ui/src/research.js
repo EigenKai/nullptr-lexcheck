@@ -21,9 +21,9 @@ export function createResearchClient(fetcher = fetch) {
       const messages = {
         503: "Model hoặc chức năng chat chưa sẵn sàng. Kiểm tra cấu hình trên server rồi thử lại; không có câu trả lời mẫu thay thế.",
         401: "Phiên nghiên cứu đã đổi. Tải lại trang để kết nối.",
-        409: "Một workspace đang nghiên cứu. Chờ lượt hiện tại kết thúc.",
+        409: "Yêu cầu trước đang xử lý hoặc dữ liệu đã thay đổi. Chờ rồi thử lại.",
         413: "Workbook vượt giới hạn 15 MB.",
-        422: "Không đọc được workbook hoặc yêu cầu. Kiểm tra file XLSX.",
+        422: "Yêu cầu hoặc bằng chứng chưa đủ để xử lý. Kiểm tra dữ liệu rồi thử lại.",
       };
       throw new Error(
         messages[response.status] || "Chưa tải được dữ liệu workspace.",

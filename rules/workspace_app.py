@@ -49,6 +49,14 @@ class ProfileStart(Contract):
     live: bool
 
 
+class ConversationCreate(Contract):
+    title: str = Field(default="Cuộc trò chuyện mới", min_length=1, max_length=100)
+
+
+class ConversationMessage(Contract):
+    question: str = Field(min_length=1, max_length=2500)
+
+
 def create_app(
     root=Path("cache/workspaces"),
     *,
@@ -56,6 +64,7 @@ def create_app(
     transport_factory=None,
     reader_factory=WorkspaceSourceReader,
     profile_client_factory=None,
+    chat_client_factory=None,
 ):
     enabled = (
         os.environ.get("LEXCHECK_WORKSPACE_RESEARCH_ENABLED", "0") == "1"
@@ -88,6 +97,11 @@ def create_app(
     )
     app.state.token = secrets.token_urlsafe(32)
     app.state.store, app.state.jobs = store, {}
+    from rules.workspace_chat import ConversationStore
+
+    conversations = ConversationStore(store)
+    chat_locks = {}
+    chat_lock_guard = threading.Lock()
 
     @app.middleware("http")
     async def local_guard(request, call_next):
@@ -121,7 +135,7 @@ def create_app(
         return JSONResponse(
             {
                 "code": "invalid_request",
-                "message": "Không đọc được yêu cầu hoặc tài liệu; kiểm tra định dạng và giới hạn file.",
+                "message": "Yêu cầu hoặc bằng chứng chưa đủ để xử lý. Kiểm tra dữ liệu và thử lại.",
             },
             status_code=422,
         )
@@ -204,7 +218,55 @@ def create_app(
             "token": app.state.token,
             "mode": "private_local_research",
             "profile_enabled": os.getenv("LEXCHECK_WORKSPACE_PROFILE_ENABLED", "0") == "1",
+            "chat_enabled": os.getenv("LEXCHECK_WORKSPACE_CHAT_ENABLED", "0") == "1",
         }
+
+    @app.get("/api/workspaces/{workspace_id}/conversations")
+    def list_conversations(workspace_id: str):
+        return conversations.list(workspace_id)
+
+    @app.post("/api/workspaces/{workspace_id}/conversations", status_code=201)
+    def create_conversation(workspace_id: str, payload: ConversationCreate):
+        return conversations.create(workspace_id, payload.title)
+
+    @app.get("/api/workspaces/{workspace_id}/conversations/{conversation_id}")
+    def conversation(workspace_id: str, conversation_id: str):
+        return conversations.get(workspace_id, conversation_id)
+
+    @app.post("/api/workspaces/{workspace_id}/conversations/{conversation_id}/messages")
+    def chat_message(workspace_id: str, conversation_id: str, payload: ConversationMessage):
+        if os.getenv("LEXCHECK_WORKSPACE_CHAT_ENABLED", "0") != "1":
+            raise HTTPException(503, "Workspace chat is disabled.")
+        conversations.get(workspace_id, conversation_id)
+        with chat_lock_guard:
+            lock = chat_locks.setdefault((workspace_id, conversation_id), threading.Lock())
+        if not lock.acquire(blocking=False):
+            raise HTTPException(409, "Conversation already has a pending response.")
+        try:
+            from rules.workspace_chat import answer
+
+            if chat_client_factory:
+                client = chat_client_factory(workspace_id)
+            else:
+                from detect.client import ModelClient
+
+                load_local_env()
+                client = ModelClient(
+                    cache_dir=store.folder(workspace_id) / "chat-cache",
+                    user_id="local-session",
+                    group="manager",
+                    acl_hash=workspace_id,
+                )
+            try:
+                return answer(
+                    store, conversations, workspace_id, conversation_id, payload.question, client
+                )
+            except RuntimeError as exc:
+                raise HTTPException(
+                    503, "Chat model unavailable; no sample answer substituted."
+                ) from exc
+        finally:
+            lock.release()
 
     @app.get("/api/workspaces")
     def list_workspaces():

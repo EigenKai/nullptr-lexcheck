@@ -244,20 +244,10 @@ function App() {
     setPanel(true);
   }
   function ask(text) {
-    if (!text.trim() || !bundle) return;
-    const chosen = text.normalize("NFC");
-    let answer;
-    if (/thay đổi|phiên bản|cập nhật/i.test(chosen))
-      answer =
-        "Kịch bản có hồ sơ công bố RV-01-v1 → RV-01-v2: bỏ công dụng “Hỗ trợ giảm cholesterol.”. Mở Cập nhật nguồn để xem hai bản. Chưa áp dụng thay đổi vào hệ thống.";
-    else if (/việc|giao|quyết định/i.test(chosen))
-      answer = history?.decisions.length
-        ? `Lịch sử API có ${history.decisions.length} quyết định. Mở Lịch sử quyết định để xem người xử lý và phiên bản.`
-        : "Chưa có quyết định được lưu trong lịch sử API. Việc giao người xử lý cần một phát hiện và backend hỗ trợ lưu quyết định.";
-    else
-      answer = `Kho mẫu có ${bundle.request.records.length} hồ sơ, ${bundle.rules.length} rule đang chờ kiểm chứng nguồn. Chưa đủ thông tin để kết luận. Mở Rà soát hồ sơ để chạy kiểm tra qua API và xem phạm vi đã kiểm.`;
-    setMessages((prev) => [...prev, { question: chosen, answer }]);
-    setPrompt("");
+    if (!text.trim()) return;
+    setError(
+      "Chat chưa kết nối API workspace. Kiểm tra cấu hình server và tải lại trang.",
+    );
   }
   const versions = bundle?.request.versions || [];
   const current = selected?.type === "finding" ? selected.value : null;

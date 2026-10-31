@@ -158,6 +158,7 @@ export function WorkspaceChat({
     event.preventDefault();
     const text = question.trim();
     if (!text || busy || loading || !researchClient.chatEnabled()) return;
+    if (conversationId && conversation?.id !== conversationId) return;
     setBusy(true);
     onBusyChange(true);
     setError("");
@@ -355,7 +356,7 @@ export function WorkspaceChat({
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               placeholder="Hỏi Lex từ những tài liệu workspace đã lưu…"
-              maxLength={4000}
+              maxLength={2500}
               rows={3}
               disabled={busy || loading || !researchClient.chatEnabled()}
               onKeyDown={(event) => {
@@ -434,7 +435,9 @@ export function WorkspaceChat({
                     [{index + 1}]{" "}
                     {citation.collection === "legal"
                       ? "Tài liệu luật · chưa xác minh"
-                      : "Tài liệu doanh nghiệp"}
+                      : citation.collection === "metadata"
+                        ? "Chỉ mục workspace"
+                        : "Tài liệu doanh nghiệp"}
                   </small>
                   <h3>{citation.title}</h3>
                   <p>
@@ -446,9 +449,11 @@ export function WorkspaceChat({
                     <br />
                     SHA-256 {citation.sha256}
                   </code>
-                  <button onClick={() => download(citation)}>
-                    Tải tài liệu nguồn ↗
-                  </button>
+                  {/^FILE-[a-f0-9]{24}$/.test(citation.document_id) && (
+                    <button onClick={() => download(citation)}>
+                      Tải tài liệu nguồn ↗
+                    </button>
+                  )}
                 </article>
               ))
             ) : (
