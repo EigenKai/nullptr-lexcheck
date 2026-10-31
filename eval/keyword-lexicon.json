@@ -1,0 +1,38 @@
+{
+  "R-01": {
+    "kind": "missing_warning",
+    "phrases": [
+      "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh."
+    ]
+  },
+  "R-02": {
+    "kind": "uses",
+    "phrases": []
+  },
+  "R-03": {
+    "kind": "confirmation",
+    "phrases": []
+  },
+  "R-04": {
+    "kind": "terms",
+    "phrases": [
+      "bác sĩ",
+      "dược sĩ",
+      "bệnh viện",
+      "cơ sở y tế",
+      "thư cảm ơn",
+      "bác sỹ",
+      "dược sỹ"
+    ]
+  },
+  "R-05": {
+    "kind": "terms",
+    "phrases": [
+      "chữa khỏi",
+      "điều trị",
+      "thay thế thuốc",
+      "đặc trị",
+      "chữa bệnh"
+    ]
+  }
+}

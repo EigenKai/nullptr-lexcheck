@@ -1,0 +1,130 @@
+{
+  "label": "synthetic/staged",
+  "cases": {
+    "clean-1": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "clean-1",
+      "is_clean": true
+    },
+    "clean-2": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "clean-2",
+      "is_clean": true
+    },
+    "clean-3": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "clean-3",
+      "is_clean": true
+    },
+    "clean-4": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "clean-4",
+      "is_clean": true
+    },
+    "clean-5": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "clean-5",
+      "is_clean": true
+    },
+    "explicit": {
+      "gold": [
+        [
+          "RV-02-v1",
+          "R-05"
+        ]
+      ],
+      "label_status": "draft_pending_owner_review",
+      "category": "explicit",
+      "is_clean": false
+    },
+    "implied": {
+      "gold": [
+        [
+          "RV-02-v1",
+          "R-05"
+        ]
+      ],
+      "label_status": "draft_pending_owner_review",
+      "category": "implied",
+      "is_clean": false
+    },
+    "use-mismatch": {
+      "gold": [
+        [
+          "RV-02-v1",
+          "R-02"
+        ]
+      ],
+      "label_status": "draft_pending_owner_review",
+      "category": "use-mismatch",
+      "is_clean": false
+    },
+    "missing-warning": {
+      "gold": [
+        [
+          "RV-02-v1",
+          "R-01"
+        ]
+      ],
+      "label_status": "draft_pending_owner_review",
+      "category": "missing-warning",
+      "is_clean": false
+    },
+    "missing-evidence": {
+      "gold": [
+        [
+          "RV-02-v1",
+          "R-03"
+        ]
+      ],
+      "label_status": "draft_pending_owner_review",
+      "category": "missing-evidence",
+      "is_clean": false
+    },
+    "profile-unknown": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "profile-unknown",
+      "is_clean": true
+    },
+    "injection": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "injection",
+      "is_clean": true
+    },
+    "endorsement": {
+      "gold": [
+        [
+          "RV-02-v1",
+          "R-04"
+        ]
+      ],
+      "label_status": "draft_pending_owner_review",
+      "category": "endorsement",
+      "is_clean": false
+    },
+    "explicit-2": {
+      "gold": [
+        [
+          "RV-02-v1",
+          "R-05"
+        ]
+      ],
+      "label_status": "draft_pending_owner_review",
+      "category": "explicit-2",
+      "is_clean": false
+    },
+    "use-control": {
+      "gold": [],
+      "label_status": "draft_pending_owner_review",
+      "category": "use-control",
+      "is_clean": true
+    }
+  }
+}
