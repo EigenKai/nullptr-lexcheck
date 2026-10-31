@@ -61,3 +61,44 @@ def test_stability_excludes_cached_model_responses():
     result = stability([trace] * 3)
     assert result["plain_chat"]["agreement"] is None
     assert result["plain_chat"]["cached_cases"] == 1
+
+
+def test_stability_excludes_cached_client_responses(monkeypatch):
+    import json
+
+    from contracts.models import ClauseVersion, Rule, RuleEvaluation
+    from detect.candidates import CandidateBatch
+    from detect.client import ModelOutput
+    from eval.run import ROOT, evaluate_cases
+    from intake.fixtures import load_demo
+
+    basis = json.loads((ROOT / "detect/tests/fixtures/basis.json").read_text())
+    rule = Rule.model_validate(basis["rule"])
+    clause = ClauseVersion.model_validate(basis["clause"])
+
+    class CachedClient:
+        model = "test"
+
+        def generate(self, **kwargs):
+            return ModelOutput("cached", CandidateBatch(candidates=()), calls=0)
+
+    def engine(request):
+        return RuleEvaluation(
+            mode="live",
+            applicability="applies",
+            reason="Test only",
+            rules_checked=(rule.id,),
+            rule_snapshots=(rule,),
+            clause_snapshots=(clause,),
+        )
+
+    monkeypatch.setattr("eval.run.evaluate", engine)
+    cases = (("test", load_demo().request, {"gold": []}),)
+    runs = tuple(evaluate_cases(cases, mode="cache", client=CachedClient()) for _ in range(3))
+    result = stability([trace for _, trace in runs])
+    for system in ("plain_chat", "lexcheck"):
+        assert result[system]["measured_cases"] == 0
+        assert result[system]["agreement"] is None
+        assert result[system]["cached_cases"] == 1
+    assert all(trace[0]["lexcheck_status"] == "cached" for _, trace in runs)
+    assert all(score.model_calls == 0 for report, _ in runs for score in report.systems)
