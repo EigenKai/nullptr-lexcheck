@@ -16,7 +16,8 @@ def request_data():
 @pytest.fixture
 def basis(request_data):
     data = json.loads((Path(__file__).parent / "fixtures/basis.json").read_text())
-    rule = Rule.model_validate(data["rule"])
+    # Generic grounding tests use a span-based rule; absence checks have dedicated cases.
+    rule = Rule.model_validate({**data["rule"], "check_type": "endorsement"})
     clause = ClauseVersion.model_validate(data["clause"])
     version = next(v for v in request_data.versions if v.id in request_data.target_version_ids)
     finding = Finding(

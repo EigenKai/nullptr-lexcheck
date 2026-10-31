@@ -52,7 +52,7 @@ def test_rejected_proposals_remain_in_denominator(monkeypatch):
     from eval.run import ROOT, evaluate_cases
 
     basis = json.loads((ROOT / "detect/tests/fixtures/basis.json").read_text())
-    rule = Rule.model_validate(basis["rule"])
+    rule = Rule.model_validate({**basis["rule"], "check_type": "endorsement"})
     clause = ClauseVersion.model_validate(basis["clause"])
     request = load_demo().request
     version = next(v for v in request.versions if v.id in request.target_version_ids)
