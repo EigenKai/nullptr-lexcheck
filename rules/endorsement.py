@@ -45,6 +45,10 @@ _CANDIDATES = tuple(
     )
 )
 _NEGATIVE = re.compile(r"\b(?:không|chưa|cấm|tránh)\b")
+_NEGATIVE_BEFORE = re.compile(
+    r"\b(?:không|chưa|cấm|tránh)"
+    r"(?:\s+(?:được|nên|hề|có|dùng|sử dụng|từng|phép|bất kỳ|bất cứ)){0,5}\s*$"
+)
 _ADVICE = re.compile(r"(?:hỏi|tham khảo|xin)\s+(?:ý kiến\s+)?(?:của\s+)?$")
 _POLICY = re.compile(r"^(?:theo quy định[, :]*)?(?:không|cấm|nghiêm cấm)\s+(?:sử dụng|dùng)\b")
 
@@ -85,7 +89,7 @@ def spans(raw):
             local_prefix = prefix.rsplit(",", 1)[-1]
             if (
                 _POLICY.search(text[sentence_start:].lstrip())
-                or _NEGATIVE.search(local_prefix)
+                or _NEGATIVE_BEFORE.search(local_prefix)
                 or _NEGATIVE.search(text[start:end])
                 or _ADVICE.search(local_prefix)
             ):
