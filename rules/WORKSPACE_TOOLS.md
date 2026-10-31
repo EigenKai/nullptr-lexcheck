@@ -39,6 +39,11 @@ flags do not activate canonical layers, generated rules or legal findings.
   the reviewed redacted extraction. It does not calculate formulas or reveal
   unknown/private cells. Citations retain worksheet, coordinates, version,
   original-byte hash and exact quote offsets.
+- `summarize_excel` inspects every reviewed worksheet in one tool call and returns
+  at most eight labels and eight numeric samples per sheet, within 18,000 cell-text
+  characters across the workbook. It reports sampled coverage and provides exact
+  contiguous citation options. It does not expose worksheet names, private cells,
+  infer mixed-unit totals, or require legal evidence for a content summary.
 - `web_search` calls the existing `detect.client.DiscoveryTransport`, which
   requires actual hosted web-search observations and filters official domains.
   One search request may fetch at most two official HTTPS sources, each at most

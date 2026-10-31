@@ -41,6 +41,7 @@ ANSWER_PROMPT += " Inventory lists already ingested files, including unselected 
 
 
 ANSWER_PROMPT += " For spreadsheet citations, quote the full coordinate, tab and cell value from a supplied line, e.g. C12\\t3500. A bare number repeated in multiple cells is ambiguous and is rejected."
+ANSWER_PROMPT += " A request to summarize or describe a selected document is a content task, not a legal audit. Summarize the supported reviewed content and mark partial coverage when needed; no legal clauses, law search or legal verification are required. Use answered when the content summary is supported even if unrelated legal evidence is missing. Explain withheld/missing document content specifically, without generic legal-evidence boilerplate."
 
 
 class ConversationStore:
