@@ -6,6 +6,7 @@
 | 14:19 | Tuấn Anh | task | Version-aware basis assessment and final-run preflight | Preflight preserves run allowance; effective pending clauses require evidence; old checks replay stored basis; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/6 |
 | 14:21 | Tuấn Anh | task | Cache authorization before reads and transport; group, ACL and pattern isolation | 120 tests; 84 owned tests; runtime detect/eval coverage 94%; self-review complete; session integration pending | https://github.com/EigenKai/nullptr-lexcheck/pull/10 |
 | 14:48 | Tuấn Anh | task | Deterministic verified warning, uses and linked-confirmation checks | 189 tests; 47 engine tests; engine statement/branch coverage 100%; fmt/test/lint/smoke/eval and dependency audit passed; disabled catalog unchanged; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/15 |
+| 15:12 | Tuấn Anh | task | Align validator warning whitespace and confirmation product scope | 255 tests; 13 reference pipeline cases with zero rejections; 125 owned tests; runtime detect/eval coverage 95%; fmt/test/lint/smoke/offline eval and dependency audit passed; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/20 |
 
 Final operator commands (credentials and model supplied by the owner; layer 3 remains off):
 
