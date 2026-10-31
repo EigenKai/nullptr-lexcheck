@@ -152,6 +152,12 @@ body {
   color: #4f6261;
 }
 
+/* Card metadata lines (history entries and similar); finding cards set
+   their own identifier colour in lex-review.css, loaded later. */
+.review-card p {
+  color: #4f6261;
+}
+
 /* Badges: tinted, bordered, always paired with their text label. */
 .badge {
   background-color: #e6f0eb;

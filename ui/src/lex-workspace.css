@@ -34,6 +34,39 @@
   background-color: #fff;
   border-color: var(--brand-scale);
 }
+.suggestion .arrow,
+.section-head button {
+  color: #4f6261;
+}
+.section-head button:hover {
+  color: var(--brand-scale);
+}
+/* Unavailable shortcuts stay readable; the dashed edge and the banner above
+   say they are off, instead of fading the text. */
+.suggestion:disabled {
+  opacity: 1;
+  background-color: #f3f4f1;
+  border-style: dashed;
+  box-shadow: none;
+}
+.suggestion:disabled b {
+  color: #3f4d48;
+}
+.suggestion:disabled small,
+.suggestion:disabled .arrow {
+  color: #55625c;
+}
+.composer-context {
+  color: #4f6261;
+}
+.composer textarea::placeholder {
+  color: #5f706d;
+}
+.send:disabled {
+  opacity: 1;
+  background-color: #c9d6d1;
+  color: #2c4447;
+}
 .message.assistant {
   border-left: 3px solid var(--brand-gold);
 }

@@ -52,11 +52,23 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-// A hash-only goto keeps React state, so load a blank page first.
+const TITLES = {
+  reviews: "Rà soát hồ sơ",
+  history: "Lịch sử quyết định",
+  knowledge: "Kho tri thức",
+};
+
+// A hash-only goto keeps React state, so load a blank page first. The strip
+// says "API kết nối" before the bundle arrives, so also wait for the screen.
 async function openApp(page, hash = "") {
   await page.goto("about:blank");
   await page.goto(`/${hash ? `#${hash}` : ""}`);
   await expect(page.locator(".status-strip")).toContainText("API kết nối");
+  if (hash === "chat") await expect(page.locator(".hero")).toBeVisible();
+  else
+    await expect(page.locator("main h1.page-title")).toHaveText(
+      TITLES[hash || "reviews"],
+    );
   await page.evaluate(() => document.fonts.ready);
 }
 
@@ -266,7 +278,8 @@ test("5 · text meets WCAG AA contrast on solid backgrounds", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
-  await openFinding(page);
+  for (const [name, open] of SCREENS) {
+  await open(page);
   const failures = await page.evaluate(() => {
     const parse = (value) => {
       const m = value.match(/rgba?\(([^)]+)\)/);
@@ -340,8 +353,9 @@ test("5 · text meets WCAG AA contrast on solid backgrounds", async ({
       }
     return { out, count: checked.size };
   });
-  expect(failures.count).toBeGreaterThan(10);
-  expect(failures.out).toEqual([]);
+  expect(failures.count, name).toBeGreaterThan(10);
+  expect(failures.out, name).toEqual([]);
+  }
 });
 
 test("7 · reduced motion switches animation off; motion stays short", async ({
