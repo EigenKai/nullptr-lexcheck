@@ -63,6 +63,13 @@ def _reason(finding, request, rules, clauses):
         or (clause.valid_to is not None and request.review_date >= clause.valid_to)
     ):
         return "inactive_clause"
+    if any(
+        c.clause_id == clause.clause_id
+        and c.id != clause.id
+        and clause.valid_from < c.valid_from <= request.review_date
+        for c in clauses.values()
+    ):
+        return "inactive_clause"
     if not finding.clause_quote or finding.clause_quote not in clause.text:
         return "quote_mismatch"
     selected = set(request.target_version_ids + request.context_version_ids)

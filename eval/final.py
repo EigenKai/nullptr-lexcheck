@@ -9,8 +9,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from pydantic import ValidationError
-
 from contracts.models import CheckRequest
 from detect.client import ModelClient, cache_key
 from detect.service import PROMPT
@@ -39,7 +37,7 @@ def _read(path):
 def _capture(directory):
     paths = [directory / "answers.json", *sorted((directory / "cases").glob("*.json"))]
     if len(paths) < 2 or (directory / "cases").is_symlink():
-        raise ValueError("empty_or_linked_dataset")
+        raise PreflightError("empty_or_linked_dataset")
     return tuple((p, _read(p)) for p in paths)
 
 
@@ -60,7 +58,15 @@ def _manifest(inputs, mode):
         },
         "mode": mode,
         "model": os.getenv("OPENAI_MODEL"),
-        "rule_hash": hashlib.sha256((ROOT / "rules/catalog.json").read_bytes()).hexdigest(),
+        "rule_hash": cache_key(
+            [
+                hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
+                for path in ("rules/catalog.json", "rules/clauses.json")
+            ]
+        ),
+        "dirty": bool(
+            subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
+        ),
         "prompt_hashes": [
             cache_key(PROMPT),
             cache_key((ROOT / "eval/plain-chat-prompt.txt").read_text()),
@@ -71,7 +77,7 @@ def _manifest(inputs, mode):
 def _parse(inputs):
     labels = json.loads(inputs[0][1])["cases"]
     if set(labels) != {path.stem for path, _ in inputs[1:]}:
-        raise ValueError("label_mismatch")
+        raise PreflightError("label_mismatch")
     cases = tuple(
         (p.stem, CheckRequest.model_validate_json(content), labels[p.stem])
         for p, content in inputs[1:]
@@ -84,16 +90,45 @@ def _parse(inputs):
             or not isinstance(pair[1], str)
             for pair in label["gold"]
         ):
-            raise ValueError("invalid_labels")
+            raise PreflightError("invalid_labels")
     return cases
 
 
-def run(directory):
+class PreflightError(ValueError):
+    pass
+
+
+def run(directory, *, mode=None, check_only=False):
     directory = directory.resolve()
     if directory.is_relative_to(ROOT):
         return {"error": "directory_inside_repository"}, 2
     if not directory.is_dir():
         return {"error": "directory_missing"}, 2
+    if (directory / ".lexcheck-run.json").exists():
+        return {"error": "already_run"}, 2
+    if mode not in ("off", "live"):
+        return {"error": "mode_required"}, 2
+    if mode == "live" and not (os.getenv("OPENAI_MODEL") and os.getenv("OPENAI_API_KEY")):
+        return {"error": "live_configuration_missing"}, 2
+    try:
+        inputs = _capture(directory)
+        cases = _parse(inputs)
+        manifest = _manifest(inputs, mode)
+    except PreflightError as error:
+        return {"error": str(error)}, 2
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        return {"error": "invalid_dataset"}, 2
+    if check_only:
+        return {
+            "mode": mode,
+            "model": manifest["model"],
+            "n": len(cases),
+            "git_sha": manifest["git_sha"],
+            "dirty": manifest["dirty"],
+            "dataset_sha256": manifest["dataset_sha256"],
+        }, 0
+    if mode == "live" and manifest["dirty"]:
+        return {"error": "dirty_tree"}, 2
     try:
         _write_exclusive(directory / ".lexcheck-run.json", {"state": "consumed"})
     except FileExistsError:
@@ -101,12 +136,8 @@ def run(directory):
     except OSError:
         return {"error": "marker_failed"}, 2
     try:
-        inputs = _capture(directory)
-        mode = os.getenv("LEXCHECK_LLM_MODE", "off")
-        manifest = _manifest(inputs, mode)
         _write_exclusive(directory / "final-manifest.json", manifest)
-        cases = _parse(inputs)
-        # Explicit no-cache client prevents input/output persistence elsewhere.
+        # No cache persistence; all input is the captured, hashed bytes above.
         report, _ = evaluate_cases(cases, phase="held_out", mode=mode, client=ModelClient())
         output = report.model_copy(
             update={
@@ -117,7 +148,7 @@ def run(directory):
         ).model_dump(mode="json")
         _write_exclusive(directory / "final-results.json", output)
         return output, 0
-    except (OSError, ValueError, KeyError, TypeError, ValidationError, subprocess.SubprocessError):
+    except Exception:  # noqa: BLE001 - fixed error code, no input-bearing diagnostics
         return {"error": "run_failed"}, 2
 
 
@@ -125,8 +156,10 @@ def main(argv=None):
     sys.dont_write_bytecode = True
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--directory", required=True, type=Path)
+    parser.add_argument("--mode", choices=("off", "live"), default=os.getenv("LEXCHECK_LLM_MODE"))
+    parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
-    output, code = run(args.directory)
+    output, code = run(args.directory, mode=args.mode, check_only=args.check)
     print(json.dumps(output, sort_keys=True))
     return code
 

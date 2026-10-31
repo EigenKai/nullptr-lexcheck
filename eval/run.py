@@ -11,6 +11,7 @@ from detect.client import cache_key, configured_client
 from detect.inputs import model_input
 from detect.service import PROMPT, suggest_with_trace
 from detect.validator import validate_findings
+from detect.versions import assess_basis
 from eval.baselines import keyword, score
 from rules.engine import evaluate
 
@@ -58,8 +59,12 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
             evaluation.rule_snapshots,
             evaluation.clause_snapshots,
         )
+        basis = assess_basis(request, evaluation.rule_snapshots, evaluation.clause_snapshots)
         measurable = (
-            evaluation.mode == "live" and bool(scope) and evaluation.applicability == "applies"
+            evaluation.mode == "live"
+            and bool(scope)
+            and evaluation.applicability == "applies"
+            and basis.status == "ready"
         )
         if measurable:
             rows["keyword"].append((keyword(request, scope), gold))
@@ -78,6 +83,7 @@ def evaluate_cases(cases, *, phase="dev", mode="off", client=None):
         trace.append(
             {
                 "case": name,
+                "basis_status": basis.status,
                 "scope": sorted(scope),
                 "input_hash": cache_key(payload),
                 "prompt_hashes": {"plain_chat": cache_key(prompt), "lexcheck": cache_key(PROMPT)},
