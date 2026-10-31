@@ -111,13 +111,17 @@ class Store:
 
     def save_check(self, check):
         with self.transaction():
-            for record in check.snapshot.records:
-                original = self.records.get(record.id)
-                if original and original.model_dump(exclude={"access_groups"}) == record.model_dump(
-                    exclude={"access_groups"}
-                ):
-                    continue
-                put_immutable(self.records, record)
-            for version in check.snapshot.versions:
-                put_immutable(self.versions, version)
-            put_immutable(self.checks, check)
+            self.register_check(check)
+
+    def register_check(self, check):
+        """Register inside an existing transaction, retaining server-owned ACL."""
+        for record in check.snapshot.records:
+            original = self.records.get(record.id)
+            if original and original.model_dump(exclude={"access_groups"}) == record.model_dump(
+                exclude={"access_groups"}
+            ):
+                continue
+            put_immutable(self.records, record)
+        for version in check.snapshot.versions:
+            put_immutable(self.versions, version)
+        put_immutable(self.checks, check)

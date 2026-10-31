@@ -97,7 +97,9 @@ test("UI-only account switch clears the previous user snapshot and ignores priva
   expect(opsDemoReads).toBe(0);
 });
 
-test("record a real bootstrap demo and review screenshot", async ({ page }) => {
+test("record a real live review, dossier recheck finding and decision", async ({
+  page,
+}) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -108,21 +110,36 @@ test("record a real bootstrap demo and review screenshot", async ({ page }) => {
   await page
     .getByRole("button", { name: "Chạy kiểm tra", exact: true })
     .click();
-  await expect(page.locator(".result-section")).toContainText("0 rule đã chạy");
+  await expect(page.locator(".result-section")).toContainText("3 rule đã chạy");
   await page.screenshot({
     path: "test-results/local-review.png",
     fullPage: true,
   });
   await page
-    .getByRole("button", { name: "Xem finding minh hoạ (fixture)" })
+    .getByRole("button", { name: "Cập nhật nguồn", exact: true })
     .click();
-  await expect(page.locator(".evidence")).toContainText("Fixture · Minh hoạ");
+  await page.getByRole("button", { name: "Gửi sự kiện mẫu tới API" }).click();
+  const queueCard = page
+    .locator(".review-card")
+    .filter({
+      has: page.getByRole("heading", { name: "RV-02-v1", exact: true }),
+    });
+  await queueCard
+    .getByRole("button", { name: "Kiểm tra lại", exact: true })
+    .first()
+    .click();
+  await page.locator(".finding-button").first().click();
+  await expect(page.locator(".evidence")).toContainText("R-02");
   await expect(page.locator(".evidence mark")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Xác nhận phát hiện", exact: true }),
-  ).toBeDisabled();
+  await page
+    .getByLabel("Ghi chú xử lý")
+    .fill("Synthetic browser review; evidence needs human review.");
+  await page
+    .getByRole("button", { name: "Xác nhận phát hiện", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText("Đã lưu quyết định");
   await page.screenshot({
-    path: "test-results/local-evidence-fixture.png",
+    path: "test-results/local-evidence-live.png",
     fullPage: true,
   });
   await page.getByRole("button", { name: "Kho tri thức", exact: true }).click();

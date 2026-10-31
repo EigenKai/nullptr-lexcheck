@@ -7,7 +7,7 @@ const demo = JSON.parse(
   ),
 );
 
-test("connected review, source versions, unavailable write, and responsive Vietnamese font", async ({
+test("live review, source versions, change queue, and responsive Vietnamese font", async ({
   page,
 }) => {
   const errors = [];
@@ -27,9 +27,9 @@ test("connected review, source versions, unavailable write, and responsive Vietn
     .getByRole("button", { name: "Chạy kiểm tra", exact: true })
     .click();
   await expect(page.locator(".result-section")).toContainText(
-    "Chưa đủ thông tin",
+    "No issue found under 3 encoded rules",
   );
-  await expect(page.locator(".result-section")).toContainText("0 rule đã chạy");
+  await expect(page.locator(".result-section")).toContainText("3 rule đã chạy");
   await page
     .getByRole("button", { name: "Cập nhật nguồn", exact: true })
     .click();
@@ -38,11 +38,16 @@ test("connected review, source versions, unavailable write, and responsive Vietn
     "Hỗ trợ giảm cholesterol.",
   );
   await page.getByRole("button", { name: "Gửi sự kiện mẫu tới API" }).click();
-  await expect(page.getByRole("alert")).toContainText("chưa sẵn sàng");
+  await expect(page.getByRole("status")).toContainText(
+    "API đã ghi nhận thay đổi.",
+  );
+  await expect(
+    page.getByRole("button", { name: "Kiểm tra lại", exact: true }).first(),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Lịch sử quyết định", exact: true })
     .click();
-  await expect(page.locator("main")).toContainText("CHK-preview");
+  await expect(page.locator("main")).toContainText("3 rule đã chạy");
   for (const [width, height] of [
     [1280, 720],
     [768, 1024],

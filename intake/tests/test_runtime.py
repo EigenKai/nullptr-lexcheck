@@ -55,7 +55,20 @@ def test_create_app_store_is_isolated(api, monkeypatch, tmp_path):
         assert session["token"] not in other.app.state.sessions
 
 
-def test_bootstrap_does_not_claim_a_live_pipeline(api):
+def test_bootstrap_does_not_claim_a_live_pipeline(api, monkeypatch):
+    # Explicit unavailable-engine fault injection; live acceptance uses the real engine.
+    from contracts.models import RuleEvaluation
+    from intake import service
+
+    monkeypatch.setattr(
+        service.engine,
+        "evaluate",
+        lambda *_args, **_kwargs: RuleEvaluation(
+            mode="fixture",
+            applicability="not_enough_information",
+            reason="Synthetic unavailable-engine test",
+        ),
+    )
     assert api.get("/health").json()["mode"] == "fixture"
     assert api.get("/api/features").json()["layer0_ready"] is False
     changed = load_demo().request.model_dump(mode="json")
@@ -72,6 +85,18 @@ def test_claimed_use_must_exist_in_original_text(api):
 
 
 def test_http_feature_flags_fail_closed_when_engine_is_not_ready(api, monkeypatch):
+    from contracts.models import RuleEvaluation
+    from intake import service
+
+    monkeypatch.setattr(
+        service.engine,
+        "evaluate",
+        lambda *_args, **_kwargs: RuleEvaluation(
+            mode="fixture",
+            applicability="not_enough_information",
+            reason="Synthetic unavailable-engine test",
+        ),
+    )
     monkeypatch.setenv("LEXCHECK_LAYER1_ENABLED", "1")
     assert api.get("/api/features").json()["layer1"] is False
     response = api.post("/api/chat", json={"check_id": "CHK-01", "question": "Why?"})

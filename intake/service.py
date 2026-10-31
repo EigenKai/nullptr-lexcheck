@@ -216,11 +216,7 @@ def recheck(item_id, llm_mode, store, *, person=None):
         result = evaluate(snapshot, store, parent=previous.id, persist=False, person=person)
         if result.mode != "live":
             raise HTTPException(503, "not_ready")
-        put_immutable(store.checks, result)
-        for record in snapshot.records:
-            put_immutable(store.records, record)
-        for version in snapshot.versions:
-            put_immutable(store.versions, version)
+        store.register_check(result)
         store.queue[item.id] = item.model_copy(
             update={"status": "completed", "new_check_id": result.id}
         )

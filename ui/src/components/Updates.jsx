@@ -6,6 +6,7 @@ export default function Updates({
   bundle,
   setDraft,
   setResult,
+  setNotice,
   history,
   offline,
   busy,
