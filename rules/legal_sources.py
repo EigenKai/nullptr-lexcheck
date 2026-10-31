@@ -5,6 +5,7 @@ import io
 import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
+from pathlib import Path
 from urllib.parse import urldefrag, urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
@@ -44,6 +45,7 @@ class Source:
     sha256: str
     pages: tuple[str, ...]
     extraction_method: str
+    warnings: tuple[str, ...] = ()
 
 
 def source_from_text(url: str, title: str, text: str) -> Source:
@@ -81,7 +83,9 @@ class _Redirect(HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def fetch_source(url: str, *, timeout_s: float = 20, max_bytes: int = 10_000_000) -> Source:
+def fetch_source(
+    url: str, *, timeout_s: float = 20, max_bytes: int = 10_000_000, archive_dir=None, ocr=None
+) -> Source:
     url = validate_url(url)
     with build_opener(_Redirect()).open(
         Request(url, headers={"User-Agent": "LexCheck/0.1 source-reader"}), timeout=timeout_s
@@ -91,6 +95,14 @@ def fetch_source(url: str, *, timeout_s: float = 20, max_bytes: int = 10_000_000
         content_type = response.headers.get("Content-Type", "")
     if len(raw) > max_bytes:
         raise ValueError("Source exceeds retrieval size budget.")
+    digest = hashlib.sha256(raw).hexdigest()
+    if archive_dir:
+        folder = Path(archive_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        target = folder / (digest + (".pdf" if raw.startswith(b"%PDF") else ".html"))
+        if not target.exists():
+            target.write_bytes(raw)
+    warnings = ()
     if raw.startswith(b"%PDF"):
         try:
             from pypdf import PdfReader
@@ -103,6 +115,10 @@ def fetch_source(url: str, *, timeout_s: float = 20, max_bytes: int = 10_000_000
             raise ValueError("Source exceeds page budget.")
         pages = tuple(page.extract_text() or "" for page in reader.pages)
         method = "pypdf-native-text"
+        if any(len(p.strip()) < 50 for p in pages) and ocr:
+            converted, warnings = ocr(raw, pages)
+            method += "+llm-ocr-unverified" if converted != pages else ":ocr_unavailable"
+            pages = converted
     else:
         if "html" not in content_type and "text/plain" not in content_type:
             raise ValueError("Unsupported official source content type.")
@@ -112,7 +128,6 @@ def fetch_source(url: str, *, timeout_s: float = 20, max_bytes: int = 10_000_000
         pages, method = (re.sub(r"\n{3,}", "\n\n", text).strip(),), "html-text-v1"
     if sum(len(p.strip()) for p in pages) < 100:
         raise ValueError("Source has no usable text; OCR/source review required.")
-    digest = hashlib.sha256(raw).hexdigest()
     return Source(
         stable_id("DOC", [final_url, digest]),
         final_url,
@@ -120,4 +135,5 @@ def fetch_source(url: str, *, timeout_s: float = 20, max_bytes: int = 10_000_000
         digest,
         pages,
         method,
+        warnings,
     )

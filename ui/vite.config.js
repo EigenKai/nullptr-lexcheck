@@ -109,6 +109,7 @@ export default defineConfig({
   plugins: [react(), fixtureCopy()],
   server: {
     proxy: {
+      "/workspace-research": "http://127.0.0.1:8000",
       "/api": process.env.LEXCHECK_API_URL || "http://127.0.0.1:8000",
       "/health": process.env.LEXCHECK_API_URL || "http://127.0.0.1:8000",
     },

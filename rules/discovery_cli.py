@@ -47,7 +47,7 @@ def main():
     ingest.add_argument("--model")
     ingest.add_argument(
         "--transport",
-        help="Optional explicit module:factory, e.g. detect.client:discovery_transport",
+        help="Optional explicit module:factory, e.g. detect.discovery_client:discovery_transport",
     )
     ingest.add_argument("--max-seconds", type=float, default=180)
     ingest.add_argument("--max-sources", type=int, default=8)
@@ -74,7 +74,7 @@ def main():
             module, factory = args.transport.split(":", 1)
             transport = getattr(importlib.import_module(module), factory)()
         else:
-            from detect.client import DiscoveryTransport
+            from detect.discovery_client import DiscoveryTransport
 
             transport = DiscoveryTransport(model=args.model, cache_dir=Path("cache/discovery-api"))
         result = discover(
