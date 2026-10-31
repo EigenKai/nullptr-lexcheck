@@ -90,3 +90,27 @@ def authorize_input(snapshot, person, store):
             raise HTTPException(403, "forbidden")
     if any(store.versions.get(v.id) != v for v in snapshot.versions):
         raise HTTPException(403, "forbidden")
+
+
+def model_client(person, store):
+    """Bind model/cache identity to the server principal and canonical state."""
+    from detect.client import cache_key, configured_client
+
+    if person is None or person.expires_at <= now():
+        raise HTTPException(401, "unauthenticated")
+    with store.lock:
+        acl = tuple(
+            (r.id, tuple(sorted(r.access_groups)))
+            for r in sorted(store.records.values(), key=lambda r: r.id)
+        )
+        patterns = tuple(
+            p.model_dump(mode="json")
+            for p in sorted(store.patterns.values(), key=lambda p: p.id)
+            if p.state == "active"
+        )
+        return configured_client(
+            user_id=person.user_id,
+            group=person.group,
+            acl_hash=cache_key(acl),
+            pattern_version=cache_key(patterns),
+        )

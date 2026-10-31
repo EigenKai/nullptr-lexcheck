@@ -71,7 +71,11 @@ def test_rejected_interpretation_keeps_audit_and_old_check(authorized):
     assert authorized.app.state.store.data.audit[-1].note == "Need a verified source."
 
 
-def test_chat_without_owner_module_reports_unavailable(authorized):
+def test_chat_without_owner_module_reports_unavailable(authorized, monkeypatch):
+    def missing(_name):
+        raise HTTPException(503, "not_ready")
+
+    monkeypatch.setattr(layer_routes.service, "owner_module", missing)
     old = load_demo().preview
     authorized.app.state.store.save_check(old)
     response = authorized.post(
@@ -114,11 +118,45 @@ def test_chat_rejects_a_fabricated_clause(authorized, monkeypatch):
     monkeypatch.setattr(
         layer_routes.service,
         "owner_module",
-        lambda _name: SimpleNamespace(answer=lambda *_args: answer),
+        lambda _name: SimpleNamespace(answer=lambda *_args, **_kwargs: answer),
     )
     response = authorized.post("/api/chat", json={"check_id": old.id, "question": "Why?"})
     assert response.json()["status"] == "needs_evidence"
     assert response.json()["citations"] == []
+
+
+def test_chat_calls_merged_owner_module_with_llm_off(authorized):
+    old = load_demo().preview
+    authorized.app.state.store.save_check(old)
+    response = authorized.post(
+        "/api/chat", json={"check_id": old.id, "question": "What evidence is missing?"}
+    )
+    assert response.status_code == 200
+    assert response.json()["model_status"] == "off"
+    assert response.json()["status"] == "needs_evidence"
+    assert response.json()["citations"] == []
+
+
+def test_chat_passes_server_session_scope(authorized, monkeypatch):
+    old = load_demo().preview
+    authorized.app.state.store.save_check(old)
+    scopes = []
+
+    def answer(_request, _check, *, client):
+        scopes.append(client.scope)
+        return ChatResponse(
+            status="needs_evidence", answer="No evidence for this question.", citations=()
+        )
+
+    monkeypatch.setattr(
+        layer_routes.service, "owner_module", lambda _name: SimpleNamespace(answer=answer)
+    )
+    response = authorized.post("/api/chat", json={"check_id": old.id, "question": "Why?"})
+    assert response.status_code == 200
+    assert scopes[0]["user"] == "U-MANAGER"
+    assert scopes[0]["group"] == "manager"
+    assert len(scopes[0]["acl"]) == 64
+    assert len(scopes[0]["pattern"]) == 64
 
 
 def test_legal_activation_rejects_future_dates():

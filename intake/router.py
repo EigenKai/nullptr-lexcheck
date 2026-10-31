@@ -61,8 +61,10 @@ def change(event: ChangeEvent, http_request: Request):
 
 @router.post("/rechecks", response_model=CheckResult, responses=ERRORS)
 def recheck(request: RecheckRequest, http_request: Request):
-    write_access(http_request)
-    return service.recheck(request.item_id, request.llm_mode, http_request.app.state.store)
+    person = write_access(http_request)
+    return service.recheck(
+        request.item_id, request.llm_mode, http_request.app.state.store, person=person
+    )
 
 
 @router.post("/decisions", response_model=Decision, status_code=201, responses=ERRORS)

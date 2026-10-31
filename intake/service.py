@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from contracts.models import CheckResult, ClauseVersion, Decision, Rule
 from detect import service as detection
 from detect import validator
-from intake.auth import now, visible_check
+from intake.auth import model_client, now, visible_check
 from intake.features import feature_flags
 from intake.fixtures import load_demo
 from intake.store import put_immutable
@@ -96,9 +96,12 @@ def evaluate(snapshot, store, *, parent=None, persist=True, person=None):
         # Default off regardless of client llm_mode. No direct model calls here.
         flags = feature_flags(True)
         model_snapshot = (
-            snapshot if flags.layer1 else snapshot.model_copy(update={"llm_mode": "off"})
+            snapshot
+            if flags.layer1 and person is not None
+            else snapshot.model_copy(update={"llm_mode": "off"})
         )
-        suggestions = detection.suggest(model_snapshot, evaluation)
+        client = model_client(person, store) if model_snapshot.llm_mode != "off" else None
+        suggestions = detection.suggest(model_snapshot, evaluation, client=client)
         checked = validator.validate_findings(
             evaluation.findings + suggestions.findings,
             snapshot,
@@ -190,7 +193,7 @@ def change(event, store):
         return tuple(q for q in store.queue.values() if q.event_id == event.id)
 
 
-def recheck(item_id, llm_mode, store):
+def recheck(item_id, llm_mode, store, *, person=None):
     with store.transaction():
         item = store.queue.get(item_id)
         if item is None:
@@ -210,7 +213,7 @@ def recheck(item_id, llm_mode, store):
             )
             snapshot = snapshot.model_copy(update={"target_version_ids": (target,)})
         snapshot = snapshot.model_copy(update={"llm_mode": llm_mode})
-        result = evaluate(snapshot, store, parent=previous.id, persist=False)
+        result = evaluate(snapshot, store, parent=previous.id, persist=False, person=person)
         if result.mode != "live":
             raise HTTPException(503, "not_ready")
         put_immutable(store.checks, result)

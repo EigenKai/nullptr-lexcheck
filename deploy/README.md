@@ -23,5 +23,17 @@ changes. A free instance has ephemeral storage: atomic snapshots survive process
 restarts while the file exists, but a redeploy or instance replacement may lose
 them. This is a single-worker synthetic demo, not durable production storage.
 
-No new deployment, remote push or PR submission is authorized until Khanh reviews
-the local result. The current source remains a local branch.
+Khanh authorized publishing the branch and opening a review PR on 2026-10-31.
+This does not enable any layer or deploy this feature branch. Keep the existing
+public fixture deployment until the integrated main SHA passes its real gates.
+
+Integration baseline: main `2049c21` includes detection, cited chat and dev eval
+(PRs #4–#8). The rule engine remains bootstrap; impact/legal/pattern adapters
+await their owners. The draft scoped-cache PR #10 still needs current-session
+authorization callback integration before layer 3 can be accepted. Intake now
+passes server user/group and hashes of canonical ACL/active patterns to the
+existing model client; no client-supplied role is trusted.
+
+Windows verification currently has 10 upstream final-CLI test failures because
+`eval/final.py` uses POSIX-only `os.O_NOFOLLOW`; report these to the eval owner.
+This branch does not change the owner's evaluator or access the final dataset.

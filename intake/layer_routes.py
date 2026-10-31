@@ -88,7 +88,9 @@ def chat(request: ChatRequest, http_request: Request):
     with store.lock:
         check = auth.get_check(store, request.check_id, person)
         try:
-            answer = service.owner_module("detect.chat").answer(request, check)
+            answer = service.owner_module("detect.chat").answer(
+                request, check, client=auth.model_client(person, store)
+            )
         except HTTPException as exc:
             if exc.status_code != 503:
                 raise
