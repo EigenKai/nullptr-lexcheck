@@ -15,3 +15,5 @@ LEXCHECK_LAYER3_ENABLED=0 LEXCHECK_LLM_MODE=live make eval-final FINAL_DIR="$HOM
 
 Run the second command once on the pinned clean revision. Input shape: `cases/<name>.json` contains a CheckRequest; `answers.json` contains `{"cases":{"<name>":{"gold":[["RV-ID","R-ID"]]}}}`. Preflight reports hashes/counts only.
 | 14:16 | Tuấn Anh | task | Grounded rule proposals from source-only reference inputs | 103 tests; 67 owned tests; offline reference n=3, unavailable=3; no legal accuracy measured; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/7 |
+
+| 14:33 | Tuấn Anh | eval | Integrated regression, pair traces, measured call latency and three-run development stability | 152 tests; 97 owned tests; runtime detect/eval coverage 95%; dev n=15 with zero executed scope; stability unmeasured; self-review complete | https://github.com/EigenKai/nullptr-lexcheck/pull/10 |
