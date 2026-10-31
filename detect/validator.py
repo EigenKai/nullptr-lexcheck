@@ -1,5 +1,7 @@
 """Ground findings against the exact supplied snapshot, without text normalization."""
 
+import unicodedata
+
 from contracts.models import (
     CheckRequest,
     ClauseVersion,
@@ -9,16 +11,35 @@ from contracts.models import (
     ValidationResult,
 )
 
-WARNING = "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh."
+WARNING = "Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh"
 # Closed field map: structured fields use presence; warning is an exact text substring.
 FIELD_PRESENT = {
     "uses": lambda v: bool(v.uses),
     "reference_ids": lambda v: bool(v.reference_ids),
     "confirmation_date": lambda v: v.confirmation_date is not None,
     "issuing_authority": lambda v: v.issuing_authority != "unknown",
-    "warning": lambda v: WARNING in v.text,
+    "warning": lambda v: WARNING in unicodedata.normalize("NFC", v.text),
     "text": lambda v: bool(v.text.strip()),
 }
+
+
+def _field_present(evidence, versions, request, rule):
+    # Content fields describe the cited record. Reference availability describes
+    # the selected connected records. Confirmation rules check document kind,
+    # since an undated confirmation is still a connected document.
+    if evidence.field == "confirmation_date" and rule.check_type == "confirmation":
+        kinds = {r.id: r.kind for r in request.records}
+        return any(
+            kinds[v.record_id] in ("ad_confirmation", "registration_receipt")
+            for v in versions.values()
+        )
+    local_fields = ("warning", "text", "uses", "issuing_authority")
+    scope = (
+        (versions[evidence.record_version_id],)
+        if evidence.field in local_fields
+        else versions.values()
+    )
+    return any(FIELD_PRESENT[evidence.field](v) for v in scope)
 
 
 def _reason(finding, request, rules, clauses):
@@ -69,7 +90,7 @@ def _reason(finding, request, rules, clauses):
         elif evidence.quote is not None:
             return "evidence_mismatch"
     if any(
-        e.kind == "missing_field" and any(FIELD_PRESENT[e.field](v) for v in versions.values())
+        e.kind == "missing_field" and _field_present(e, versions, request, rule)
         for e in finding.evidence
     ):
         return "missing_field_present"

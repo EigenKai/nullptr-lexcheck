@@ -141,3 +141,69 @@ def test_rejects_clause_not_returned_this_turn(request_data, basis):
         validate_findings((finding,), request_data, (rule,), ()).rejected[0].reason
         == "unknown_clause"
     )
+
+
+def test_missing_warning_not_cancelled_by_another_target(request_data, basis):
+    from pathlib import Path
+
+    from contracts.models import CheckRequest
+
+    path = Path(__file__).resolve().parents[2] / "data/fixtures/cases/missing-warning.json"
+    request = CheckRequest.model_validate_json(path.read_text())
+    missing = Evidence(record_version_id="RV-02-v1", kind="missing_field", field="warning")
+    assert check(request, basis, evidence=(missing,)).findings
+    present = missing.model_copy(update={"record_version_id": "RV-03-v1"})
+    assert check(request, basis, evidence=(present,)).rejected[0].reason == "missing_field_present"
+
+
+@pytest.mark.parametrize("field", ["warning", "uses", "text", "issuing_authority"])
+def test_local_field_not_cancelled_by_context(request_data, basis, field):
+    versions = tuple(
+        v.model_copy(update={"text": "", "uses": (), "issuing_authority": "unknown"})
+        if v.id == basis[2].record_version_id
+        else v
+        for v in request_data.versions
+    )
+    missing = Evidence(
+        record_version_id=basis[2].record_version_id, kind="missing_field", field=field
+    )
+    assert check(
+        request_data.model_copy(update={"versions": versions}), basis, evidence=(missing,)
+    ).findings
+
+
+@pytest.mark.parametrize("suffix", ["", "!", "\n"])
+def test_warning_punctuation_and_nfd(request_data, basis, suffix):
+    import unicodedata
+
+    from detect.validator import WARNING
+
+    versions = tuple(
+        v.model_copy(update={"text": unicodedata.normalize("NFD", WARNING) + suffix})
+        if v.id == basis[2].record_version_id
+        else v
+        for v in request_data.versions
+    )
+    missing = Evidence(
+        record_version_id=basis[2].record_version_id, kind="missing_field", field="warning"
+    )
+    assert (
+        check(request_data.model_copy(update={"versions": versions}), basis, evidence=(missing,))
+        .rejected[0]
+        .reason
+        == "missing_field_present"
+    )
+
+
+def test_confirmation_checks_record_kind(request_data, basis):
+    rule, clause, finding = basis
+    confirmation_basis = (rule.model_copy(update={"check_type": "confirmation"}), clause, finding)
+    missing = Evidence(
+        record_version_id=finding.record_version_id, kind="missing_field", field="confirmation_date"
+    )
+    assert (
+        check(request_data, confirmation_basis, evidence=(missing,)).rejected[0].reason
+        == "missing_field_present"
+    )
+    request = request_data.model_copy(update={"context_version_ids": ("RV-01-v1",)})
+    assert check(request, confirmation_basis, evidence=(missing,)).findings
