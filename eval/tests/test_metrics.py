@@ -102,3 +102,15 @@ def test_stability_excludes_cached_client_responses(monkeypatch):
         assert result[system]["cached_cases"] == 1
     assert all(trace[0]["lexcheck_status"] == "cached" for _, trace in runs)
     assert all(score.model_calls == 0 for report, _ in runs for score in report.systems)
+
+
+def test_additional_system_names_are_validated():
+    import pytest
+    from pydantic import ValidationError
+
+    from eval.baselines import score
+
+    for name in ("retrieval", "plain_chat_web"):
+        assert score(name, [], 0, 0).system == name
+    with pytest.raises(ValidationError):
+        score("unknown", [], 0, 0)
