@@ -17,7 +17,7 @@ from contracts.models import (
 from detect.validator import WARNING
 
 CATALOG_DIR = Path(__file__).resolve().parent
-CHECK_TYPES = ("warning", "uses", "confirmation")
+CHECK_TYPES = ("warning", "uses", "confirmation", "endorsement")
 
 
 def _pending(reason="Rule implementation and source verification pending."):
@@ -26,7 +26,8 @@ def _pending(reason="Rule implementation and source verification pending."):
 
 def _load(name, model):
     return tuple(
-        model.model_validate(item) for item in json.loads((CATALOG_DIR / name).read_text())
+        model.model_validate(item)
+        for item in json.loads((CATALOG_DIR / name).read_text(encoding="utf-8"))
     )
 
 
@@ -55,6 +56,7 @@ def _finding(rule, clause, evidence):
         "warning": "Mandatory warning not found in the advertising record.",
         "uses": "Claimed use is outside the connected dossier; supporting evidence needs human review.",
         "confirmation": "Advertising confirmation not found in the connected records.",
+        "endorsement": "Medical endorsement or medical identity in advertising text needs human review.",
     }
     identity = json.dumps(
         [rule.id, rule.version, clause.id, evidence.model_dump(mode="json")], sort_keys=True
@@ -65,7 +67,9 @@ def _finding(rule, clause, evidence):
         rule_version=rule.version,
         clause_version_id=clause.id,
         record_version_id=evidence.record_version_id,
-        status="needs_review" if rule.check_type == "warning" else "needs_evidence",
+        status="needs_review"
+        if rule.check_type in ("warning", "endorsement")
+        else "needs_evidence",
         source="rule",
         severity=rule.severity,
         message=messages[rule.check_type],
@@ -114,6 +118,19 @@ def _use_evidence(version, request, records, selected):
 
 
 def _evidence(rule, version, request, records, selected):
+    if rule.check_type == "endorsement":
+        from rules.endorsement import spans
+
+        return tuple(
+            Evidence(
+                record_version_id=version.id,
+                kind="span",
+                quote=version.text[start:end],
+                start=start,
+                end=end,
+            )
+            for start, end in spans(version.text)
+        ), True
     if rule.check_type == "uses":
         return _use_evidence(version, request, records, selected)
     if rule.check_type == "warning":
@@ -160,7 +177,7 @@ def evaluate(
 ) -> RuleEvaluation:
     """Run only implemented, active rules on selected advertising targets.
 
-    Patterns do not affect these three deterministic checks. Missing comparison
+    Patterns do not affect these deterministic checks. Missing comparison
     inputs remain uncertain; no ungrounded span or clean conclusion is emitted.
     """
     try:
