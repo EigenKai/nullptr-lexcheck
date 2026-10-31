@@ -88,6 +88,7 @@ def test_agent_searches_index_then_answers_with_exact_citations_and_saved_histor
 
 def test_default_chat_does_not_load_optional_harness(inputs, monkeypatch):
     import builtins
+
     from rules.workspace_chat import ConversationStore, answer
 
     monkeypatch.delenv("LEXCHECK_WORKSPACE_TOOL_HARNESS_ENABLED", raising=False)
