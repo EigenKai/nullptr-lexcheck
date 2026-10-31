@@ -19,6 +19,7 @@ class SuggestionTrace:
     result: DetectionResult
     rejected: tuple[tuple[str, int], ...] = ()
     calls: int = 0
+    error: str | None = None
 
 
 def suggest(request: CheckRequest, evaluation: RuleEvaluation, *, client=None) -> DetectionResult:
@@ -48,7 +49,9 @@ def suggest_with_trace(request, evaluation, *, client=None):
     )
     if output.parsed is None:
         return SuggestionTrace(
-            DetectionResult(model_status=output.status, cache_key=output.key), calls=output.calls
+            DetectionResult(model_status=output.status, cache_key=output.key),
+            calls=output.calls,
+            error=output.error,
         )
     validation = validate_findings(
         materialize(output.parsed, evaluation.rule_snapshots),
@@ -68,4 +71,5 @@ def suggest_with_trace(request, evaluation, *, client=None):
         ),
         tuple(sorted(rejected.items())),
         output.calls,
+        output.error,
     )
