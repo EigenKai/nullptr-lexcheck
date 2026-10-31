@@ -320,6 +320,227 @@
   min-height: 40px;
   line-height: 1.8;
 }
+
+.research-form textarea {
+  width: 100%;
+  font: inherit;
+  padding: 12px;
+  border: 1px solid #cbd2c1;
+  border-radius: 5px;
+  background: #fff;
+  resize: vertical;
+}
+.document-intake {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 1px solid #dfe3d7;
+  padding: 8px 0 24px;
+}
+.document-intake h2 {
+  margin: 0 0 10px;
+}
+.document-intake p {
+  margin: 0;
+  max-width: 650px;
+  font-size: 14px;
+  color: #606a57;
+}
+.document-file-button {
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  min-height: 44px;
+}
+.document-file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+.document-file-button:focus-within {
+  outline: 3px solid #678850;
+  outline-offset: 3px;
+}
+.document-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) auto;
+  column-gap: 24px;
+  row-gap: 10px;
+  padding: 22px 0;
+  border-bottom: 1px solid #e0e4d9;
+}
+.document-row-main {
+  min-width: 0;
+}
+.document-row-main b {
+  overflow-wrap: anywhere;
+  display: block;
+  font-size: 16px;
+}
+.document-row-main small {
+  display: block;
+  font-size: 12px;
+  color: #66725a;
+  margin-top: 7px;
+}
+.document-row-main code {
+  margin-bottom: 0;
+}
+.document-row-actions {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+}
+.document-context-status {
+  font-size: 12px;
+  color: #667457;
+}
+.document-empty {
+  padding: 25px;
+  color: #6a735f;
+  background: #f3f5ed;
+  border: 1px dashed #cbd4be;
+  border-radius: 6px;
+  margin: 22px 0;
+  line-height: 1.8;
+  font-size: 14px;
+}
+.document-preview {
+  margin-top: 30px;
+  padding: 24px;
+  border: 1px solid #d4ddc9;
+  border-radius: 8px;
+  background: #fff;
+}
+.document-preview h2 {
+  margin: 0;
+}
+.document-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 400px;
+  overflow: auto;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.8;
+  background: #f4f6ef;
+  padding: 18px;
+}
+.document-preview summary {
+  padding: 8px 0;
+}
+.document-checkbox {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  font-size: 14px;
+  margin: 18px 0;
+  line-height: 1.7;
+}
+.document-checkbox input {
+  margin-top: 6px;
+  width: 18px;
+  height: 18px;
+  accent-color: #6b8b51;
+}
+.document-privacy,
+.document-legacy {
+  font-size: 13px;
+  padding: 15px 18px;
+  border-left: 3px solid #a08139;
+  background: #faf1df;
+  line-height: 1.8;
+}
+.document-collection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin: 25px 0 35px;
+}
+.document-collection-grid button {
+  text-align: left;
+  padding: 26px;
+  background: #f1f4e9;
+  border: 1px solid #dce3cf;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.document-collection-grid small {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #6a8059;
+}
+.document-collection-grid h2 {
+  margin: 10px 0;
+}
+.document-collection-grid p {
+  color: #5f6c54;
+  font-size: 14px;
+}
+.document-collection-grid b {
+  font-size: 13px;
+  color: #566f43;
+}
+.profile-facts {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 12px;
+  font-size: 14px;
+}
+.profile-facts dt {
+  color: #67725d;
+}
+.profile-facts dd {
+  margin: 0;
+}
+.research-section blockquote {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 18px 0;
+  padding: 16px;
+  background: #f3f5ed;
+  border-left: 3px solid #849d6b;
+}
+.research-section blockquote small {
+  display: block;
+  margin-top: 8px;
+  font: 12px monospace;
+  color: #6c765e;
+}
+@media (max-width: 800px) {
+  .document-intake {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .document-file-button {
+    align-self: start;
+  }
+  .document-row {
+    grid-template-columns: 1fr;
+  }
+  .document-row-actions {
+    flex-wrap: wrap;
+  }
+  .document-collection-grid {
+    grid-template-columns: 1fr;
+  }
+  .document-preview {
+    padding: 16px;
+  }
+  .profile-facts {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .profile-facts dd {
+    margin-bottom: 12px;
+  }
+}
 .research-page button:focus-visible {
   outline: 3px solid #678850;
   outline-offset: 3px;

@@ -1,5 +1,11 @@
 # Private workspace research pilot
 
+**Current shared document UI:** see [DOCUMENT_WORKSPACES.md](DOCUMENT_WORKSPACES.md).
+It replaces the industry-specific screens with the same overview and separate
+business/legal libraries for every workspace. The standalone XLSX/housing flow
+described below is historical development documentation, not the current upload
+or generic model workflow. Generic law discovery/rule generation remains pending.
+
 This package implements the user's rental-housing example. The follow-up integration, explicitly requested by the user, adds a selector and native research screens to the existing React UI and mounts its private API in the main FastAPI app. It is a coordinated integration PR; shared contracts and the runtime TPBVSK pack are unchanged. `LEXCHECK_WORKSPACE_RESEARCH_ENABLED` defaults to `0`. No production layer flag changes.
 
 ## Run

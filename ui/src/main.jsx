@@ -5,16 +5,16 @@ import "./prototype.css";
 import "./style.css";
 import { request, resultLabel, evidenceParts } from "./api.js";
 import { researchClient } from "./research.js";
-import { RentalWorkspace } from "./RentalWorkspace.jsx";
+import { DocumentWorkspace } from "./DocumentWorkspace.jsx";
 
 const initialWorkspace =
   location.hash.match(/^#workspace\/(WS-[a-f0-9]{24}|new)$/)?.[1] || "demo";
 const researchTabs = [
   ["overview", "Tổng quan"],
+  ["business", "Tài liệu doanh nghiệp"],
+  ["legal", "Tài liệu luật"],
   ["knowledge", "Kho tri thức"],
-  ["sources", "Nguồn pháp lý"],
-  ["company", "Hồ sơ doanh nghiệp"],
-  ["gaps", "Cần bổ sung"],
+  ["settings", "Thông tin workspace"],
 ];
 
 const paths = {
@@ -101,11 +101,18 @@ function App() {
   const [oldNew, setOldNew] = useState(false);
   const [note, setNote] = useState("");
   const [owner, setOwner] = useState("marketing");
-  const isHousing = workspaceId !== "demo";
-  const currentTabs = isHousing ? researchTabs : tabs;
-  const workspaceName = researchWorkspaces.find(
-    (workspace) => workspace.id === workspaceId,
-  )?.name;
+  const isResearchWorkspace = researchReady || workspaceId !== "demo";
+  const currentTabs = isResearchWorkspace ? researchTabs : tabs;
+  const effectiveWorkspaceId =
+    workspaceId === "demo"
+      ? researchWorkspaces.find(
+          (workspace) => workspace.reference_key === "fixture:CO-DEMO",
+        )?.id
+      : workspaceId;
+  const currentWorkspace = researchWorkspaces.find(
+    (workspace) => workspace.id === effectiveWorkspaceId,
+  );
+  const workspaceName = currentWorkspace?.name;
   const loadResearchWorkspaces = useCallback(async () => {
     try {
       setResearchWorkspaces(await researchClient.list());
@@ -115,7 +122,7 @@ function App() {
   }, []);
   function chooseWorkspace(id) {
     setWorkspaceId(id);
-    setView(id === "demo" ? "chat" : "overview");
+    setView(id === "demo" && !researchReady ? "chat" : "overview");
     setSelected(null);
     setPanel(false);
     setError("");
@@ -168,11 +175,22 @@ function App() {
   }, []);
   useEffect(() => {
     let active = true;
-    researchClient.connect().then((connected) => {
+    researchClient.connect().then(async (connected) => {
       if (!active) return;
       setResearchReady(connected);
-      if (connected) loadResearchWorkspaces();
-      else if (initialWorkspace !== "demo") chooseWorkspace("demo");
+      if (connected) {
+        try {
+          await researchClient.ensureDemo();
+          await loadResearchWorkspaces();
+          if (active) setView("overview");
+        } catch (e) {
+          if (active) setError(e.message);
+        }
+      } else if (initialWorkspace !== "demo") {
+        setError(
+          "Chưa kết nối được API workspace. Không dùng dữ liệu mẫu thay thế cho workspace đang chọn.",
+        );
+      }
     });
     return () => {
       active = false;
@@ -486,7 +504,7 @@ function App() {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              go("chat");
+              go(isResearchWorkspace ? "overview" : "chat");
             }}
           >
             <span className="brand-mark">◈</span>lexcheck
@@ -502,17 +520,22 @@ function App() {
                   onChange={(event) => chooseWorkspace(event.target.value)}
                 >
                   <option value="demo">NULLPTR Demo · TPBVSK</option>
-                  {researchWorkspaces.map((workspace) => (
-                    <option key={workspace.id} value={workspace.id}>
-                      {workspace.name}
-                    </option>
-                  ))}
-                  <option value="new">+ Tạo workspace nhà trọ</option>
+                  {researchWorkspaces
+                    .filter(
+                      (workspace) =>
+                        workspace.reference_key !== "fixture:CO-DEMO",
+                    )
+                    .map((workspace) => (
+                      <option key={workspace.id} value={workspace.id}>
+                        {workspace.name}
+                      </option>
+                    ))}
+                  <option value="new">+ Tạo workspace</option>
                 </select>
                 <small>
-                  {isHousing
-                    ? "Nhà trọ · Ví dụ riêng cục bộ"
-                    : "Doanh nghiệp TPBVSK · Dữ liệu mẫu"}
+                  {currentWorkspace?.synthetic
+                    ? "Dữ liệu mẫu tổng hợp"
+                    : "Hồ sơ riêng cục bộ"}
                 </small>
               </label>
             ) : (
@@ -525,7 +548,7 @@ function App() {
           <button
             className="new-chat"
             onClick={() => {
-              if (isHousing) {
+              if (isResearchWorkspace) {
                 chooseWorkspace("new");
                 return;
               }
@@ -534,7 +557,7 @@ function App() {
             }}
           >
             <Icon name="plus" />
-            {isHousing ? "Thêm workspace mới" : "Cuộc trò chuyện mới"}
+            {isResearchWorkspace ? "Thêm workspace mới" : "Cuộc trò chuyện mới"}
           </button>
           <div className="nav-caption">KHÔNG GIAN LÀM VIỆC</div>
           <nav aria-label="Điều hướng chính">
@@ -599,13 +622,15 @@ function App() {
             </div>
             <div className="top-actions">
               <span className="demo-pill">
-                {isHousing
-                  ? "Ví dụ riêng · Rule đề xuất"
+                {isResearchWorkspace
+                  ? currentWorkspace?.synthetic
+                    ? "Dữ liệu mẫu tổng hợp"
+                    : "Workspace riêng"
                   : offline
                     ? "Mẫu ngoại tuyến"
                     : "Dữ liệu tổng hợp"}
               </span>
-              {!isHousing && (
+              {!isResearchWorkspace && (
                 <button
                   className="icon-button"
                   onClick={() => setPanel(!panel)}
@@ -617,16 +642,16 @@ function App() {
             </div>
           </header>
           <div className="status-strip">
-            <span>{isHousing ? "NHÀ TRỌ" : "TPBVSK"}</span>
+            <span>{isResearchWorkspace ? "WORKSPACE" : "TPBVSK"}</span>
             <span>
-              {isHousing
-                ? `${workspaceName || "Workspace mới"} · Nguồn và rule chờ xác minh`
+              {isResearchWorkspace
+                ? `${workspaceName || "Workspace mới"} · Dữ liệu từ kho tài liệu/API`
                 : offline
                   ? "API mất kết nối · Chỉ xem bản mẫu đi kèm"
                   : "API kết nối · Backend hiện ở chế độ fixture"}
             </span>
             <button
-              onClick={isHousing ? loadResearchWorkspaces : load}
+              onClick={isResearchWorkspace ? loadResearchWorkspaces : load}
               disabled={!!busy}
             >
               Tải lại
@@ -647,23 +672,31 @@ function App() {
               {notice}
             </div>
           )}
-          <div className={`body-layout ${isHousing ? "research-body" : ""}`}>
+          <div
+            className={`body-layout ${isResearchWorkspace ? "research-body" : ""}`}
+          >
             <main id="main" tabIndex="-1">
-              {isHousing ? (
-                <RentalWorkspace
-                  key={workspaceId}
-                  id={workspaceId}
-                  view={view}
-                  onNavigate={go}
-                  onUpdated={loadResearchWorkspaces}
-                  onCreated={(workspace) => {
-                    setResearchWorkspaces((previous) => [
-                      ...previous,
-                      workspace,
-                    ]);
-                    chooseWorkspace(workspace.id);
-                  }}
-                />
+              {isResearchWorkspace ? (
+                effectiveWorkspaceId ? (
+                  <DocumentWorkspace
+                    key={effectiveWorkspaceId}
+                    id={effectiveWorkspaceId}
+                    view={view}
+                    onNavigate={go}
+                    onUpdated={loadResearchWorkspaces}
+                    onCreated={(workspace) => {
+                      setResearchWorkspaces((previous) => [
+                        ...previous,
+                        workspace,
+                      ]);
+                      chooseWorkspace(workspace.id);
+                    }}
+                  />
+                ) : (
+                  <p className="content-page" role="status">
+                    Đang tải workspace từ API…
+                  </p>
+                )
               ) : !bundle ? (
                 <Page title="Kết nối hồ sơ">
                   <p>
@@ -1385,7 +1418,7 @@ function App() {
                 </>
               )}
             </main>
-            {!isHousing && (
+            {!isResearchWorkspace && (
               <aside
                 className={`evidence ${panel ? "open" : ""}`}
                 aria-label="Tri thức và bằng chứng"

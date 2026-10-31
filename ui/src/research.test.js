@@ -2,6 +2,36 @@ import { describe, it, expect, vi } from "vitest";
 import { createResearchClient } from "./research.js";
 
 describe("private research client", () => {
+  it("keeps both document collections on the same workspace API without starting research", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ token: "session" }),
+      });
+    const client = createResearchClient(fetcher);
+    await client.connect();
+    await client.createWorkspace("Any company", "From the user");
+    const file = Object.assign(new Blob(["Synthetic document"]), {
+      name: "source.txt",
+    });
+    await client.uploadDocument("WS-example", "business", file);
+    await client.uploadDocument("WS-example", "legal", file);
+    expect(fetcher.mock.calls[1][0]).toBe("/workspace-research/api/workspaces");
+    expect(fetcher.mock.calls[2][0]).toBe(
+      "/workspace-research/api/workspaces/WS-example/documents/business",
+    );
+    expect(fetcher.mock.calls[3][0]).toBe(
+      "/workspace-research/api/workspaces/WS-example/documents/legal",
+    );
+    expect(fetcher.mock.calls[2][1].body).toBe(file);
+    expect(
+      fetcher.mock.calls
+        .slice(1)
+        .some(([path]) => path.includes("research=true")),
+    ).toBe(false);
+    expect(client.profileEnabled()).toBe(false);
+  });
   it("loads a session and uses its token for the mounted API", async () => {
     const fetcher = vi
       .fn()
