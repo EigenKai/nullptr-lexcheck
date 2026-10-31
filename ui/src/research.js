@@ -1,6 +1,7 @@
 // Private local research uses its own server-issued token, never the reviewer session.
 export function createResearchClient(fetcher = fetch) {
   let token = null;
+  let profileEnabled = false;
   const base = "/workspace-research";
   async function call(path, options = {}) {
     if (!token) throw new Error("Workspace nghiên cứu chưa kết nối.");
@@ -37,11 +38,78 @@ export function createResearchClient(fetcher = fetch) {
         if (!response.ok) return false;
         const session = await response.json();
         token = session.token || null;
+        profileEnabled = Boolean(session.profile_enabled);
         return Boolean(token);
       } catch {
         return false;
       }
     },
+    profileEnabled: () => profileEnabled,
+    ensureDemo: async () =>
+      (await call("workspaces/demo", { method: "POST" })).json(),
+    createWorkspace: async (name, description) =>
+      (
+        await call("workspaces", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, description }),
+        })
+      ).json(),
+    documents: async (id) =>
+      (await call(`workspaces/${encodeURIComponent(id)}/documents`)).json(),
+    document: async (id, documentId) =>
+      (
+        await call(
+          `workspaces/${encodeURIComponent(id)}/documents/${encodeURIComponent(documentId)}`,
+        )
+      ).json(),
+    uploadDocument: async (id, collection, file) =>
+      (
+        await call(
+          `workspaces/${encodeURIComponent(id)}/documents/${collection}`,
+          {
+            method: "POST",
+            headers: {
+              "X-File-Name": encodeURIComponent(file.name),
+              "Content-Type": "application/octet-stream",
+            },
+            body: file,
+          },
+        )
+      ).json(),
+    context: async (id, documentId, enabled) =>
+      (
+        await call(
+          `workspaces/${encodeURIComponent(id)}/documents/${encodeURIComponent(documentId)}/context`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled }),
+          },
+        )
+      ).json(),
+    original: async (id, documentId) =>
+      (
+        await call(
+          `workspaces/${encodeURIComponent(id)}/documents/${encodeURIComponent(documentId)}/raw`,
+        )
+      ).blob(),
+    profile: async (id) =>
+      (
+        await call(`workspaces/${encodeURIComponent(id)}/profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ live: true }),
+        })
+      ).json(),
+    updateWorkspace: async (id, name, description) =>
+      (
+        await call(`workspaces/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, description }),
+        })
+      ).json(),
     list: async () => (await call("workspaces")).json(),
     detail: async (id, signal) =>
       (await call(`workspaces/${encodeURIComponent(id)}`, { signal })).json(),

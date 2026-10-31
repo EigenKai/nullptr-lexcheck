@@ -1,6 +1,7 @@
 """Local-only, default-off workspace research pilot; does not mount into shared API."""
 
 import argparse
+import hashlib
 import json
 import os
 import secrets
@@ -32,6 +33,20 @@ class ResearchStart(Contract):
 
 class WorkspaceRename(Contract):
     name: str = Field(min_length=1, max_length=150)
+    description: str | None = Field(default=None, max_length=2000)
+
+
+class WorkspaceCreate(Contract):
+    name: str = Field(min_length=1, max_length=150)
+    description: str = Field(default="", max_length=2000)
+
+
+class DocumentContext(Contract):
+    enabled: bool
+
+
+class ProfileStart(Contract):
+    live: bool
 
 
 def create_app(
@@ -40,6 +55,7 @@ def create_app(
     enabled=None,
     transport_factory=None,
     reader_factory=WorkspaceSourceReader,
+    profile_client_factory=None,
 ):
     enabled = (
         os.environ.get("LEXCHECK_WORKSPACE_RESEARCH_ENABLED", "0") == "1"
@@ -105,7 +121,7 @@ def create_app(
         return JSONResponse(
             {
                 "code": "invalid_request",
-                "message": "Không đọc được yêu cầu hoặc workbook; kiểm tra định dạng và giới hạn file.",
+                "message": "Không đọc được yêu cầu hoặc tài liệu; kiểm tra định dạng và giới hạn file.",
             },
             status_code=422,
         )
@@ -118,6 +134,10 @@ def create_app(
         if not options.live:
             raise HTTPException(422, "Live research must be explicitly requested.")
         workspace = store.get(workspace_id)
+        if workspace.get("domain") == "unclassified":
+            raise HTTPException(
+                503, "Generic legal discovery is pending integration; no model was called."
+            )
         with job_lock:
             if any(not future.done() for future in app.state.jobs.values()):
                 raise HTTPException(
@@ -180,14 +200,48 @@ def create_app(
 
     @app.get("/session")
     def local_session():
-        return {"token": app.state.token, "mode": "private_local_research"}
+        return {
+            "token": app.state.token,
+            "mode": "private_local_research",
+            "profile_enabled": os.getenv("LEXCHECK_WORKSPACE_PROFILE_ENABLED", "0") == "1",
+        }
 
     @app.get("/api/workspaces")
     def list_workspaces():
-        return store.list()
+        return [store.migrate_documents(workspace["id"]) for workspace in store.list()]
+
+    @app.post("/api/workspaces/demo")
+    def ensure_demo_workspace():
+        existing = next(
+            (
+                workspace
+                for workspace in store.list()
+                if workspace.get("reference_key") == "fixture:CO-DEMO"
+            ),
+            None,
+        )
+        if existing:
+            return existing
+        from intake.fixtures import load_demo
+
+        bundle = load_demo()
+        workspace = store.create_blank(
+            "NULLPTR Demo", reference_key="fixture:CO-DEMO", synthetic=True
+        )
+        records = {record.id: record for record in bundle.request.records}
+        for version in bundle.request.versions:
+            record = records[version.record_id]
+            name = record.title[:140] + f" ({version.id}).txt"
+            store.add_document(
+                workspace["id"], "business", name, version.text.encode(), origin="synthetic_fixture"
+            )
+        return store.get(workspace["id"])
 
     @app.post("/api/workspaces", status_code=201)
     async def upload(request: Request, research: bool = False):
+        if request.headers.get("Content-Type", "").split(";", 1)[0] == "application/json":
+            data = WorkspaceCreate.model_validate(await request.json())
+            return store.create_blank(data.name, description=data.description)
         if research and any(not future.done() for future in app.state.jobs.values()):
             raise HTTPException(
                 409, "Một workspace đang được nghiên cứu; chờ lượt hiện tại kết thúc."
@@ -205,11 +259,86 @@ def create_app(
 
     @app.get("/api/workspaces/{workspace_id}")
     def workspace_detail(workspace_id: str):
-        return {"workspace": store.get(workspace_id), "result": store.result(workspace_id)}
+        workspace = store.migrate_documents(workspace_id)
+        if workspace.get("profile"):
+            fingerprint = hashlib.sha256(
+                json.dumps(
+                    store.model_context(workspace_id), sort_keys=True, ensure_ascii=False
+                ).encode()
+            ).hexdigest()
+            workspace["profile_stale"] = workspace["profile"]["input_sha256"] != fingerprint
+        return {
+            "workspace": workspace,
+            "result": store.result(workspace_id),
+            "inventory_graph": store.inventory_graph(workspace_id),
+        }
 
     @app.patch("/api/workspaces/{workspace_id}")
     def rename_workspace(workspace_id: str, change: WorkspaceRename):
-        return store.update(workspace_id, name=change.name)
+        fields = {"name": change.name}
+        if change.description is not None:
+            fields["description"] = change.description
+        return store.update(workspace_id, **fields)
+
+    @app.get("/api/workspaces/{workspace_id}/documents")
+    def document_list(workspace_id: str):
+        store.migrate_documents(workspace_id)
+        return store.documents(workspace_id)
+
+    @app.post("/api/workspaces/{workspace_id}/documents/{collection}", status_code=201)
+    async def document_upload(workspace_id: str, collection: str, request: Request):
+        store.migrate_documents(workspace_id)
+        raw = bytearray()
+        async for chunk in request.stream():
+            raw.extend(chunk)
+            if len(raw) > 15_000_000:
+                raise HTTPException(413, "Document exceeds 15 MB.")
+        name = unquote(request.headers.get("X-File-Name", "document.txt"))
+        return store.add_document(workspace_id, collection, name, bytes(raw))
+
+    @app.get("/api/workspaces/{workspace_id}/documents/{document_id}")
+    def document_detail(workspace_id: str, document_id: str):
+        return store.document(workspace_id, document_id)
+
+    @app.get("/api/workspaces/{workspace_id}/documents/{document_id}/raw")
+    def document_raw(workspace_id: str, document_id: str):
+        document = store.document(workspace_id, document_id)
+        path = (
+            store.folder(workspace_id)
+            / "documents"
+            / document_id
+            / ("original" + document["suffix"])
+        )
+        return FileResponse(path, filename=document["name"], media_type="application/octet-stream")
+
+    @app.patch("/api/workspaces/{workspace_id}/documents/{document_id}/context")
+    def document_model_context(workspace_id: str, document_id: str, selection: DocumentContext):
+        return store.document_context(workspace_id, document_id, selection.enabled)
+
+    @app.post("/api/workspaces/{workspace_id}/profile")
+    def profile(workspace_id: str, options: ProfileStart):
+        if not options.live or os.getenv("LEXCHECK_WORKSPACE_PROFILE_ENABLED", "0") != "1":
+            raise HTTPException(503, "Generic profile analysis is disabled.")
+        from rules.workspace_profile import infer_profile
+
+        if profile_client_factory:
+            client = profile_client_factory(workspace_id)
+        else:
+            from detect.client import ModelClient
+
+            load_local_env()
+            client = ModelClient(
+                cache_dir=store.folder(workspace_id) / "profile-cache",
+                user_id="local-session",
+                group="manager",
+                acl_hash=workspace_id,
+            )
+        try:
+            return infer_profile(store, workspace_id, client)
+        except RuntimeError as exc:
+            raise HTTPException(
+                503, "Business analysis unavailable; no sample was substituted."
+            ) from exc
 
     @app.post("/api/workspaces/{workspace_id}/research", status_code=202)
     def begin_research(workspace_id: str, options: ResearchStart):
