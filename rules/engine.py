@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import unicodedata
 from pathlib import Path
 
 from contracts.models import (
@@ -13,7 +14,7 @@ from contracts.models import (
     Rule,
     RuleEvaluation,
 )
-from detect.validator import FIELD_PRESENT
+from detect.validator import WARNING
 
 CATALOG_DIR = Path(__file__).resolve().parent
 CHECK_TYPES = ("warning", "uses", "confirmation")
@@ -116,12 +117,14 @@ def _evidence(rule, version, request, records, selected):
     if rule.check_type == "uses":
         return _use_evidence(version, request, records, selected)
     if rule.check_type == "warning":
-        # Share the validator's NFC and optional trailing-period presence semantics.
-        present = FIELD_PRESENT["warning"](version)
+        # Normalize only for presence; evidence offsets always use untouched text.
+        present = WARNING in " ".join(unicodedata.normalize("NFC", version.text).split())
         field = "warning"
     else:
         present = any(
-            v.id in version.reference_ids and records[v.record_id].kind == "ad_confirmation"
+            v.id in version.reference_ids
+            and records[v.record_id].kind == "ad_confirmation"
+            and records[v.record_id].product_id == records[version.record_id].product_id
             for v in selected
         )
         field = "confirmation_date"
@@ -209,7 +212,11 @@ def evaluate(
         if incomplete
         else "Verified advertising checks executed on the selected records.",
         rules_checked=tuple(r.id for r in checked),
-        skipped_rule_ids=tuple(r.id for r in rules if r not in checked),
+        skipped_rule_ids=tuple(
+            r.id
+            for r in rules
+            if r.enabled and profile.activity in r.activities and r not in checked
+        ),
         rule_snapshots=checked,
         clause_snapshots=tuple(clause_map[cid] for cid in clause_ids),
         findings=findings,
