@@ -20,13 +20,19 @@
   box-shadow: 0 22px 34px -30px rgba(15, 48, 56, 0.7);
   overflow: hidden;
 }
+/* Centred, so the band still balances when the fixture button is hidden
+   (live mode). */
 .review-desk-copy {
-  padding-bottom: 20px;
+  align-self: center;
+  padding-bottom: 6px;
   min-width: 0;
 }
 .review-desk .page-description {
   margin: 0 0 14px;
   background-color: #fbf3e6;
+}
+.review-desk .page-description:last-child {
+  margin-bottom: 0;
 }
 .review-desk-lex {
   width: 168px;
