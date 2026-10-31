@@ -125,10 +125,24 @@ def answer(store, history, workspace_id, thread_id, question, client, *, emit=No
         raise ValueError("Question is empty or too long.")
     thread = history.get(workspace_id, thread_id)
     index = WorkspaceIndex(store, workspace_id)
+
+    def history_source_status(turn):
+        if not turn["citations"]:
+            return "unreferenced"
+        current = all(
+            c["document_id"] in index.sources
+            and index.sources[c["document_id"]]["sha256"] == c["sha256"]
+            and index.sources[c["document_id"]]["version"] == c.get("version")
+            and index.sources[c["document_id"]]["title"] == c.get("title")
+            for c in turn["citations"]
+        )
+        return "current" if current else "changed"
+
     prior = [
         {
             "question": turn["question"],
             "answer": turn["answer"],
+            "source_status": history_source_status(turn),
         }
         for turn in thread["turns"][-5:]
     ]

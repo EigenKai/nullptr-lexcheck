@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import logging
 import os
 import queue
 import secrets
@@ -325,9 +326,22 @@ def create_app(
                 emit("done", {"turn": turn})
             except StreamCancelled:
                 pass
-            except Exception:  # noqa: BLE001 - never expose private provider payloads or credentials
+            except Exception as exc:  # noqa: BLE001 - never expose private provider payloads or credentials
+                kinds = []
+                cause = exc
+                while cause is not None and len(kinds) < 6:
+                    kinds.append(type(cause).__name__)
+                    cause = cause.__cause__ or cause.__context__
+                logging.getLogger(__name__).warning(
+                    "Workspace stream failed: %s", " -> ".join(kinds)
+                )
                 if not cancelled.is_set():
-                    events.put(("error", {"message": "Không thể hoàn tất phản hồi. Hãy thử lại."}))
+                    events.put(
+                        (
+                            "error",
+                            {"message": f"Không thể hoàn tất phản hồi ({kinds[-1]}). Hãy thử lại."},
+                        )
+                    )
             finally:
                 lock.release()
                 events.put((None, None))

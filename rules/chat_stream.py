@@ -20,6 +20,27 @@ def check_cancelled(cancelled):
         raise StreamCancelled("Chat request cancelled.")
 
 
+def json_objects(text):
+    """Ignore provider prose/format labels; never forward them as answer text."""
+    for position, character in enumerate(text):
+        if character == "{":
+            yield text[position:]
+
+
+def parse_structured(schema, text):
+    try:
+        return schema.model_validate_json(text)
+    except ValueError:
+        decoder = json.JSONDecoder()
+        for candidate in json_objects(text):
+            try:
+                value, _ = decoder.raw_decode(candidate)
+                return schema.model_validate(value)
+            except ValueError:
+                continue
+        raise
+
+
 class AnswerDeltas:
     def __init__(self, emit, *, root_answer=False):
         self.emit, self.root_answer = emit, root_answer
@@ -27,25 +48,27 @@ class AnswerDeltas:
 
     def feed(self, delta):
         self.buffer += delta
-        try:
-            partial = from_json(self.buffer, allow_partial="trailing-strings")
-        except ValueError:
-            return
-        if not isinstance(partial, dict):
-            return
-        if self.root_answer:
-            answer = partial.get("answer")
-        elif partial.get("tool") == "final_answer":
-            answer = (partial.get("final") or {}).get("answer")
-        else:
-            return
-        if (
-            isinstance(answer, str)
-            and answer.startswith(self.sent)
-            and len(answer) > len(self.sent)
-        ):
-            self.emit("answer_delta", {"text": answer[len(self.sent) :]})
-            self.sent = answer
+        for candidate in json_objects(self.buffer):
+            try:
+                partial = from_json(candidate, allow_partial="trailing-strings")
+            except ValueError:
+                continue
+            if not isinstance(partial, dict):
+                continue
+            if self.root_answer:
+                answer = partial.get("answer")
+            elif partial.get("tool") == "final_answer" and isinstance(partial.get("final"), dict):
+                answer = partial["final"].get("answer")
+            else:
+                continue
+            if (
+                isinstance(answer, str)
+                and answer.startswith(self.sent)
+                and len(answer) > len(self.sent)
+            ):
+                self.emit("answer_delta", {"text": answer[len(self.sent) :]})
+                self.sent = answer
+                break
 
 
 def strict_schema(schema):
@@ -83,6 +106,11 @@ class StreamingModelClient:
 
     def generate(self, **kwargs):
         check_cancelled(self.cancelled)
+        kwargs = {
+            **kwargs,
+            "prompt": kwargs["prompt"]
+            + " Return only the requested JSON object. Do not add Thought/Action labels, Markdown fences or prose outside the JSON object.",
+        }
         cached = self.base.generate(
             **{**kwargs, "mode": "off" if kwargs.get("mode") == "off" else "cache"}
         )
@@ -117,6 +145,7 @@ class StreamingModelClient:
         }
         client = self.http_client or httpx.Client(timeout=timeout_seconds())
         completed = False
+        completed_text = ""
         self.emit(
             "progress", {"tool": "model", "status": "generating", "message": "Đang xử lý yêu cầu…"}
         )
@@ -154,12 +183,18 @@ class StreamingModelClient:
                         completed = (
                             event.get("response", {}).get("status", "completed") == "completed"
                         )
+                        completed_text = "".join(
+                            part.get("text", "")
+                            for output in event.get("response", {}).get("output", [])
+                            for part in output.get("content", [])
+                            if part.get("type") == "output_text"
+                        )
                     elif kind in ("error", "response.failed", "response.incomplete"):
                         raise RuntimeError("Provider stream did not complete.")
             check_cancelled(self.cancelled)
             if not completed:
                 raise RuntimeError("Provider stream ended before completion.")
-            parsed = schema.model_validate_json(deltas.buffer)
+            parsed = parse_structured(schema, completed_text or deltas.buffer)
             if not self.base._authorized(kwargs["payload"]):
                 return ModelOutput("unavailable", key=cached.key, calls=1, error="access_denied")
             self._cache(cached.key, parsed)

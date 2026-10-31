@@ -27,6 +27,21 @@ def test_partial_structured_answer_preserves_unicode_and_escapes():
     other.feed('{"tool":"web_search","query":"hello","final":null}')
 
 
+def test_provider_labelled_json_stream_does_not_leak_planning():
+    from rules.chat_stream import parse_structured
+
+    draft = AnswerDraft(
+        answer="Visible answer", status="answered", answer_type="conversation", citations=[]
+    )
+    raw = "Thought: private planning text.\nAction:\n```json\n" + draft.model_dump_json() + "\n```"
+    assert parse_structured(AnswerDraft, raw) == draft
+    events = []
+    parser = AnswerDeltas(lambda kind, data: events.append(data["text"]), root_answer=True)
+    for piece in raw:
+        parser.feed(piece)
+    assert "".join(events) == "Visible answer"
+
+
 def test_actual_sse_transport_emits_before_completion_and_honors_cancel(tmp_path, monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "synthetic-key")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://provider.example/v1")
