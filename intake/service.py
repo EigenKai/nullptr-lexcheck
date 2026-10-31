@@ -229,6 +229,21 @@ def decide(payload, person, store):
             raise HTTPException(403, "forbidden")
         if not payload.note.strip():
             raise HTTPException(422, "invalid_request")
+        timing = feature_flags(runtime_mode() == "live").remediation
+        task_fields = (
+            "internal_due_on",
+            "legal_due_on",
+            "legal_clause_version_id",
+            "legal_deadline_quote",
+            "closure_conditions",
+        )
+        supplied = any(getattr(payload, field) is not None for field in task_fields)
+        if not timing and (
+            supplied or payload.action == "acknowledge" or payload.closure_conditions_met
+        ):
+            raise HTTPException(404, "feature_disabled")
+        if supplied and payload.action != "assign":
+            raise HTTPException(422, "invalid_request")
         check = store.checks.get(payload.check_id)
         finding = (
             next((f for f in check.findings if f.id == payload.finding_id), None) if check else None
@@ -238,7 +253,44 @@ def decide(payload, person, store):
         prior = [d for d in store.decisions.values() if d.request.finding_id == finding.id]
         if prior and prior[-1].task_status in ("closed", "dismissed"):
             raise HTTPException(409, "conflict")
+        if prior:
+            inherited = {
+                field: getattr(prior[-1].request, field)
+                for field in task_fields
+                if payload.action != "assign" or not timing or field not in payload.model_fields_set
+            }
+            if payload.owner is None:
+                inherited["owner"] = prior[-1].request.owner
+            payload = payload.model_copy(update=inherited)
+        if (
+            timing
+            and payload.action == "assign"
+            and not (
+                payload.internal_due_on
+                and payload.closure_conditions
+                and payload.closure_conditions.strip()
+            )
+        ):
+            raise HTTPException(422, "invalid_request")
+        if payload.legal_due_on:
+            source = next(
+                (
+                    clause
+                    for clause in check.clause_snapshots
+                    if clause.id == payload.legal_clause_version_id
+                ),
+                None,
+            )
+            if (
+                source is None
+                or source.verification_status != "verified"
+                or not payload.legal_deadline_quote
+                or payload.legal_deadline_quote not in source.text
+            ):
+                raise HTTPException(422, "invalid_request")
         if payload.action == "close":
+            if payload.closure_conditions and not payload.closure_conditions_met:
+                raise HTTPException(409, "conflict")
             fresh = store.checks.get(payload.closure_check_id)
             original = next(v for v in check.snapshot.versions if v.id == finding.record_version_id)
             if (
@@ -276,7 +328,9 @@ def decide(payload, person, store):
             id=identifier("DEC"),
             request=payload,
             actor_user_id=person.user_id,
-            task_status={
+            task_status=(prior[-1].task_status if prior else "open")
+            if payload.action == "acknowledge"
+            else {
                 "confirm": "open",
                 "assign": "assigned",
                 "reject": "dismissed",

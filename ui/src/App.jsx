@@ -293,8 +293,12 @@ export default function App() {
     setResult(null);
     setSelected(null);
   }
-  async function decide(action) {
-    if (!note.trim()) {
+  async function decide(action, taskFields = {}) {
+    const decisionNote =
+      action === "acknowledge"
+        ? note.trim() || "Đã đọc phát hiện; chưa đóng việc."
+        : note.trim();
+    if (!decisionNote) {
       setError("Nhập ghi chú trước khi lưu quyết định.");
       return;
     }
@@ -306,9 +310,10 @@ export default function App() {
           finding_id: current.id,
           action,
           actor: "reviewer",
-          note: note.trim(),
+          note: decisionNote,
           ...(action === "assign" ? { owner } : {}),
           ...(action === "close" ? { closure_check_id: closureCheckId } : {}),
+          ...taskFields,
         }),
       });
       await refreshHistory();

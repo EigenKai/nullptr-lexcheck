@@ -1,7 +1,18 @@
 # Deployment
 
-The existing public bootstrap is at https://nullptr-lexcheck.onrender.com/docs.
-It is a fixture preview, not a completed live review pipeline.
+Public reviewer UI: https://nullptr-lexcheck.onrender.com/.
+Deployed reviewed main SHA: `27b8a1f` (PR #13), pinned using Render's specific
+commit deployment on 2026-10-31. Build is `bash deploy/build.sh`; start is one
+Uvicorn worker. Render marks deployment `dep-dbiqdqavcj2c73e9ejg0` live.
+Health reports live, root UI returns 200, and a public API check ran R-01..R-04.
+The same main SHA passed real smoke0 and seven Chromium flows locally before
+deployment. Teammate-device verification is still requested separately.
+Specific-commit deployment disabled Render Auto-Deploy; later deployments must
+explicitly select the reviewed/tested main SHA.
+
+All company data is synthetic/staged. Sessions are **demo login, without real
+authentication**. Before layer 3, demo reads are public, including synthetic
+manager-only records; do not put private documents in this demo service.
 
 After local review, configure one Render/Railway Python service:
 
@@ -11,6 +22,7 @@ After local review, configure one Render/Railway Python service:
 - Health path: `/health`.
 - Environment: `PYTHON_VERSION=3.11.14`, `NODE_VERSION=22.15.0`, `PYTHONUTF8=1`.
 - `LEXCHECK_LAYER1_ENABLED`, `LEXCHECK_LAYER2_ENABLED`, `LEXCHECK_LAYER3_ENABLED`: `0`.
+- `LEXCHECK_REMEDIATION_ENABLED`, `LEXCHECK_TASK_DASHBOARD_ENABLED`: `0`.
 - `LEXCHECK_STATE_FILE=cache/demo-state.json`. Sessions are ephemeral and never persisted.
 
 Local preview: build the UI, restart the API, open `/` and `/docs` on port 8000.
@@ -27,9 +39,9 @@ Khanh authorized publishing the branch and opening a review PR on 2026-10-31.
 This does not enable any layer or deploy this feature branch. Keep the existing
 public fixture deployment until the integrated main SHA passes its real gates.
 
-Integration baseline: main `2049c21` includes detection, cited chat and dev eval
-(PRs #4–#8). The rule engine remains bootstrap; impact/legal/pattern adapters
-await their owners. The scoped-cache PR #10 still needs current-session
+Integration baseline: reviewed main includes engine, impact, validator and
+R-01..R-04 catalog verification. Legal/pattern adapters await their owners.
+The scoped-cache PR #10 still needs current-session
 authorization callback integration before layer 3 can be accepted. Intake now
 passes server user/group and hashes of canonical ACL/active patterns to the
 existing model client; no client-supplied role is trusted.
@@ -37,3 +49,9 @@ existing model client; no client-supplied role is trusted.
 Windows verification currently has 10 upstream final-CLI test failures because
 `eval/final.py` uses POSIX-only `os.O_NOFOLLOW`; report these to the eval owner.
 This branch does not change the owner's evaluator or access the final dataset.
+
+Remediation timing is a separate default-off UI/API feature. When reviewed on
+main, `LEXCHECK_REMEDIATION_ENABLED=1` exposes internal due dates, reviewer-entered
+legal due dates with immutable clause/version/quote, and closure conditions.
+No statutory date is inferred. Acknowledgement preserves the current task state.
+Keep the flag off until its acceptance and browser checks pass on the deploy SHA.

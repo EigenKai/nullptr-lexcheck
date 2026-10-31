@@ -1,6 +1,7 @@
 import React from "react";
 import { Icon, Page, Badge, recordNames, ruleNames, date } from "./shared.jsx";
 import { resultLabel, evidenceParts } from "../api.js";
+import TaskTiming from "./TaskTiming.jsx";
 export default function Evidence({
   bundle,
   history,
@@ -215,7 +216,10 @@ export default function Evidence({
               ["reject", "Bác bỏ"],
               ["assign", "Giao xử lý"],
             ]
-              .filter(([a]) => a !== "assign" || features.layer1)
+              .filter(
+                ([a]) =>
+                  a !== "assign" || (features.layer1 && !features.remediation),
+              )
               .map(([a, label]) => (
                 <button
                   className="button secondary"
@@ -233,40 +237,58 @@ export default function Evidence({
                 </button>
               ))}
           </div>
-          <label htmlFor="closure-check">
-            Kết quả kiểm tra lại dùng để đóng việc
-          </label>
-          <select
-            id="closure-check"
-            value={closureCheckId}
-            onChange={(e) => setClosureCheckId(e.target.value)}
-          >
-            <option value="">Chọn lượt kiểm tra mới</option>
-            {(history?.checks || [])
-              .filter((c) => c.parent_check_id === check.id)
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.id} · {resultLabel(c)}
-                </option>
-              ))}
-          </select>
-          <button
-            className="button secondary"
-            disabled={
-              !!busy ||
-              offline ||
-              !closureCheckId ||
-              session?.group !== "manager" ||
-              check?.mode !== "live"
-            }
-            onClick={() => decide("close")}
-          >
-            Đóng việc sau kiểm tra lại
-          </button>
-          <p className="footnote">
-            Đóng việc cần một lượt kiểm tra lại mới. Đọc phát hiện không tự đóng
-            việc.
-          </p>
+          {features.remediation ? (
+            <TaskTiming
+              key={current.id}
+              current={current}
+              check={check}
+              history={history}
+              owner={owner}
+              decide={decide}
+              busy={busy}
+              offline={offline}
+              session={session}
+              closureCheckId={closureCheckId}
+              setClosureCheckId={setClosureCheckId}
+            />
+          ) : (
+            <>
+              <label htmlFor="closure-check">
+                Kết quả kiểm tra lại dùng để đóng việc
+              </label>
+              <select
+                id="closure-check"
+                value={closureCheckId}
+                onChange={(e) => setClosureCheckId(e.target.value)}
+              >
+                <option value="">Chọn lượt kiểm tra mới</option>
+                {(history?.checks || [])
+                  .filter((c) => c.parent_check_id === check.id)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.id} · {resultLabel(c)}
+                    </option>
+                  ))}
+              </select>
+              <button
+                className="button secondary"
+                disabled={
+                  !!busy ||
+                  offline ||
+                  !closureCheckId ||
+                  session?.group !== "manager" ||
+                  check?.mode !== "live"
+                }
+                onClick={() => decide("close")}
+              >
+                Đóng việc sau kiểm tra lại
+              </button>
+              <p className="footnote">
+                Đóng việc cần một lượt kiểm tra lại mới. Đọc phát hiện không tự
+                đóng việc.
+              </p>
+            </>
+          )}
         </section>
       )}
     </>
