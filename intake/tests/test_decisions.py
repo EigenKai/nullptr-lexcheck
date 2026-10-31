@@ -129,7 +129,11 @@ def test_duplicate_event_is_idempotent_without_replaying_impact(state):
     assert exc.value.status_code == 409
 
 
-def test_missing_impact_owner_does_not_mutate_state(state):
+def test_missing_impact_owner_does_not_mutate_state(state, monkeypatch):
+    def missing(_name):
+        raise HTTPException(503, "not_ready")
+
+    monkeypatch.setattr(service, "owner_module", missing)
     store, _, _ = state
     before = store.data.model_copy(deep=True)
     with pytest.raises(HTTPException) as exc:

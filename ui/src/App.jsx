@@ -364,6 +364,7 @@ export default function App() {
     busy,
     error,
     notice,
+    setNotice,
     selected,
     setSelected,
     panel,

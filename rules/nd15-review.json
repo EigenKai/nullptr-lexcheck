@@ -1,0 +1,46 @@
+{
+  "scope": "Human-confirmed Vietnamese TPBVSK text advertising at demo review_date2026-10-31; not a general historical legal-status assertion",
+  "reviewer": "Dung",
+  "confirmation_recorded_at": "2026-10-31T07:59:16.716938+00:00",
+  "original_pdf": {
+    "url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",
+    "sha256": "a6435d8e778117111bb165d52badb125b7afbe2430334b0f53ec0ea42a3c1ea5",
+    "retrieved_at": "2026-10-31T07:54:34.369313+00:00",
+    "clause_pages": [
+      19,
+      20,
+      21
+    ],
+    "effective_date_page": 30
+  },
+  "continuation_source": {
+    "document": "15/2026/NQ-CP",
+    "url": "https://congbaocdn.chinhphu.vn/180507251028987904/2026/4/22/469344-1776837714_v1_1776849804_signed.pdf",
+    "sha256": "f76f585b4a3066bf9ae1511deff62690bf03fc88eca3eeddfc1fb922543689ec",
+    "article2_page": 1,
+    "article5_page": 4,
+    "issued_on": "2026-04-06",
+    "effective_on": "2026-04-06"
+  },
+  "human_confirmation_received": true,
+  "agent_visual_comparison_completed": true,
+  "enabled_rule_ids": [
+    "R-01",
+    "R-02",
+    "R-03",
+    "R-04"
+  ],
+  "pending_rule_ids": [
+    "R-05",
+    "R-06",
+    "R-07",
+    "R-08"
+  ],
+  "limitations": [
+    "Historical interruption intervals are not encoded by this pack.",
+    "A missing connected confirmation is not a finding that an external procedure never happened.",
+    "Scientific evidence still requires human evaluation.",
+    "Authority changes and older certificate validity require separate review."
+  ],
+  "r04_verification_provenance": "Exact second sentence already human-confirmed in CV-02-v1; original confirmation timestamp reused. Agent visually rechecked original PDF page19; no new human verification fabricated."
+}
