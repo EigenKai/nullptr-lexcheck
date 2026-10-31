@@ -28,6 +28,8 @@ Windows dùng `.venv/Scripts/python.exe -X utf8` thay cho `python` nếu cần. 
 
 ## Nguồn
 
+Phần đọc ảnh và chép chữ được giao qua công cụ subagent của Codex, dùng model `gpt-6-luna` với reasoning thấp theo yêu cầu của người dùng. Đây là một subagent trong phiên Codex, không phải dịch vụ OCR bên ngoài hoặc một thư viện OCR mới. Kết quả vẫn ghi `assistant visual transcription` và chưa có xác nhận pháp lý của con người. Bước tạo rule trong bộ mẫu là developer biên soạn, không phải đầu ra của một lần gọi API sinh rule.
+
 [NĐ 15/2018 bản ký](https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf), trang PDF 19–21, Điều 26–27. Có thể đọc thêm [bản Công báo](https://congbaocdn.chinhphu.vn/CongBaoCP/VanBan/2018/2/25858/21320-1-2018375-37615-2018-nd-cp.pdf), trang PDF 20–22. PDF/ZIP và bản nháp OCR được giữ trong cache local, không kèm bộ mẫu.
 
 Nguồn về hiệu lực/phân cấp còn cần đối chiếu trước khi dùng thật: NQ 15/2026, NQ 21/2026 và các văn bản liên quan hiện hành. Không mặc định mọi nhãn là quảng cáo; không suy thiếu file trong kho là thủ tục ngoài đời chưa từng xảy ra.
