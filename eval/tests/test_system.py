@@ -17,7 +17,7 @@ def test_offline_eval_system(monkeypatch):
     path = ROOT / "eval/results/latest.json"
     report = EvaluationReport.model_validate_json(path.read_text())
     assert report.n == 15
-    assert len(report.systems) == 3
+    assert len(report.systems) == 5
     before = path.read_bytes()
     main()
     assert before == path.read_bytes()
@@ -111,3 +111,16 @@ def test_parallel_workers_overlap(monkeypatch):
     )
     assert all(s.failed_calls == 0 for s in report.systems)
     assert report.systems[1].model_calls == 4
+
+
+def test_report_has_five_systems_in_order():
+    from eval.run import evaluate_cases, load_cases
+
+    report, _ = evaluate_cases(load_cases(ROOT / "data/dev"))
+    assert [s.system for s in report.systems] == [
+        "keyword",
+        "plain_chat",
+        "plain_chat_web",
+        "retrieval",
+        "lexcheck",
+    ]

@@ -47,7 +47,12 @@ def test_outputs_metrics_without_case_text(dataset):
     result = invoke(dataset)
     assert result.returncode == 0, result.stdout
     assert secret not in result.stdout + result.stderr
-    for filename in (".lexcheck-run.json", "final-manifest.json", "final-results.json"):
+    for filename in (
+        ".lexcheck-run.json",
+        "final-manifest.json",
+        "final-results.json",
+        "final-diagnostics.json",
+    ):
         assert secret not in (dataset / filename).read_text()
     assert all(path.read_bytes() == content for path, content in before.items())
     manifest = json.loads((dataset / "final-manifest.json").read_text())
@@ -143,3 +148,36 @@ def test_failed_evaluation_still_consumes(dataset, monkeypatch):
     monkeypatch.setattr("eval.final.evaluate_cases", failed)
     assert run(dataset, mode="off")[0]["error"] == "run_failed"
     assert run(dataset, mode="off")[0]["error"] == "already_run"
+
+
+def test_final_report_has_five_systems(dataset, monkeypatch):
+    from types import SimpleNamespace
+
+    from detect.candidates import CandidateBatch
+    from detect.client import ModelClient
+    from eval.final import _manifest, run
+
+    original = _manifest
+    monkeypatch.setenv("OPENAI_MODEL", "test")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-only-credential")
+    monkeypatch.setattr(
+        "eval.final._manifest", lambda inputs, mode: {**original(inputs, mode), "dirty": False}
+    )
+    monkeypatch.setattr(
+        "eval.final.ModelClient",
+        lambda: ModelClient(
+            model="test",
+            transport=lambda **kw: SimpleNamespace(
+                status="completed", output_parsed=CandidateBatch(candidates=())
+            ),
+        ),
+    )
+    report, code = run(dataset, mode="live")
+    assert code == 0
+    assert [s["system"] for s in report["systems"]] == [
+        "keyword",
+        "plain_chat",
+        "plain_chat_web",
+        "retrieval",
+        "lexcheck",
+    ]

@@ -73,7 +73,7 @@ class ModelClient:
         except Exception:  # noqa: BLE001 - authorization failure denies access
             return False
 
-    def generate(self, *, purpose, payload, prompt, schema, mode):
+    def generate(self, *, purpose, payload, prompt, schema, mode, tools=()):
         if mode == "off":
             return ModelOutput("off")
         if not self._authorized(payload):
@@ -88,6 +88,7 @@ class ModelClient:
                 "prompt": prompt,
                 "payload": payload,
                 "scope": self.scope,
+                "tools": tools,
             }
         )
         scoped = all(self.scope[k] for k in ("user", "group", "acl"))
@@ -99,9 +100,9 @@ class ModelClient:
                 return ModelOutput("unavailable", key=key, error="cache_invalid")
         if mode != "live":
             return ModelOutput("unavailable", key=key, error="cache_miss")
-        return self._live(payload, prompt, schema, key, path)
+        return self._live(payload, prompt, schema, key, path, tools)
 
-    def _live(self, payload, prompt, schema, key, path):
+    def _live(self, payload, prompt, schema, key, path, tools):
         if self.transport is None and not os.getenv("OPENAI_API_KEY"):
             return ModelOutput("unavailable", key=key, error="credentials_missing")
         try:
@@ -115,6 +116,7 @@ class ModelClient:
                         input=json.dumps(payload, ensure_ascii=False),
                         text_format=schema,
                         store=False,
+                        **({"tools": list(tools)} if tools else {}),
                     )
             else:
                 response = self.transport(
@@ -123,6 +125,7 @@ class ModelClient:
                     input=json.dumps(payload, ensure_ascii=False),
                     text_format=schema,
                     store=False,
+                    **({"tools": list(tools)} if tools else {}),
                 )
             if response.status != "completed" or response.output_parsed is None:
                 return ModelOutput("unavailable", key=key, calls=1, error="no_complete_output")
