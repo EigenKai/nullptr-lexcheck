@@ -28,7 +28,7 @@ Nếu chưa có ≥3 rule thật trước 14:05: vẫn nộp WIP đúng giờ nh
 ## 4. Kiến trúc và điểm cắm
 ```mermaid
 flowchart LR
- UI[React + Vite + Tailwind] --> API[FastAPI intake / sessions / state]
+ UI[React + Vite + CSS] --> API[FastAPI intake / sessions / state]
  API --> Profile[profile + explicit context versions]
  Profile --> Rules[rules.engine + versioned catalog]
  Rules --> Detect[detect validator / optional model / cache]
@@ -49,7 +49,7 @@ Rule/clause/record snapshots bất biến. context_version_ids là căn cứ ng�
 | Dũng | rules/, fix/ nếu cần, docs/ledger/dung.md | evaluate, impact.enqueue/apply_event, legal activation logic, pattern guard; dữ liệu luật đã xác minh |
 | Khanh | intake/, ui/, deploy/, docs/ledger/khanh.md | store/session/auth/router, API orchestration, reviewer UI, smoke tầng, một service deploy |
 | Chung — PR hợp đồng riêng, cả đội đọc | contracts/, schemas/, tests/, scripts/, data/fixtures/, app/, Makefile, requirements.txt, CI, AGENTS.md, README, docs/plan/, docs/build-ledger.md | Tuấn Anh điều phối; không feature PR tiện tay đổi |
-UI package.json/package-lock.json do Khanh tạo trong PR UI đầu và cả đội đọc; từ đó thay dependency phải PR riêng. Không ai sửa file ledger người khác. Leader tổng hợp build-ledger. Các job chỉ import model chung; test tính năng nằm trong thư mục chủ sở hữu.
+Khanh kế thừa UI JavaScript/CSS của PR #1 sau human review/merge, không port sang TypeScript/Tailwind; client kiểm JSDoc/schema. Khanh và Dũng xác nhận bàn giao UI (PR từ tài khoản Dũng); Dũng tiếp tục rules/fix. package-lock của PR UI đầu được cả đội đọc; từ đó đổi dependency phải PR riêng. Không ai sửa file ledger người khác. Leader tổng hợp build-ledger. Các job chỉ import model chung; test tính năng nằm trong thư mục chủ sở hữu.
 
 ## 6. Mốc thực thi và tích hợp
 | Giờ +07 | Hành động / chủ / tiêu chí |

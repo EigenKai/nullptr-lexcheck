@@ -18,7 +18,7 @@ make eval
 make run
 ```
 
-Open http://127.0.0.1:8000/docs; `/health` and `/api/demo` are ready. `make smoke` exercises the fixture API; `make schemas` exports the contracts. `make eval` currently validates fixtures only and reports no accuracy number. Frontend implementation is the UI owner's first package (Vite, React, Tailwind; one FastAPI service serves its build).
+Open http://127.0.0.1:8000/docs; `/health` and `/api/demo` are ready. `make smoke` exercises the fixture API; `make schemas` exports the contracts. `make eval` currently validates fixtures only and reports no accuracy number. The UI owner builds on [PR #1](https://github.com/EigenKai/nullptr-lexcheck/pull/1) after human review/merge (Vite/React, JavaScript and CSS; JSDoc/schema client checks). One FastAPI service serves the build.
 
 ## Team workflow
 
