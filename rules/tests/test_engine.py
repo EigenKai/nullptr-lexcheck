@@ -349,7 +349,7 @@ def test_no_advertising_target_runs_no_rules(pack):
 
 
 @pytest.mark.parametrize(
-    "change", [{"check_type": "endorsement"}, {"activities": ("ad_registration",)}]
+    "change", [{"check_type": "medicinal"}, {"activities": ("ad_registration",)}]
 )
 def test_unimplemented_or_other_activity_rule_is_not_counted(pack, change):
     result = checked(case("missing-warning"), ((pack[0][0].model_copy(update=change),), pack[1]))
