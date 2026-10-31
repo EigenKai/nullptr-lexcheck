@@ -68,3 +68,24 @@ def test_acl_and_user_invalidate_cache(tmp_path):
         client = ModelClient(model="test", cache_dir=tmp_path, group="manager", **scope)
         result = client.generate(**ARGS, mode="cache")
         assert result.status == "unavailable" and result.key != base.key
+
+
+def test_final_unscoped_client_is_unavailable_in_layer3(monkeypatch):
+    import socket
+
+    from eval.run import ROOT, evaluate_cases, load_cases
+
+    monkeypatch.setenv("LEXCHECK_LAYER3_ENABLED", "1")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("network forbidden")
+
+    monkeypatch.setattr(socket, "socket", forbidden)
+    report, _ = evaluate_cases(
+        load_cases(ROOT / "data/dev"),
+        phase="held_out",
+        mode="live",
+        client=ModelClient(model="test"),
+    )
+    assert all(s.model_calls == 0 for s in report.systems)
+    assert report.systems[1].failed_calls == 15 and report.systems[2].failed_calls == 15
