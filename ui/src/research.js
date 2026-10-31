@@ -1,0 +1,84 @@
+// Private local research uses its own server-issued token, never the reviewer session.
+export function createResearchClient(fetcher = fetch) {
+  let token = null;
+  const base = "/workspace-research";
+  async function call(path, options = {}) {
+    if (!token) throw new Error("Workspace nghiên cứu chưa kết nối.");
+    let response;
+    try {
+      response = await fetcher(`${base}/api/${path}`, {
+        ...options,
+        headers: { "X-Workspace-Token": token, ...options.headers },
+        signal: options.signal || AbortSignal.timeout(20000),
+      });
+    } catch (error) {
+      if (error.name === "AbortError") throw error;
+      throw new Error("Không kết nối được API workspace. Hãy thử lại.");
+    }
+    if (!response.ok) {
+      const messages = {
+        401: "Phiên nghiên cứu đã đổi. Tải lại trang để kết nối.",
+        409: "Một workspace đang nghiên cứu. Chờ lượt hiện tại kết thúc.",
+        413: "Workbook vượt giới hạn 15 MB.",
+        422: "Không đọc được workbook hoặc yêu cầu. Kiểm tra file XLSX.",
+      };
+      throw new Error(
+        messages[response.status] || "Chưa tải được dữ liệu workspace.",
+      );
+    }
+    return response;
+  }
+  return {
+    async connect() {
+      try {
+        const response = await fetcher(`${base}/session`, {
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!response.ok) return false;
+        const session = await response.json();
+        token = session.token || null;
+        return Boolean(token);
+      } catch {
+        return false;
+      }
+    },
+    list: async () => (await call("workspaces")).json(),
+    detail: async (id, signal) =>
+      (await call(`workspaces/${encodeURIComponent(id)}`, { signal })).json(),
+    create: async (name, file) =>
+      (
+        await call("workspaces?research=true", {
+          method: "POST",
+          headers: {
+            "X-Workspace-Name": encodeURIComponent(name),
+            "Content-Type": "application/octet-stream",
+          },
+          body: file,
+        })
+      ).json(),
+    start: async (id) =>
+      (
+        await call(`workspaces/${encodeURIComponent(id)}/research`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ live: true }),
+        })
+      ).json(),
+    rename: async (id, name) =>
+      (
+        await call(`workspaces/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        })
+      ).json(),
+    source: async (id, hash) =>
+      (
+        await call(
+          `workspaces/${encodeURIComponent(id)}/sources/${encodeURIComponent(hash)}`,
+        )
+      ).blob(),
+  };
+}
+
+export const researchClient = createResearchClient();

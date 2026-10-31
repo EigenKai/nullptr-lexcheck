@@ -1,9 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource-variable/nunito-sans";
 import "./prototype.css";
 import "./style.css";
 import { request, resultLabel, evidenceParts } from "./api.js";
+import { researchClient } from "./research.js";
+import { RentalWorkspace } from "./RentalWorkspace.jsx";
+
+const initialWorkspace =
+  location.hash.match(/^#workspace\/(WS-[a-f0-9]{24}|new)$/)?.[1] || "demo";
+const researchTabs = [
+  ["overview", "Tổng quan"],
+  ["knowledge", "Kho tri thức"],
+  ["sources", "Nguồn pháp lý"],
+  ["company", "Hồ sơ doanh nghiệp"],
+  ["gaps", "Cần bổ sung"],
+];
 
 const paths = {
   chat: "M5 4h14v14H9l-5 3V4ZM8 8h8M8 12h5",
@@ -66,7 +78,12 @@ function Badge({ children, neutral = false }) {
   return <span className={`badge ${neutral ? "" : "warn"}`}>{children}</span>;
 }
 function App() {
-  const [view, setView] = useState("chat");
+  const [view, setView] = useState(
+    initialWorkspace === "demo" ? "chat" : "overview",
+  );
+  const [workspaceId, setWorkspaceId] = useState(initialWorkspace);
+  const [researchReady, setResearchReady] = useState(false);
+  const [researchWorkspaces, setResearchWorkspaces] = useState([]);
   const [bundle, setBundle] = useState(null);
   const [draft, setDraft] = useState(null);
   const [result, setResult] = useState(null);
@@ -84,6 +101,34 @@ function App() {
   const [oldNew, setOldNew] = useState(false);
   const [note, setNote] = useState("");
   const [owner, setOwner] = useState("marketing");
+  const isHousing = workspaceId !== "demo";
+  const currentTabs = isHousing ? researchTabs : tabs;
+  const workspaceName = researchWorkspaces.find(
+    (workspace) => workspace.id === workspaceId,
+  )?.name;
+  const loadResearchWorkspaces = useCallback(async () => {
+    try {
+      setResearchWorkspaces(await researchClient.list());
+    } catch (e) {
+      setError(e.message);
+    }
+  }, []);
+  function chooseWorkspace(id) {
+    setWorkspaceId(id);
+    setView(id === "demo" ? "chat" : "overview");
+    setSelected(null);
+    setPanel(false);
+    setError("");
+    setNotice("");
+    setMobile(false);
+    window.history.replaceState(
+      null,
+      "",
+      location.pathname +
+        location.search +
+        (id === "demo" ? "" : `#workspace/${id}`),
+    );
+  }
   const go = (next) => {
     setView(next);
     setMobile(false);
@@ -121,6 +166,18 @@ function App() {
   useEffect(() => {
     load();
   }, []);
+  useEffect(() => {
+    let active = true;
+    researchClient.connect().then((connected) => {
+      if (!active) return;
+      setResearchReady(connected);
+      if (connected) loadResearchWorkspaces();
+      else if (initialWorkspace !== "demo") chooseWorkspace("demo");
+    });
+    return () => {
+      active = false;
+    };
+  }, [loadResearchWorkspaces]);
   useEffect(() => {
     const escape = (e) => {
       if (e.key === "Escape") {
@@ -437,24 +494,51 @@ function App() {
           </a>
           <div className="workspace">
             <span className="workspace-logo">N</span>
-            <span>
-              <b>NULLPTR Demo</b>
-              <small>Doanh nghiệp TPBVSK · Dữ liệu mẫu</small>
-            </span>
+            {researchReady ? (
+              <label className="workspace-select">
+                <select
+                  aria-label="Chọn workspace"
+                  value={workspaceId}
+                  onChange={(event) => chooseWorkspace(event.target.value)}
+                >
+                  <option value="demo">NULLPTR Demo · TPBVSK</option>
+                  {researchWorkspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </option>
+                  ))}
+                  <option value="new">+ Tạo workspace nhà trọ</option>
+                </select>
+                <small>
+                  {isHousing
+                    ? "Nhà trọ · Ví dụ riêng cục bộ"
+                    : "Doanh nghiệp TPBVSK · Dữ liệu mẫu"}
+                </small>
+              </label>
+            ) : (
+              <span>
+                <b>NULLPTR Demo</b>
+                <small>Doanh nghiệp TPBVSK · Dữ liệu mẫu</small>
+              </span>
+            )}
           </div>
           <button
             className="new-chat"
             onClick={() => {
+              if (isHousing) {
+                chooseWorkspace("new");
+                return;
+              }
               setMessages([]);
               go("chat");
             }}
           >
             <Icon name="plus" />
-            Cuộc trò chuyện mới
+            {isHousing ? "Thêm workspace mới" : "Cuộc trò chuyện mới"}
           </button>
           <div className="nav-caption">KHÔNG GIAN LÀM VIỆC</div>
           <nav aria-label="Điều hướng chính">
-            {tabs.map(([key, label]) => (
+            {currentTabs.map(([key, label]) => (
               <button
                 className={`nav-item ${view === key ? "active" : ""}`}
                 aria-current={view === key ? "page" : undefined}
@@ -509,29 +593,42 @@ function App() {
               </button>
               <span className="muted">Không gian làm việc</span>
               <span className="slash">/</span>
-              <b>{tabs.find((t) => t[0] === view)[1]}</b>
+              <b>
+                {currentTabs.find((t) => t[0] === view)?.[1] || "Tổng quan"}
+              </b>
             </div>
             <div className="top-actions">
               <span className="demo-pill">
-                {offline ? "Mẫu ngoại tuyến" : "Dữ liệu tổng hợp"}
+                {isHousing
+                  ? "Ví dụ riêng · Rule đề xuất"
+                  : offline
+                    ? "Mẫu ngoại tuyến"
+                    : "Dữ liệu tổng hợp"}
               </span>
-              <button
-                className="icon-button"
-                onClick={() => setPanel(!panel)}
-                aria-label="Mở bằng chứng và tri thức"
-              >
-                <Icon name="panel" />
-              </button>
+              {!isHousing && (
+                <button
+                  className="icon-button"
+                  onClick={() => setPanel(!panel)}
+                  aria-label="Mở bằng chứng và tri thức"
+                >
+                  <Icon name="panel" />
+                </button>
+              )}
             </div>
           </header>
           <div className="status-strip">
-            <span>TPBVSK</span>
+            <span>{isHousing ? "NHÀ TRỌ" : "TPBVSK"}</span>
             <span>
-              {offline
-                ? "API mất kết nối · Chỉ xem bản mẫu đi kèm"
-                : "API kết nối · Backend hiện ở chế độ fixture"}
+              {isHousing
+                ? `${workspaceName || "Workspace mới"} · Nguồn và rule chờ xác minh`
+                : offline
+                  ? "API mất kết nối · Chỉ xem bản mẫu đi kèm"
+                  : "API kết nối · Backend hiện ở chế độ fixture"}
             </span>
-            <button onClick={load} disabled={!!busy}>
+            <button
+              onClick={isHousing ? loadResearchWorkspaces : load}
+              disabled={!!busy}
+            >
               Tải lại
             </button>
           </div>
@@ -550,9 +647,24 @@ function App() {
               {notice}
             </div>
           )}
-          <div className="body-layout">
+          <div className={`body-layout ${isHousing ? "research-body" : ""}`}>
             <main id="main" tabIndex="-1">
-              {!bundle ? (
+              {isHousing ? (
+                <RentalWorkspace
+                  key={workspaceId}
+                  id={workspaceId}
+                  view={view}
+                  onNavigate={go}
+                  onUpdated={loadResearchWorkspaces}
+                  onCreated={(workspace) => {
+                    setResearchWorkspaces((previous) => [
+                      ...previous,
+                      workspace,
+                    ]);
+                    chooseWorkspace(workspace.id);
+                  }}
+                />
+              ) : !bundle ? (
                 <Page title="Kết nối hồ sơ">
                   <p>
                     {busy || "Chưa có dữ liệu. Bấm Tải lại để thử kết nối."}
@@ -1273,12 +1385,14 @@ function App() {
                 </>
               )}
             </main>
-            <aside
-              className={`evidence ${panel ? "open" : ""}`}
-              aria-label="Tri thức và bằng chứng"
-            >
-              {evidencePanel}
-            </aside>
+            {!isHousing && (
+              <aside
+                className={`evidence ${panel ? "open" : ""}`}
+                aria-label="Tri thức và bằng chứng"
+              >
+                {evidencePanel}
+              </aside>
+            )}
           </div>
         </div>
       </div>
