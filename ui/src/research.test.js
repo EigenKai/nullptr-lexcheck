@@ -2,13 +2,42 @@ import { describe, it, expect, vi } from "vitest";
 import { createResearchClient } from "./research.js";
 
 describe("private research client", () => {
-  it("keeps both document collections on the same workspace API without starting research", async () => {
+  it("scopes conversations and sends messages with a 90-second timeout", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
     const fetcher = vi
       .fn()
       .mockResolvedValue({
         ok: true,
-        json: async () => ({ token: "session" }),
+        json: async () => ({ token: "session", chat_enabled: true }),
       });
+    const client = createResearchClient(fetcher);
+    await client.connect();
+    expect(client.chatEnabled()).toBe(true);
+    await client.conversations("WS-test");
+    await client.newConversation("WS-test");
+    await client.conversation("WS-test", "CONV-test");
+    await client.message("WS-test", "CONV-test", "Question from user");
+    expect(fetcher.mock.calls[1][0]).toBe(
+      "/workspace-research/api/workspaces/WS-test/conversations",
+    );
+    expect(fetcher.mock.calls[2][1].method).toBe("POST");
+    expect(fetcher.mock.calls[3][0]).toBe(
+      "/workspace-research/api/workspaces/WS-test/conversations/CONV-test",
+    );
+    expect(fetcher.mock.calls[4][0]).toBe(
+      "/workspace-research/api/workspaces/WS-test/conversations/CONV-test/messages",
+    );
+    expect(JSON.parse(fetcher.mock.calls[4][1].body)).toEqual({
+      question: "Question from user",
+    });
+    expect(timeout).toHaveBeenCalledWith(90000);
+    timeout.mockRestore();
+  });
+  it("keeps both document collections on the same workspace API without starting research", async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ token: "session" }),
+    });
     const client = createResearchClient(fetcher);
     await client.connect();
     await client.createWorkspace("Any company", "From the user");

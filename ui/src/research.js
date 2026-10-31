@@ -2,6 +2,7 @@
 export function createResearchClient(fetcher = fetch) {
   let token = null;
   let profileEnabled = false;
+  let chatEnabled = false;
   const base = "/workspace-research";
   async function call(path, options = {}) {
     if (!token) throw new Error("Workspace nghiên cứu chưa kết nối.");
@@ -18,6 +19,7 @@ export function createResearchClient(fetcher = fetch) {
     }
     if (!response.ok) {
       const messages = {
+        503: "Model hoặc chức năng chat chưa sẵn sàng. Kiểm tra cấu hình trên server rồi thử lại; không có câu trả lời mẫu thay thế.",
         401: "Phiên nghiên cứu đã đổi. Tải lại trang để kết nối.",
         409: "Một workspace đang nghiên cứu. Chờ lượt hiện tại kết thúc.",
         413: "Workbook vượt giới hạn 15 MB.",
@@ -39,12 +41,47 @@ export function createResearchClient(fetcher = fetch) {
         const session = await response.json();
         token = session.token || null;
         profileEnabled = Boolean(session.profile_enabled);
+        chatEnabled = Boolean(session.chat_enabled);
         return Boolean(token);
       } catch {
         return false;
       }
     },
     profileEnabled: () => profileEnabled,
+    chatEnabled: () => chatEnabled,
+    conversations: async (id, signal) =>
+      (
+        await call(`workspaces/${encodeURIComponent(id)}/conversations`, {
+          signal,
+        })
+      ).json(),
+    newConversation: async (id, title) =>
+      (
+        await call(`workspaces/${encodeURIComponent(id)}/conversations`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(title ? { title } : {}),
+        })
+      ).json(),
+    conversation: async (id, conversationId, signal) =>
+      (
+        await call(
+          `workspaces/${encodeURIComponent(id)}/conversations/${encodeURIComponent(conversationId)}`,
+          { signal },
+        )
+      ).json(),
+    message: async (id, conversationId, question) =>
+      (
+        await call(
+          `workspaces/${encodeURIComponent(id)}/conversations/${encodeURIComponent(conversationId)}/messages`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question }),
+            signal: AbortSignal.timeout(90000),
+          },
+        )
+      ).json(),
     ensureDemo: async () =>
       (await call("workspaces/demo", { method: "POST" })).json(),
     createWorkspace: async (name, description) =>

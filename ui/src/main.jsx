@@ -6,10 +6,12 @@ import "./style.css";
 import { request, resultLabel, evidenceParts } from "./api.js";
 import { researchClient } from "./research.js";
 import { DocumentWorkspace } from "./DocumentWorkspace.jsx";
+import { WorkspaceChat, WorkspaceConversations } from "./WorkspaceChat.jsx";
 
 const initialWorkspace =
   location.hash.match(/^#workspace\/(WS-[a-f0-9]{24}|new)$/)?.[1] || "demo";
 const researchTabs = [
+  ["chat", "Trợ lý Lex"],
   ["overview", "Tổng quan"],
   ["business", "Tài liệu doanh nghiệp"],
   ["legal", "Tài liệu luật"],
@@ -78,9 +80,11 @@ function Badge({ children, neutral = false }) {
   return <span className={`badge ${neutral ? "" : "warn"}`}>{children}</span>;
 }
 function App() {
-  const [view, setView] = useState(
-    initialWorkspace === "demo" ? "chat" : "overview",
-  );
+  const [view, setView] = useState("chat");
+  const [conversationId, setConversationId] = useState(null);
+  const [chatRefresh, setChatRefresh] = useState(0);
+  const [newConversationNonce, setNewConversationNonce] = useState(0);
+  const [chatBusy, setChatBusy] = useState(false);
   const [workspaceId, setWorkspaceId] = useState(initialWorkspace);
   const [researchReady, setResearchReady] = useState(false);
   const [researchWorkspaces, setResearchWorkspaces] = useState([]);
@@ -113,6 +117,19 @@ function App() {
     (workspace) => workspace.id === effectiveWorkspaceId,
   );
   const workspaceName = currentWorkspace?.name;
+  const refreshConversations = useCallback(
+    () => setChatRefresh((value) => value + 1),
+    [],
+  );
+  const createdConversation = useCallback((id) => {
+    setConversationId(id);
+    setChatRefresh((value) => value + 1);
+  }, []);
+  const selectConversation = useCallback((id) => {
+    setConversationId(id);
+    setView("chat");
+    setMobile(false);
+  }, []);
   const loadResearchWorkspaces = useCallback(async () => {
     try {
       setResearchWorkspaces(await researchClient.list());
@@ -122,7 +139,10 @@ function App() {
   }, []);
   function chooseWorkspace(id) {
     setWorkspaceId(id);
-    setView(id === "demo" && !researchReady ? "chat" : "overview");
+    setView(id === "new" ? "overview" : "chat");
+    setConversationId(null);
+    setChatBusy(false);
+    setNewConversationNonce((value) => value + 1);
     setSelected(null);
     setPanel(false);
     setError("");
@@ -182,7 +202,7 @@ function App() {
         try {
           await researchClient.ensureDemo();
           await loadResearchWorkspaces();
-          if (active) setView("overview");
+          if (active) setView("chat");
         } catch (e) {
           if (active) setError(e.message);
         }
@@ -504,7 +524,7 @@ function App() {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              go(isResearchWorkspace ? "overview" : "chat");
+              go("chat");
             }}
           >
             <span className="brand-mark">◈</span>lexcheck
@@ -547,9 +567,16 @@ function App() {
           </div>
           <button
             className="new-chat"
+            disabled={
+              chatBusy ||
+              (isResearchWorkspace &&
+                (!effectiveWorkspaceId || effectiveWorkspaceId === "new"))
+            }
             onClick={() => {
               if (isResearchWorkspace) {
-                chooseWorkspace("new");
+                setConversationId(null);
+                setNewConversationNonce((value) => value + 1);
+                go("chat");
                 return;
               }
               setMessages([]);
@@ -557,7 +584,7 @@ function App() {
             }}
           >
             <Icon name="plus" />
-            {isResearchWorkspace ? "Thêm workspace mới" : "Cuộc trò chuyện mới"}
+            Cuộc trò chuyện mới
           </button>
           <div className="nav-caption">KHÔNG GIAN LÀM VIỆC</div>
           <nav aria-label="Điều hướng chính">
@@ -585,6 +612,15 @@ function App() {
               </button>
             ))}
           </nav>
+          {isResearchWorkspace && (
+            <WorkspaceConversations
+              workspaceId={effectiveWorkspaceId}
+              selectedId={conversationId}
+              refresh={chatRefresh}
+              disabled={chatBusy}
+              onSelect={selectConversation}
+            />
+          )}
           <div className="sidebar-bottom">
             <div className="memory-note">
               <Icon name="network" />
@@ -677,7 +713,21 @@ function App() {
           >
             <main id="main" tabIndex="-1">
               {isResearchWorkspace ? (
-                effectiveWorkspaceId ? (
+                effectiveWorkspaceId &&
+                view === "chat" &&
+                effectiveWorkspaceId !== "new" &&
+                currentWorkspace ? (
+                  <WorkspaceChat
+                    key={`${effectiveWorkspaceId}:${newConversationNonce}`}
+                    workspace={currentWorkspace}
+                    conversationId={conversationId}
+                    newConversationNonce={newConversationNonce}
+                    onConversationSelected={createdConversation}
+                    onTurnSaved={refreshConversations}
+                    onBusyChange={setChatBusy}
+                    onNavigate={go}
+                  />
+                ) : effectiveWorkspaceId ? (
                   <DocumentWorkspace
                     key={effectiveWorkspaceId}
                     id={effectiveWorkspaceId}
