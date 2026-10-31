@@ -282,3 +282,23 @@ def test_registration_receipt_is_not_ad_confirmation(request_data, basis):
     assert check(
         request_data.model_copy(update={"records": records}), confirmation_basis, evidence=(ev,)
     ).findings
+
+
+def test_scientific_document_still_requires_human_review(request_data, basis):
+    rule, clause, finding = basis
+    use = "Hỗ trợ tiêu hóa."
+    ev = Evidence(
+        record_version_id=finding.record_version_id, kind="span", quote=use, start=0, end=len(use)
+    )
+    records = tuple(
+        r.model_copy(update={"kind": "scientific_evidence"}) if r.kind == "dossier" else r
+        for r in request_data.records
+    )
+    candidate = finding.model_copy(update={"status": "needs_evidence", "evidence": (ev,)})
+    result = validate_findings(
+        (candidate,),
+        request_data.model_copy(update={"records": records}),
+        (rule.model_copy(update={"check_type": "uses"}),),
+        (clause,),
+    )
+    assert result.findings == (candidate,)
