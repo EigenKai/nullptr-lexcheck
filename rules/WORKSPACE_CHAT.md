@@ -92,3 +92,9 @@ alongside exact original quote offsets, version and original-byte hash. Internal
 chunk identifiers become numbered citations in answer prose. Business tariff
 data does not establish whether a price is permitted by law; an unrelated legal
 PDF cannot supply missing electricity-law evidence.
+
+Index cache identity and eligible prior-answer evidence include extraction version
+and citation title as well as source-byte hash. A same-byte extraction update
+cannot silently reuse old citation metadata. Repeated spreadsheet values need an
+unambiguous original cell quote; include the coordinate and value. Old stored
+turns retain their original evidence and are not rewritten.

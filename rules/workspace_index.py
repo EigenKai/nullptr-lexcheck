@@ -70,7 +70,13 @@ class WorkspaceIndex:
             "model_pages": [inventory],
         }
         material = [
-            {"id": doc["id"], "sha256": doc["sha256"], "model_pages": doc["model_pages"]}
+            {
+                "id": doc["id"],
+                "sha256": doc["sha256"],
+                "version": doc["version"],
+                "title": doc["title"],
+                "model_pages": doc["model_pages"],
+            }
             for doc in self.sources.values()
         ]
         self.fingerprint = hashlib.sha256(
@@ -177,6 +183,8 @@ class WorkspaceIndex:
         if not source or not quote or quote not in chunk["text"]:
             raise ValueError("Model quotation is not in the retrieved passage.")
         original = source["pages"][chunk["page"] - 1]
+        if source.get("suffix") == ".xlsx" and original.count(quote) > 1:
+            raise ValueError("Excel quotation is ambiguous; include the original cell coordinate.")
         start = original.find(quote)
         if start < 0:
             raise ValueError("Model quotation is not in the original extracted text.")

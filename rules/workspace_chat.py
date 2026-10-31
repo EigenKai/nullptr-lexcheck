@@ -39,6 +39,9 @@ ANSWER_PROMPT = """Answer the user in Vietnamese using ONLY the provided results
 ANSWER_PROMPT += " Inventory lists already ingested files, including unselected ones. If a needed file exists but is unselected, name it and direct the user to the existing document selection panel; never ask to upload it again. A spreadsheet tariff is a business record, not evidence of a lawful price. An unrelated fire-safety PDF cannot answer electricity law; state missing relevant legal evidence. Keep internal CHUNK identifiers out of answer prose; use citations separately. For XLSX cite exact original cell text and distinguish blank/formula-without-cached-value from zero."
 
 
+ANSWER_PROMPT += " For spreadsheet citations, quote the full coordinate, tab and cell value from a supplied line, e.g. C12\\t3500. A bare number repeated in multiple cells is ambiguous and is rejected."
+
+
 class ConversationStore:
     def __init__(self, store):
         self.store = store
@@ -120,6 +123,8 @@ def answer(store, history, workspace_id, thread_id, question, client):
             if all(
                 c["document_id"] in index.sources
                 and index.sources[c["document_id"]]["sha256"] == c["sha256"]
+                and index.sources[c["document_id"]]["version"] == c.get("version")
+                and index.sources[c["document_id"]]["title"] == c.get("title")
                 for c in turn["citations"]
             )
             else "Earlier sources are no longer selected.",
