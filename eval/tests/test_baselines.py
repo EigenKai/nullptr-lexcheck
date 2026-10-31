@@ -96,3 +96,20 @@ def test_rejected_proposals_remain_in_denominator(monkeypatch):
     assert trace[0]["rejected"] == {"quote_mismatch": 1}
     assert received[0] == received[1]
     assert "gold" not in str(received)
+
+
+def test_plain_input_excludes_patterns_and_examples():
+    bundle = load_demo()
+    rules = tuple(
+        rule.model_copy(
+            update={"patterns": ("private pattern",), "positive_examples": ("example answer",)}
+        )
+        for rule in bundle.rules
+    )
+    payload = model_input(bundle.request, rules, bundle.clauses)
+    assert all(
+        "patterns" not in rule
+        and "positive_examples" not in rule
+        and "negative_examples" not in rule
+        for rule in payload["rules"]
+    )
