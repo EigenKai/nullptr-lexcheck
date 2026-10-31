@@ -198,18 +198,13 @@ test("6 · keyboard focus is clearly visible", async ({ page }) => {
   ];
   for (const target of targets) {
     await tabTo(page, target);
+    // Buttons already carry a resting box-shadow, so require a real outline.
     const ring = await target.evaluate((e) => {
       const s = getComputedStyle(e);
-      return {
-        style: s.outlineStyle,
-        width: parseFloat(s.outlineWidth),
-        shadow: s.boxShadow,
-      };
+      return { style: s.outlineStyle, width: parseFloat(s.outlineWidth) };
     });
-    const outlined = ring.style !== "none" && ring.width >= 2;
-    expect(outlined || ring.shadow !== "none", JSON.stringify(ring)).toBe(
-      true,
-    );
+    expect(ring.style, JSON.stringify(ring)).not.toBe("none");
+    expect(ring.width, JSON.stringify(ring)).toBeGreaterThanOrEqual(2);
   }
 });
 
