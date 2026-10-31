@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Badge } from "./shared.jsx";
 import { taskRows, ownerSummaries, ownerLabels, taskLabels } from "../tasks.js";
+import { useT } from "../i18n.jsx";
 
 export default function TaskDashboard({ history, inspect }) {
+  const t = useT();
   const [owner, setOwner] = useState("all");
   const [status, setStatus] = useState("all");
   const rows = taskRows(history);
@@ -12,36 +14,35 @@ export default function TaskDashboard({ history, inspect }) {
       (status === "all" || row.status === status),
   );
   return (
-    <section className="task-dashboard" aria-label="Dashboard việc khắc phục">
-      <h2>Việc khắc phục</h2>
+    <section className="task-dashboard" aria-label={t("Dashboard việc khắc phục")}>
+      <h2>{t("Việc khắc phục")}</h2>
       <p className="page-description">
-        Trạng thái lấy từ quyết định mới nhất của từng phát hiện. Đã đọc không
-        tự đóng việc.
+        {t("Trạng thái theo quyết định mới nhất; đã đọc không tự đóng việc.")}
       </p>
       <div className="metrics">
         {["open", "assigned", "closed"].map((key) => (
           <div className="metric" key={key}>
             <strong>{rows.filter((row) => row.status === key).length}</strong>
-            <small>{taskLabels[key]}</small>
+            <small>{t(taskLabels[key])}</small>
           </div>
         ))}
       </div>
       <div className="table-scroll">
         <table>
-          <caption>Phân bổ theo người phụ trách trong demo</caption>
+          <caption>{t("Phân bổ theo người phụ trách trong demo")}</caption>
           <thead>
             <tr>
-              <th>Người phụ trách</th>
-              <th>Việc mở</th>
-              <th>Đang xử lý</th>
-              <th>Đã đóng</th>
-              <th>Đã bác bỏ</th>
+              <th>{t("Người phụ trách")}</th>
+              <th>{t("Việc mở")}</th>
+              <th>{t("Đang xử lý")}</th>
+              <th>{t("Đã đóng")}</th>
+              <th>{t("Đã bác bỏ")}</th>
             </tr>
           </thead>
           <tbody>
             {ownerSummaries(rows).map((row) => (
               <tr key={row.owner}>
-                <th>{ownerLabels[row.owner]}</th>
+                <th>{t(ownerLabels[row.owner])}</th>
                 <td>{row.open}</td>
                 <td>{row.assigned}</td>
                 <td>{row.closed}</td>
@@ -53,23 +54,23 @@ export default function TaskDashboard({ history, inspect }) {
       </div>
       <div className="task-filters">
         <label>
-          Lọc người phụ trách
+          {t("Lọc người phụ trách")}
           <select value={owner} onChange={(e) => setOwner(e.target.value)}>
-            <option value="all">Tất cả</option>
+            <option value="all">{t("Tất cả")}</option>
             {Object.entries(ownerLabels).map(([key, name]) => (
               <option key={key} value={key}>
-                {name}
+                {t(name)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          Lọc trạng thái việc
+          {t("Lọc trạng thái việc")}
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="all">Tất cả</option>
+            <option value="all">{t("Tất cả")}</option>
             {Object.entries(taskLabels).map(([key, name]) => (
               <option key={key} value={key}>
-                {name}
+                {t(name)}
               </option>
             ))}
           </select>
@@ -79,11 +80,11 @@ export default function TaskDashboard({ history, inspect }) {
         <table>
           <thead>
             <tr>
-              <th>Phát hiện / phiên bản</th>
-              <th>Người phụ trách</th>
-              <th>Trạng thái</th>
-              <th>Hạn xử lý</th>
-              <th>Xem căn cứ</th>
+              <th>{t("Phát hiện / phiên bản")}</th>
+              <th>{t("Người phụ trách")}</th>
+              <th>{t("Trạng thái")}</th>
+              <th>{t("Hạn xử lý")}</th>
+              <th>{t("Xem căn cứ")}</th>
             </tr>
           </thead>
           <tbody>
@@ -94,22 +95,24 @@ export default function TaskDashboard({ history, inspect }) {
                   <br />
                   <code>{row.finding.record_version_id}</code>
                 </td>
-                <td>{ownerLabels[row.owner]}</td>
+                <td>{t(ownerLabels[row.owner])}</td>
                 <td>
-                  <Badge neutral>{taskLabels[row.status]}</Badge>
+                  <Badge neutral>{t(taskLabels[row.status])}</Badge>
                 </td>
                 <td>
                   {row.decision?.request.internal_due_on ? (
-                    <>Hạn nội bộ: {row.decision.request.internal_due_on}</>
+                    <>{t("Hạn nội bộ: {date}", { date: row.decision.request.internal_due_on })}</>
                   ) : (
-                    "Chưa đặt hạn nội bộ"
+                    t("Chưa đặt hạn nội bộ")
                   )}
                   {row.decision?.request.legal_due_on && (
                     <>
                       <br />
-                      Hạn theo luật: {row.decision.request.legal_due_on}
+                      {t("Hạn theo luật: {date}", {
+                        date: row.decision.request.legal_due_on,
+                      })}
                       <br />
-                      Nguồn:{" "}
+                      {t("Nguồn:")}{" "}
                       <code>
                         {row.decision.request.legal_clause_version_id}
                       </code>
@@ -127,7 +130,7 @@ export default function TaskDashboard({ history, inspect }) {
                       })
                     }
                   >
-                    Xem phát hiện
+                    {t("Xem phát hiện")}
                   </button>
                 </td>
               </tr>
@@ -136,7 +139,7 @@ export default function TaskDashboard({ history, inspect }) {
         </table>
       </div>
       {!shown.length && (
-        <p className="empty-state">Chưa có việc phù hợp với bộ lọc.</p>
+        <p className="empty-state">{t("Chưa có việc phù hợp với bộ lọc.")}</p>
       )}
     </section>
   );

@@ -1,29 +1,31 @@
 import React, { useState } from "react";
+import { useT, N_ } from "../i18n.jsx";
 
 export default function Evaluation({ request, act }) {
+  const t = useT();
   const [report, setReport] = useState(null);
   return (
     <section className="form-panel">
-      <h2>Đánh giá trên dữ liệu đã gán nhãn</h2>
+      <h2>{t("Đánh giá trên dữ liệu đã gán nhãn")}</h2>
       <button
         className="button secondary"
         onClick={() =>
-          act("Đang đọc báo cáo đánh giá…", async () =>
+          act(N_("Đang đọc báo cáo đánh giá…"), async () =>
             setReport(await request("/evaluation")),
           )
         }
       >
-        Đọc báo cáo từ API
+        {t("Đọc báo cáo từ API")}
       </button>
       {report && (
         <>
           <p>
             {report.phase} · n={report.n} ·{" "}
-            {report.git_sha || "Chưa ghi commit"}
+            {report.git_sha || t("Chưa ghi commit")}
           </p>
           <p>
             {report.n === 0
-              ? "Chưa đo chất lượng phát hiện. Không có số so sánh."
+              ? t("Chưa đo chất lượng phát hiện.")
               : report.note}
           </p>
           {report.n > 0 && (
@@ -31,11 +33,11 @@ export default function Evaluation({ request, act }) {
               <table>
                 <thead>
                   <tr>
-                    <th>Hệ thống</th>
-                    <th>Số ca</th>
+                    <th>{t("Hệ thống")}</th>
+                    <th>{t("Số ca")}</th>
                     <th>Precision</th>
                     <th>Recall</th>
-                    <th>Cờ sai trên ca sạch</th>
+                    <th>{t("Cờ sai trên ca sạch")}</th>
                     <th>Model calls</th>
                   </tr>
                 </thead>
@@ -44,8 +46,8 @@ export default function Evaluation({ request, act }) {
                     <tr key={s.system}>
                       <td>{s.system}</td>
                       <td>{s.evaluated_cases}</td>
-                      <td>{s.precision ?? "Chưa đo"}</td>
-                      <td>{s.recall ?? "Chưa đo"}</td>
+                      <td>{s.precision ?? t("Chưa đo")}</td>
+                      <td>{s.recall ?? t("Chưa đo")}</td>
                       <td>{s.false_flags_on_clean}</td>
                       <td>{s.model_calls}</td>
                     </tr>

@@ -26,7 +26,8 @@ test("history HTTP failure preserves the API dossier without static fallback", a
     page.getByRole("heading", { name: "Rà soát hồ sơ", exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("alert")).toContainText("chưa sẵn sàng");
-  await expect(page.locator(".status-strip")).toContainText("API kết nối");
+  // The history failure keeps the API connection: no offline banner.
+  await expect(page.locator(".status-strip")).toHaveCount(0);
   expect(fallback).toBe(0);
 });
 

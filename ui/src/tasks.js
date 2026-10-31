@@ -1,14 +1,16 @@
+import { N_ } from "./i18n.jsx";
+
 export const ownerLabels = {
   marketing: "Marketing",
-  legal: "Pháp chế",
-  document_control: "Quản lý hồ sơ",
-  unassigned: "Chưa giao",
+  legal: N_("Pháp chế"),
+  document_control: N_("Quản lý hồ sơ"),
+  unassigned: N_("Chưa giao"),
 };
 export const taskLabels = {
-  open: "Việc mở",
-  assigned: "Đang xử lý",
-  closed: "Đã đóng",
-  dismissed: "Đã bác bỏ",
+  open: N_("Việc mở"),
+  assigned: N_("Đang xử lý"),
+  closed: N_("Đã đóng"),
+  dismissed: N_("Đã bác bỏ"),
 };
 
 export function taskRows(history) {

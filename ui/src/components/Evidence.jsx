@@ -1,6 +1,7 @@
 import React from "react";
-import { Icon, Page, Badge, recordNames, ruleNames, date } from "./shared.jsx";
+import { Icon, Badge, recordNames, date } from "./shared.jsx";
 import { resultLabel, evidenceParts } from "../api.js";
+import { useT } from "../i18n.jsx";
 import TaskTiming from "./TaskTiming.jsx";
 export default function Evidence({
   bundle,
@@ -25,64 +26,64 @@ export default function Evidence({
   closureCheckId,
   setClosureCheckId,
 }) {
+  const t = useT();
+  // bundle.rules is the static demo fixture, where every rule is disabled, so
+  // count the rules the check on screen ran (its stored snapshots) instead.
+  const enabledRules =
+    check?.mode === "live" && check.model_status === "off"
+      ? (check.rule_snapshots || []).filter((r) => r.enabled).length
+      : 0;
   return (
     <>
       <div className="panel-heading">
         <Icon name="network" />
-        {selected ? "CHI TIẾT & BẰNG CHỨNG" : "TRI THỨC ĐƯỢC KẾT NỐI"}
+        {selected ? t("CHI TIẾT & BẰNG CHỨNG") : t("TRI THỨC ĐƯỢC KẾT NỐI")}
         <button
           className="icon-button close-panel"
           onClick={() => setPanel(false)}
-          aria-label="Đóng bảng bằng chứng"
+          aria-label={t("Đóng bảng bằng chứng")}
         >
           ×
         </button>
       </div>
       {selected && (
         <button className="back-link" onClick={() => setSelected(null)}>
-          ← Tổng quan tri thức
+          {t("← Tổng quan tri thức")}
         </button>
       )}
       {!selected && (
         <>
           <div className="panel-intro">
-            <h2>
-              Mỗi phát hiện,
-              <br />
-              đều có điểm tựa.
-            </h2>
-            <p>Hồ sơ, điều khoản và quyết định cùng giữ đường truy lại.</p>
+            <p>{t("Mỗi phát hiện truy được về điều khoản và hồ sơ.")}</p>
           </div>
           <div className="trace-map">
             <div>
-              Điều khoản <small>Phiên bản & ngày hiệu lực</small>
+              {t("Điều khoản")} <small>{t("Phiên bản & ngày hiệu lực")}</small>
             </div>
             <span>↓ DERIVED_FROM</span>
             <div>
-              Rule <small>Trạng thái kiểm chứng</small>
+              Rule <small>{t("Trạng thái kiểm chứng")}</small>
             </div>
             <span>↓ EVIDENCE</span>
             <div>
-              Hồ sơ doanh nghiệp{" "}
-              <small>Bản gốc → phát hiện → người quyết định</small>
+              {t("Hồ sơ doanh nghiệp")}{" "}
+              <small>{t("Bản gốc → phát hiện → người quyết định")}</small>
             </div>
           </div>
           <div className="panel-callout">
-            <b>Phạm vi hiện tại</b>
-            <p>
-              Pack thực phẩm bảo vệ sức khỏe. Dữ liệu công ty được dựng cho
-              demo. Quyết định được kiểm tra bằng phiên demo do server cấp.
-            </p>
+            <b>{t("Phạm vi hiện tại")}</b>
+            <p>{t("Thực phẩm bảo vệ sức khỏe · dữ liệu mẫu.")}</p>
           </div>
-          <p className="footnote">
-            {bundle?.rules.filter((r) => r.enabled).length || 0} rule đã bật ·
-            LLM tắt
-          </p>
+          {enabledRules > 0 && (
+            <p className="footnote">
+              {t("{count} rule đã bật · LLM tắt", { count: enabledRules })}
+            </p>
+          )}
         </>
       )}
       {selected?.type === "record" && (
         <>
-          <h2>{recordNames[selected.value.kind]}</h2>
+          <h2>{t(recordNames[selected.value.kind])}</h2>
           <code>{selected.value.id}</code>
           {versions
             .filter((v) => v.record_id === selected.value.id)
@@ -91,9 +92,17 @@ export default function Evidence({
                 <h3>
                   {v.id} · v{v.version}
                 </h3>
-                <p className="record-text">{v.text}</p>
-                <p className="footnote">Nhận: {date(v.received_at)}</p>
-                <p>Tham chiếu: {v.reference_ids.join(", ") || "Chưa có"}</p>
+                <p className="record-text" lang="vi">
+                  {v.text}
+                </p>
+                <p className="footnote">
+                  {t("Nhận: {date}", { date: date(v.received_at, t) })}
+                </p>
+                <p>
+                  {t("Tham chiếu: {ids}", {
+                    ids: v.reference_ids.join(", ") || t("Chưa có"),
+                  })}
+                </p>
               </section>
             ))}
         </>
@@ -105,14 +114,17 @@ export default function Evidence({
           </h2>
           <Badge neutral={current.status === "needs_evidence"}>
             {check?.mode === "fixture"
-              ? "Fixture · Minh hoạ, chưa chạy engine"
+              ? t("Fixture · Minh hoạ, chưa chạy engine")
               : current.source === "llm"
-                ? "Suggestion · Người duyệt quyết định"
-                : "Rule · Kiểm tra bằng code"}
+                ? t("Suggestion · Người duyệt quyết định")
+                : t("Rule · Kiểm tra bằng code")}
           </Badge>
-          <p>{current.message}</p>
+          <p lang="vi">{current.message}</p>
           <p>
-            Mức độ: {current.severity} · Trạng thái: {current.status}
+            {t("Mức độ: {severity} · Trạng thái: {status}", {
+              severity: current.severity,
+              status: current.status,
+            })}
           </p>
           <p>
             Applicability: {current.applicability || check?.applicability} ·{" "}
@@ -128,12 +140,11 @@ export default function Evidence({
                 <b>{ev.record_version_id}</b>
                 {ev.kind === "missing_field" ? (
                   <p>
-                    Không tìm thấy trường <code>{ev.field}</code> trong các hồ
-                    sơ đã kết nối.
+                    {t("Hồ sơ đã kết nối thiếu trường:")} <code>{ev.field}</code>
                   </p>
                 ) : (
                   <>
-                    <p className="record-text">
+                    <p className="record-text" lang="vi">
                       {parts ? (
                         <>
                           {parts[0]}
@@ -145,14 +156,21 @@ export default function Evidence({
                       )}
                     </p>
                     <small>
-                      {ev.kind === "span"
-                        ? `Vị trí ${ev.start}–${ev.end}`
-                        : ev.kind === "cell"
-                          ? `${ev.sheet} · ${ev.cell}`
-                          : `Trang ${ev.page}`}
+                      {ev.kind === "span" ? (
+                        t("Vị trí {start}–{end}", {
+                          start: ev.start,
+                          end: ev.end,
+                        })
+                      ) : ev.kind === "cell" ? (
+                        <span lang="vi">
+                          {ev.sheet} · {ev.cell}
+                        </span>
+                      ) : (
+                        t("Trang {page}", { page: ev.page })
+                      )}
                     </small>
                     {!parts && ev.kind === "span" && (
-                      <p>Chưa xác nhận vị trí trích dẫn.</p>
+                      <p>{t("Chưa xác nhận vị trí trích dẫn.")}</p>
                     )}
                   </>
                 )}
@@ -165,18 +183,23 @@ export default function Evidence({
         <section className="clause">
           <Badge neutral>
             {clause.verification_status === "verified"
-              ? "Nguồn đã kiểm chứng"
-              : "Nguồn chờ kiểm chứng"}
+              ? t("Nguồn đã kiểm chứng")
+              : t("Nguồn chờ kiểm chứng")}
           </Badge>
-          <h3>
+          <h3 lang="vi">
             {clause.document} · {clause.article}
           </h3>
           <code>{clause.id}</code>
           <p>
-            Từ {clause.valid_from} đến{" "}
-            {clause.valid_to || "chưa ghi ngày kết thúc"} · {clause.in_force}
+            {t("Từ {from} đến {to} · {status}", {
+              from: clause.valid_from,
+              to: clause.valid_to || t("chưa ghi ngày kết thúc"),
+              status: clause.in_force,
+            })}
           </p>
-          <blockquote>{current?.clause_quote || clause.text}</blockquote>
+          <blockquote lang="vi">
+            {current?.clause_quote || clause.text}
+          </blockquote>
           <a
             href={
               /^https?:\/\//.test(clause.source_url)
@@ -186,35 +209,35 @@ export default function Evidence({
             target="_blank"
             rel="noreferrer"
           >
-            Mở văn bản nguồn ↗
+            {t("Mở văn bản nguồn ↗")}
           </a>
           <p className="footnote">{clause.status_note}</p>
         </section>
       )}
       {current && (
         <section className="decision-form">
-          <h3>Quyết định của reviewer</h3>
-          <label htmlFor="decisionNote">Ghi chú xử lý</label>
+          <h3>{t("Quyết định của reviewer")}</h3>
+          <label htmlFor="decisionNote">{t("Ghi chú xử lý")}</label>
           <textarea
             id="decisionNote"
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
-          <label htmlFor="owner">Người phụ trách</label>
+          <label htmlFor="owner">{t("Người phụ trách")}</label>
           <select
             id="owner"
             value={owner}
             onChange={(e) => setOwner(e.target.value)}
           >
             <option value="marketing">Marketing</option>
-            <option value="legal">Pháp chế</option>
-            <option value="document_control">Quản lý hồ sơ</option>
+            <option value="legal">{t("Pháp chế")}</option>
+            <option value="document_control">{t("Quản lý hồ sơ")}</option>
           </select>
           <div className="action-row">
             {[
-              ["confirm", "Xác nhận phát hiện"],
-              ["reject", "Bác bỏ"],
-              ["assign", "Giao xử lý"],
+              ["confirm", t("Xác nhận phát hiện")],
+              ["reject", t("Bác bỏ")],
+              ["assign", t("Giao xử lý")],
             ]
               .filter(
                 ([a]) =>
@@ -254,19 +277,19 @@ export default function Evidence({
           ) : (
             <>
               <label htmlFor="closure-check">
-                Kết quả kiểm tra lại dùng để đóng việc
+                {t("Lượt kiểm tra lại để đóng việc")}
               </label>
               <select
                 id="closure-check"
                 value={closureCheckId}
                 onChange={(e) => setClosureCheckId(e.target.value)}
               >
-                <option value="">Chọn lượt kiểm tra mới</option>
+                <option value="">{t("Chọn lượt kiểm tra mới")}</option>
                 {(history?.checks || [])
                   .filter((c) => c.parent_check_id === check.id)
                   .map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.id} · {resultLabel(c)}
+                      {c.id} · {resultLabel(c, t)}
                     </option>
                   ))}
               </select>
@@ -281,11 +304,10 @@ export default function Evidence({
                 }
                 onClick={() => decide("close")}
               >
-                Đóng việc sau kiểm tra lại
+                {t("Đóng việc sau kiểm tra lại")}
               </button>
               <p className="footnote">
-                Đóng việc cần một lượt kiểm tra lại mới. Đọc phát hiện không tự
-                đóng việc.
+                {t("Cần một lượt kiểm tra lại mới để đóng việc.")}
               </p>
             </>
           )}

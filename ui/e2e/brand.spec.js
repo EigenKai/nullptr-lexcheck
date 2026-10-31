@@ -56,14 +56,14 @@ const TITLES = {
   reviews: "Rà soát hồ sơ",
   history: "Lịch sử quyết định",
   knowledge: "Kho tri thức",
+  preferences: "Cài đặt",
 };
 
-// A hash-only goto keeps React state, so load a blank page first. The strip
-// says "API kết nối" before the bundle arrives, so also wait for the screen.
+// A hash-only goto keeps React state, so load a blank page first, then wait
+// for the screen's own title so measurements never see the loading state.
 async function openApp(page, hash = "") {
   await page.goto("about:blank");
   await page.goto(`/${hash ? `#${hash}` : ""}`);
-  await expect(page.locator(".status-strip")).toContainText("API kết nối");
   if (hash === "chat") await expect(page.locator(".hero")).toBeVisible();
   else
     await expect(page.locator("main h1.page-title")).toHaveText(
@@ -86,6 +86,7 @@ const SCREENS = [
   ["chat", (page) => openApp(page, "chat")],
   ["history", (page) => openApp(page, "history")],
   ["knowledge", (page) => openApp(page, "knowledge")],
+  ["settings", (page) => openApp(page, "preferences")],
 ];
 
 async function shoot(page, name) {
@@ -237,15 +238,21 @@ test("8 · fonts carry Vietnamese glyphs", async ({ page }) => {
   }
 });
 
-test("10 · the data-mode status stays visible at every width", async ({
+test("10 · the status strip appears only when the API is unreachable", async ({
   page,
 }) => {
   for (const [width, height] of VIEWPORTS) {
     await page.setViewportSize({ width, height });
     await openApp(page);
+    await expect(page.locator(".status-strip")).toHaveCount(0);
+  }
+  await page.route("**/api/**", (route) => route.abort());
+  for (const [width, height] of VIEWPORTS) {
+    await page.setViewportSize({ width, height });
+    await page.goto("about:blank");
+    await page.goto("/");
     const strip = page.locator(".status-strip");
-    await expect(strip).toBeVisible();
-    await expect(strip).toContainText(/live|fixture/);
+    await expect(strip).toContainText("API mất kết nối");
     const box = await strip.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width + 1);

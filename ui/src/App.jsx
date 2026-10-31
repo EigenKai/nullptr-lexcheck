@@ -14,6 +14,8 @@ import History from "./components/History.jsx";
 import Chat from "./components/Chat.jsx";
 import Sources from "./components/Sources.jsx";
 import Updates from "./components/Updates.jsx";
+import Settings from "./components/Settings.jsx";
+import { N_, useLanguage } from "./i18n.jsx";
 import { researchClient } from "./research.js";
 
 const DocumentWorkspace = lazy(() =>
@@ -32,14 +34,15 @@ const WorkspaceConversations = lazy(() =>
   })),
 );
 const researchTabs = [
-  ["chat", "Trợ lý Lex"],
-  ["overview", "Tổng quan"],
-  ["business", "Tài liệu doanh nghiệp"],
-  ["legal", "Tài liệu luật"],
-  ["knowledge", "Kho tri thức"],
-  ["settings", "Thông tin workspace"],
+  ["chat", N_("Trợ lý Lex")],
+  ["overview", N_("Tổng quan")],
+  ["business", N_("Tài liệu doanh nghiệp")],
+  ["legal", N_("Tài liệu luật")],
+  ["knowledge", N_("Kho tri thức")],
+  ["settings", N_("Thông tin workspace")],
 ];
 export default function App() {
+  const { t } = useLanguage();
   const [researchReady, setResearchReady] = useState(false);
   const [researchWorkspaces, setResearchWorkspaces] = useState([]);
   const [workspaceId, setWorkspaceId] = useState(
@@ -140,7 +143,7 @@ export default function App() {
       },
     }).then((data) => {
       if (epoch !== generation.current)
-        throw new Error("Tài khoản đã thay đổi. Bỏ kết quả của phiên cũ.");
+        throw new Error(N_("Tài khoản đã thay đổi. Bỏ kết quả của phiên cũ."));
       return data;
     });
   };
@@ -164,7 +167,7 @@ export default function App() {
   };
   async function load(user = sessionRef.current?.user_id || "U-MANAGER") {
     const epoch = generation.current;
-    setBusy("Đang tải hồ sơ và lịch sử từ API…");
+    setBusy(N_("Đang tải hồ sơ và lịch sử từ API…"));
     setError("");
     try {
       let flags;
@@ -295,9 +298,9 @@ export default function App() {
         setView(workspaceId === "new" ? "overview" : "chat");
         return;
       }
-      const allowed = (researchActive ? researchTabs : tabs).some(
-        ([key]) => key === next,
-      );
+      const allowed =
+        next === "preferences" ||
+        (researchActive ? researchTabs : tabs).some(([key]) => key === next);
       setView(allowed ? next : researchActive ? "chat" : "reviews");
     };
     navigate();
@@ -333,9 +336,9 @@ export default function App() {
     setPanel(true);
   }
   async function showPreview() {
-    await act("Đang mở finding minh hoạ…", async () => {
+    await act(N_("Đang mở finding minh hoạ…"), async () => {
       const response = await fetch("/finding-preview.json");
-      if (!response.ok) throw new Error("Không tải được finding minh hoạ.");
+      if (!response.ok) throw new Error(N_("Không tải được finding minh hoạ."));
       const preview = await response.json();
       setResult(preview);
       setSelected({
@@ -345,23 +348,23 @@ export default function App() {
       });
       setPanel(true);
       setNotice(
-        "Finding minh hoạ synthetic/staged từ fixture. Chưa chạy engine; không lưu quyết định hoặc gọi model.",
+        N_("Finding minh hoạ từ fixture: chưa chạy engine, không lưu quyết định."),
       );
     });
   }
   async function ask(text) {
     if (!text.trim()) return;
     if (!features.layer1 || offline) {
-      setError("Chưa kết nối chatbot. Câu hỏi chưa được gửi.");
+      setError(N_("Chưa kết nối chatbot. Câu hỏi chưa được gửi."));
       return;
     }
     if (!check) {
-      setError("Chọn một kết quả kiểm tra trước khi hỏi.");
+      setError(N_("Chọn một kết quả kiểm tra trước khi hỏi."));
       return;
     }
     const question = text.trim();
     const epoch = generation.current;
-    await act("Đang tra cứu căn cứ trong kết quả đã chọn…", async () => {
+    await act(N_("Đang tra cứu căn cứ trong kết quả đã chọn…"), async () => {
       const answer = await request("/chat", {
         method: "POST",
         body: JSON.stringify({ check_id: check.id, question }),
@@ -397,10 +400,10 @@ export default function App() {
         ? note.trim() || "Đã đọc phát hiện; chưa đóng việc."
         : note.trim();
     if (!decisionNote) {
-      setError("Nhập ghi chú trước khi lưu quyết định.");
+      setError(N_("Nhập ghi chú trước khi lưu quyết định."));
       return;
     }
-    await act("Đang lưu quyết định của reviewer…", async () => {
+    await act(N_("Đang lưu quyết định của reviewer…"), async () => {
       await request("/decisions", {
         method: "POST",
         body: JSON.stringify({
@@ -415,7 +418,7 @@ export default function App() {
         }),
       });
       await refreshHistory();
-      setNotice("Đã lưu quyết định vào lịch sử API.");
+      setNotice(N_("Đã lưu quyết định vào lịch sử API."));
       setNote("");
     });
   }
@@ -427,10 +430,10 @@ export default function App() {
       (edited.text === original.text &&
         JSON.stringify(edited.uses) === JSON.stringify(original.uses))
     ) {
-      setError("Chỉnh nội dung hoặc công dụng trước khi tạo phiên bản mới.");
+      setError(N_("Chỉnh nội dung hoặc công dụng trước khi tạo phiên bản mới."));
       return;
     }
-    await act("Đang tạo phiên bản mới và hàng đợi rà lại…", async () => {
+    await act(N_("Đang tạo phiên bản mới và hàng đợi rà lại…"), async () => {
       const timestamp = new Date().toISOString();
       const event = {
         id: `EV-${crypto.randomUUID()}`,
@@ -452,7 +455,7 @@ export default function App() {
       });
       await refreshHistory();
       go("updates");
-      setNotice("Đã tạo phiên bản mới. Chạy lại mục tương ứng trong hàng đợi.");
+      setNotice(N_("Đã tạo phiên bản mới. Chạy lại mục tương ứng trong hàng đợi."));
     });
   }
   const context = {
@@ -506,16 +509,23 @@ export default function App() {
     showPreview,
   };
   const evidencePanel = <Evidence {...context} />;
+  const viewLabel =
+    view === "preferences"
+      ? N_("Cài đặt")
+      : currentTabs.find(([key]) => key === view)?.[1] || "Workspace";
+  // The strip only reports a problem: the API is unreachable, or the engine
+  // behind it is not ready. A healthy connection needs no banner.
+  const degraded = offline || (bundle && !features.layer0_ready);
   return (
     <>
       <a className="skip" href="#main">
-        Đến nội dung chính
+        {t("Đến nội dung chính")}
       </a>
       <div className={`app${researchActive ? " research-feature" : ""}`}>
         {mobile && (
           <button
             className="nav-scrim"
-            aria-label="Đóng menu"
+            aria-label={t("Đóng menu")}
             onClick={() => setMobile(false)}
           />
         )}
@@ -538,12 +548,12 @@ export default function App() {
             lexcheck
             <span className="brand-dot">.</span>
           </a>
-          <div className="workspace">
-            <span className="workspace-logo">N</span>
-            {researchReady ? (
+          {researchReady && (
+            <div className="workspace">
+              <span className="workspace-logo">N</span>
               <label className="workspace-select">
                 <select
-                  aria-label="Chọn workspace"
+                  aria-label={t("Chọn workspace")}
                   value={workspaceId}
                   onChange={(event) => chooseWorkspace(event.target.value)}
                   disabled={chatBusy}
@@ -554,21 +564,16 @@ export default function App() {
                       {workspace.name}
                     </option>
                   ))}
-                  <option value="new">+ Tạo workspace</option>
+                  <option value="new">{t("+ Tạo workspace")}</option>
                 </select>
                 <small>
                   {researchActive
-                    ? "Tài liệu và hội thoại riêng"
-                    : "Rà soát hồ sơ mẫu"}
+                    ? t("Tài liệu và hội thoại riêng")
+                    : t("Rà soát hồ sơ mẫu")}
                 </small>
               </label>
-            ) : (
-              <span>
-                <b>NULLPTR Demo</b>
-                <small>Doanh nghiệp TPBVSK · Dữ liệu mẫu</small>
-              </span>
-            )}
-          </div>
+            </div>
+          )}
           <button
             className="new-chat"
             disabled={researchActive && chatBusy}
@@ -583,10 +588,10 @@ export default function App() {
             }}
           >
             <Icon name="plus" />
-            Cuộc trò chuyện mới
+            {t("Cuộc trò chuyện mới")}
           </button>
-          <div className="nav-caption">KHÔNG GIAN LÀM VIỆC</div>
-          <nav aria-label="Điều hướng chính">
+          <div className="nav-caption">{t("KHÔNG GIAN LÀM VIỆC")}</div>
+          <nav aria-label={t("Điều hướng chính")}>
             {currentTabs.map(([key, label]) => (
               <button
                 className={`nav-item ${view === key ? "active" : ""}`}
@@ -607,7 +612,7 @@ export default function App() {
                             : "chat"
                   }
                 />
-                {label}
+                {t(label)}
               </button>
             ))}
           </nav>
@@ -626,34 +631,34 @@ export default function App() {
             </Suspense>
           )}
           <div className="sidebar-bottom">
-            <div className="memory-note">
-              <Icon name="network" />
-              <b>Tri thức có phiên bản.</b>
-              <p>
-                Kết quả luôn đi cùng hồ sơ và nguồn được dùng ở thời điểm kiểm
-                tra.
-              </p>
-            </div>
+            <button
+              className={`nav-item settings-link ${view === "preferences" ? "active" : ""}`}
+              aria-current={view === "preferences" ? "page" : undefined}
+              onClick={() => go("preferences")}
+            >
+              <Icon name="settings" />
+              {t("Cài đặt")}
+            </button>
             <div className="profile">
               <span className="avatar">
                 {session?.group === "operations" ? "O" : "M"}
               </span>
               <span>
-                <b>Reviewer mẫu</b>
-                <small>Chế độ trải nghiệm</small>
+                <b>{t("Reviewer mẫu")}</b>
+                <small>{t("Chế độ trải nghiệm")}</small>
               </span>
             </div>
             {features.layer3 && (
               <label>
-                Đổi tài khoản mẫu
+                {t("Đổi tài khoản mẫu")}
                 <select
-                  aria-label="Tài khoản mẫu"
+                  aria-label={t("Tài khoản mẫu")}
                   value={session?.user_id || "U-MANAGER"}
                   disabled={!!busy}
                   onChange={(e) => switchUser(e.target.value)}
                 >
-                  <option value="U-MANAGER">Quản lý</option>
-                  <option value="U-OPS">Kế toán + vận hành</option>
+                  <option value="U-MANAGER">{t("Quản lý")}</option>
+                  <option value="U-OPS">{t("Kế toán + vận hành")}</option>
                 </select>
               </label>
             )}
@@ -665,76 +670,76 @@ export default function App() {
               <button
                 className="icon-button mobile-menu"
                 onClick={() => setMobile(!mobile)}
-                aria-label="Mở menu"
+                aria-label={t("Mở menu")}
                 aria-expanded={mobile}
               >
                 <Icon name="menu" />
               </button>
-              <span className="muted">Không gian làm việc</span>
+              <span className="muted">{t("Không gian làm việc")}</span>
               <span className="slash">/</span>
-              <b>
-                {currentTabs.find((t) => t[0] === view)?.[1] || "Workspace"}
-              </b>
+              <b>{t(viewLabel)}</b>
             </div>
             <div className="top-actions">
+              <button
+                className="button secondary"
+                onClick={() =>
+                  researchActive
+                    ? refreshResearch().catch((error) => setError(error.message))
+                    : load()
+                }
+                disabled={!!busy || chatBusy}
+              >
+                {t("Tải lại")}
+              </button>
               <span className="demo-pill">
-                synthetic/staged ·{" "}
-                {offline ? "fixture ngoại tuyến" : "Dữ liệu tổng hợp"}
+                {offline ? t("Bản mẫu ngoại tuyến") : t("Dữ liệu tổng hợp")}
               </span>
               <button
                 className="icon-button"
                 onClick={() => setPanel(!panel)}
-                aria-label="Mở bằng chứng và tri thức"
+                aria-label={t("Mở bằng chứng và tri thức")}
               >
                 <Icon name="panel" />
               </button>
             </div>
           </header>
-          <div className="status-strip">
-            <span>
-              {researchActive
-                ? currentWorkspace?.name || "Workspace mới"
-                : "TPBVSK"}
-            </span>
-            <span>
-              {researchActive
-                ? "API workspace kết nối · Nguồn cần người rà soát"
-                : offline
-                  ? "API mất kết nối · Chỉ xem bản mẫu đi kèm"
-                  : `API kết nối · ${features.layer0_ready ? "live" : "fixture — engine chưa sẵn sàng"}`}
-            </span>
-            <button
-              onClick={() =>
-                researchActive
-                  ? refreshResearch().catch((error) => setError(error.message))
-                  : load()
-              }
-              disabled={!!busy || chatBusy}
-            >
-              Tải lại
-            </button>
-          </div>
+          {degraded && !researchActive && (
+            <div className="status-strip">
+              <span>
+                {offline
+                  ? t("API mất kết nối · Chỉ xem bản mẫu đi kèm")
+                  : t("Engine chưa sẵn sàng · đang dùng fixture")}
+              </span>
+            </div>
+          )}
           {busy && (
             <div className="feedback" role="status">
-              {busy}
+              {t(busy)}
             </div>
           )}
           {error && (
             <div className="feedback error" role="alert">
-              {error}
+              {t(error)}
             </div>
           )}
           {notice && (
             <div className="feedback" role="status">
-              {notice}
+              {t(notice)}
             </div>
           )}
           <div
             className={`body-layout${researchActive ? " research-body" : ""}`}
           >
             <main id="main" tabIndex="-1">
-              {researchActive ? (
-                <Suspense fallback={<p role="status">Đang tải workspace…</p>}>
+              {view === "preferences" ? (
+                <Settings
+                  offline={offline}
+                  features={features}
+                  busy={busy}
+                  reload={() => load()}
+                />
+              ) : researchActive ? (
+                <Suspense fallback={<p role="status">{t("Đang tải workspace…")}</p>}>
                   {view === "chat" && currentWorkspace ? (
                     <WorkspaceChat
                       key={`${workspaceId}:${newConversationNonce}`}
@@ -768,10 +773,13 @@ export default function App() {
                   )}
                 </Suspense>
               ) : !bundle ? (
-                <Page title="Kết nối hồ sơ">
-                  <p>
-                    {busy || "Chưa có dữ liệu. Bấm Tải lại để thử kết nối."}
-                  </p>
+                <Page title={t("Kết nối hồ sơ")}>
+                  <p>{busy ? t(busy) : t("Chưa có dữ liệu.")}</p>
+                  {!busy && (
+                    <button className="button secondary" onClick={() => load()}>
+                      {t("Tải lại")}
+                    </button>
+                  )}
                 </Page>
               ) : (
                 <>
@@ -786,7 +794,7 @@ export default function App() {
             {!researchActive && (
               <aside
                 className={`evidence ${panel ? "open" : ""}`}
-                aria-label="Tri thức và bằng chứng"
+                aria-label={t("Tri thức và bằng chứng")}
               >
                 {evidencePanel}
               </aside>

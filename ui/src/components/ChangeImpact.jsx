@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Badge, date } from "./shared.jsx";
 import { resultLabel } from "../api.js";
+import { N_, useT } from "../i18n.jsx";
 
 export default function ChangeImpact({ history }) {
+  const t = useT();
   const [preloaded, setPreloaded] = useState(null);
   const [legalError, setLegalError] = useState("");
   useEffect(() => {
@@ -18,7 +20,7 @@ export default function ChangeImpact({ history }) {
       .catch(() => {
         if (current)
           setLegalError(
-            "Chưa tải được nguồn luật nạp trước; chưa thể xác nhận cập nhật từ nguồn này.",
+            N_("Chưa tải được nguồn luật nạp trước; chưa thể xác nhận cập nhật từ nguồn này."),
           );
       });
     return () => {
@@ -38,9 +40,9 @@ export default function ChangeImpact({ history }) {
       <table>
         <thead>
           <tr>
-            <th>Phiên bản cần kiểm lại</th>
-            <th>Kết quả cũ giữ nguyên</th>
-            <th>Kết quả kiểm lại</th>
+            <th>{t("Phiên bản cần kiểm lại")}</th>
+            <th>{t("Kết quả cũ giữ nguyên")}</th>
+            <th>{t("Kết quả kiểm lại")}</th>
           </tr>
         </thead>
         <tbody>
@@ -54,7 +56,7 @@ export default function ChangeImpact({ history }) {
                   <code>{item.target_version_id}</code>
                   <br />
                   <Badge neutral>
-                    {item.status === "queued" ? "Chờ kiểm lại" : "Đã kiểm lại"}
+                    {item.status === "queued" ? t("Chờ kiểm lại") : t("Đã kiểm lại")}
                   </Badge>
                 </td>
                 <td>
@@ -65,10 +67,10 @@ export default function ChangeImpact({ history }) {
                     <>
                       <code>{fresh.id}</code>
                       <br />
-                      {resultLabel(fresh)}
+                      {resultLabel(fresh, t)}
                     </>
                   ) : (
-                    "Chưa có kết quả mới"
+                    t("Chưa có kết quả mới")
                   )}
                 </td>
               </tr>
@@ -79,66 +81,63 @@ export default function ChangeImpact({ history }) {
     </div>
   );
   return (
-    <section aria-label="Tác động thay đổi nguồn">
-      <h2>Tác động thay đổi hồ sơ</h2>
+    <section aria-label={t("Tác động thay đổi nguồn")}>
+      <h2>{t("Tác động thay đổi hồ sơ")}</h2>
       {[...(history?.events || [])].reverse().map((event) => (
         <article
           className="review-card"
           key={event.id}
           data-event-id={event.id}
         >
-          <Badge neutral>Thay đổi hồ sơ đã ghi nhận</Badge>
+          <Badge neutral>{t("Thay đổi hồ sơ đã ghi nhận")}</Badge>
           <h3>{event.record_id}</h3>
           <p>
             <code>{event.previous_version_id}</code> →{" "}
             <code>{event.new_version.id}</code>
           </p>
-          <p>Nhận lúc: {date(event.received_at)}</p>
-          <p>
-            Kết quả và quyết định cũ được giữ nguyên. Chỉ lượt kiểm lại tạo kết
-            quả mới.
-          </p>
+          <p>{t("Nhận lúc: {date}", { date: date(event.received_at, t) })}</p>
+          <p>{t("Kết quả và quyết định cũ được giữ; chỉ lượt kiểm lại tạo kết quả mới.")}</p>
           {queueTable(event.id)}
         </article>
       ))}
-      {!history?.events.length && <p>Chưa có thay đổi hồ sơ được ghi nhận.</p>}
-      {legalError && <p className="footnote">{legalError}</p>}
+      {!history?.events.length && <p>{t("Chưa có thay đổi hồ sơ được ghi nhận.")}</p>}
+      {legalError && <p className="footnote">{t(legalError)}</p>}
       {legalStates.map((state) => (
         <article className="review-card" key={state.event.id}>
           {!(history?.legal_changes || []).some(
             (saved) => saved.event.id === state.event.id,
-          ) && <Badge neutral>Luật nạp trước · Chưa áp dụng</Badge>}
+          ) && <Badge neutral>{t("Luật nạp trước · Chưa áp dụng")}</Badge>}
           <Badge neutral>
             {state.status} ·{" "}
             {state.event.new_clause.verification_status === "verified"
-              ? "Nguồn đã đối chiếu"
-              : "Chờ xác minh nguồn"}
+              ? t("Nguồn đã đối chiếu")
+              : t("Chờ xác minh nguồn")}
           </Badge>
-          <h3>Thay đổi điều khoản</h3>
+          <h3>{t("Thay đổi điều khoản")}</h3>
           <p>
             {state.event.previous_clause_version_id} →{" "}
             {state.event.new_clause.id}
           </p>
           <dl>
-            <dt>Ban hành</dt>
+            <dt>{t("Ban hành")}</dt>
             <dd>{state.event.issued_on}</dd>
-            <dt>Hiệu lực</dt>
+            <dt>{t("Hiệu lực")}</dt>
             <dd>{state.event.effective_on}</dd>
-            <dt>Nhận</dt>
-            <dd>{date(state.event.received_at)}</dd>
-            <dt>Duyệt</dt>
+            <dt>{t("Nhận")}</dt>
+            <dd>{date(state.event.received_at, t)}</dd>
+            <dt>{t("Duyệt")}</dt>
             <dd>
-              {state.reviewed_at ? date(state.reviewed_at) : "Chưa duyệt"}
+              {state.reviewed_at ? date(state.reviewed_at, t) : t("Chưa duyệt")}
             </dd>
           </dl>
           <p>
-            Rule liên quan:{" "}
+            {t("Rule liên quan:")}{" "}
             {state.event.proposed_rules.map((rule) => rule.id).join(", ")}
           </p>
           <div className="diff-grid">
             <section>
-              <h4>Điều khoản cũ</h4>
-              <blockquote>
+              <h4>{t("Điều khoản cũ")}</h4>
+              <blockquote lang="vi">
                 {(preloaded?.previous_clause?.id ===
                 state.event.previous_clause_version_id
                   ? preloaded.previous_clause
@@ -148,12 +147,12 @@ export default function ChangeImpact({ history }) {
                         (clause) =>
                           clause.id === state.event.previous_clause_version_id,
                       )
-                )?.text || "Không tìm thấy bản cũ trong các nguồn đã kết nối."}
+                )?.text || t("Không tìm thấy bản cũ trong các nguồn đã kết nối.")}
               </blockquote>
             </section>
             <section>
-              <h4>Điều khoản mới</h4>
-              <blockquote>{state.event.new_clause.text}</blockquote>
+              <h4>{t("Điều khoản mới")}</h4>
+              <blockquote lang="vi">{state.event.new_clause.text}</blockquote>
             </section>
           </div>
           {queueTable(state.event.id)}

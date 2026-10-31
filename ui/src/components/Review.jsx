@@ -1,6 +1,7 @@
 import React from "react";
-import { Icon, Page, Badge, recordNames, ruleNames, date } from "./shared.jsx";
-import { resultLabel, evidenceParts } from "../api.js";
+import { Icon, Page, Badge } from "./shared.jsx";
+import { resultLabel } from "../api.js";
+import { useT, N_ } from "../i18n.jsx";
 export default function Review({
   bundle,
   draft,
@@ -23,16 +24,17 @@ export default function Review({
   refreshHistory,
   showPreview,
 }) {
+  const t = useT();
   return (
     <Page
-      eyebrow="TỪ HỒ SƠ ĐẾN PHÁT HIỆN CÓ CĂN CỨ"
-      title="Rà soát hồ sơ"
+      eyebrow={t("TỪ HỒ SƠ ĐẾN PHÁT HIỆN CÓ CĂN CỨ")}
+      title={t("Rà soát hồ sơ")}
       action={
         <button
           className="button"
           disabled={!!busy || offline}
           onClick={() =>
-            act("Đang đối chiếu hồ sơ qua API…", async () => {
+            act(N_("Đang đối chiếu hồ sơ qua API…"), async () => {
               const r = await request("/check", {
                 method: "POST",
                 body: JSON.stringify(draft),
@@ -44,15 +46,14 @@ export default function Review({
           }
         >
           <Icon name="check" />
-          Chạy kiểm tra
+          {t("Chạy kiểm tra")}
         </button>
       }
     >
       <div className="review-desk">
         <div className="review-desk-copy">
           <p className="page-description">
-            Xác nhận bối cảnh và nội dung trước khi đối chiếu. Người duyệt quyết
-            định từng phát hiện.
+            {t("Xác nhận hồ sơ trước khi kiểm tra. Người duyệt quyết định.")}
           </p>
           {!features.layer0_ready && (
             <button
@@ -60,7 +61,7 @@ export default function Review({
               disabled={!!busy}
               onClick={showPreview}
             >
-              Xem finding minh hoạ (fixture)
+              {t("Xem finding minh hoạ (fixture)")}
             </button>
           )}
         </div>
@@ -73,25 +74,37 @@ export default function Review({
         />
       </div>
       <section className="result-section" aria-live="polite">
-        <h2>Kết quả · {resultLabel(result)}</h2>
+        <h2>{t("Kết quả · {label}", { label: resultLabel(result, t) })}</h2>
         {result ? (
           <>
             <div className="action-row">
               <Badge neutral>
                 {result.mode === "fixture"
-                  ? "Fixture · Xem trước"
-                  : "Kết quả API"}
+                  ? t("Fixture · Xem trước")
+                  : t("Kết quả API")}
               </Badge>
-              <Badge neutral>{result.rules_checked.length} rule đã chạy</Badge>
-              <Badge>{result.skipped_rule_ids.length} rule chưa kiểm</Badge>
+              <Badge neutral>
+                {t("{count} rule đã chạy", {
+                  count: result.rules_checked.length,
+                })}
+              </Badge>
+              <Badge>
+                {t("{count} rule chưa kiểm", {
+                  count: result.skipped_rule_ids.length,
+                })}
+              </Badge>
             </div>
             <p>
               {result.mode === "fixture"
-                ? "Các rule đang chờ chủ sở hữu kiểm chứng nguồn. Đây là dữ liệu xem trước, chưa phải kết quả kiểm tra pháp lý."
+                ? t("Dữ liệu xem trước, chưa phải kết quả kiểm tra pháp lý.")
                 : result.summary}
             </p>
             {result.skipped_rule_ids.length > 0 && (
-              <p>Chưa kiểm: {result.skipped_rule_ids.join(", ")}</p>
+              <p>
+                {t("Chưa kiểm: {ids}", {
+                  ids: result.skipped_rule_ids.join(", "),
+                })}
+              </p>
             )}
             {result.findings.map((f) => (
               <button
@@ -109,28 +122,25 @@ export default function Review({
                 <Badge neutral={f.status === "needs_evidence"}>
                   {f.source === "llm" ? "Suggestion" : "Rule"} · {f.status}
                 </Badge>
-                <h3>
+                <h3 lang="vi">
                   {f.rule_id} · {f.message}
                 </h3>
                 <p>
                   {f.record_version_id} · {f.clause_version_id}
                 </p>
-                <span>Xem bằng chứng & quyết định ↗</span>
+                <span>{t("Xem bằng chứng & quyết định ↗")}</span>
               </button>
             ))}
           </>
         ) : (
-          <p>
-            Chạy kiểm tra để nhận kết quả từ API. Không có phát hiện hiển thị
-            trước khi kiểm tra.
-          </p>
+          <p>{t("Chạy kiểm tra để xem kết quả.")}</p>
         )}
       </section>
       <section className="form-panel">
-        <h2>01 · Hồ sơ hoạt động</h2>
+        <h2>{t("01 · Hồ sơ hoạt động")}</h2>
         <div className="form-grid">
           <label>
-            Nhóm sản phẩm
+            {t("Nhóm sản phẩm")}
             <select
               value={draft.profile.product_group}
               onChange={(e) => {
@@ -144,13 +154,13 @@ export default function Review({
                 setResult(null);
               }}
             >
-              <option value="tpbvsk">Thực phẩm bảo vệ sức khỏe</option>
-              <option value="other">Nhóm khác</option>
-              <option value="unknown">Chưa rõ</option>
+              <option value="tpbvsk">{t("Thực phẩm bảo vệ sức khỏe")}</option>
+              <option value="other">{t("Nhóm khác")}</option>
+              <option value="unknown">{t("Chưa rõ")}</option>
             </select>
           </label>
           <label>
-            Hoạt động
+            {t("Hoạt động")}
             <select
               value={draft.profile.activity}
               onChange={(e) => {
@@ -164,9 +174,9 @@ export default function Review({
                 setResult(null);
               }}
             >
-              <option value="advertising">Quảng cáo</option>
-              <option value="label_only">Chỉ có nhãn</option>
-              <option value="unknown">Chưa rõ</option>
+              <option value="advertising">{t("Quảng cáo")}</option>
+              <option value="label_only">{t("Chỉ có nhãn")}</option>
+              <option value="unknown">{t("Chưa rõ")}</option>
             </select>
           </label>
         </div>
@@ -185,28 +195,32 @@ export default function Review({
               setResult(null);
             }}
           />
-          Đã xác nhận bối cảnh công ty mẫu
+          {t("Đã xác nhận bối cảnh công ty mẫu")}
         </label>
         <p className="footnote">
-          Vai trò: nhà phân phối trong nước · Ngày rà soát {draft.review_date} ·
-          LLM tắt
+          {t(
+            "Vai trò: nhà phân phối trong nước · Ngày rà soát {date} · LLM tắt",
+            { date: draft.review_date },
+          )}
         </p>
       </section>
       <section className="form-panel">
-        <h2>02 · Nội dung cần đối chiếu</h2>
+        <h2>{t("02 · Nội dung cần đối chiếu")}</h2>
         {draft.target_version_ids.map((id) => (
           <React.Fragment key={id}>
             <label className="text-field" key={id}>
               {id}
               <textarea
+                lang="vi"
                 value={draft.versions.find((v) => v.id === id).text}
                 onChange={(e) => updateText(id, e.target.value)}
                 rows="5"
               />
             </label>
             <label className="text-field">
-              Công dụng đã ghi trong nội dung · {id}
+              {t("Công dụng đã ghi · {id}", { id })}
               <textarea
+                lang="vi"
                 value={draft.versions.find((v) => v.id === id).uses.join("\n")}
                 onChange={(e) => {
                   setDraft((prev) => ({
@@ -235,14 +249,14 @@ export default function Review({
               }
               onClick={() => revise(id)}
             >
-              Lưu phiên bản mới · {id}
+              {t("Lưu phiên bản mới · {id}", { id })}
             </button>
           </React.Fragment>
         ))}
         <p className="footnote">
           {features.layer0_ready
-            ? "Khi chỉnh nội dung, lưu thành phiên bản mới trước; bản gốc và các quyết định cũ được giữ lại."
-            : "API fixture chỉ nhận bộ mẫu gốc. Engine thật chưa sẵn sàng; thay đổi chưa được lưu."}
+            ? t("Lưu thành phiên bản mới; bản gốc và quyết định cũ được giữ.")
+            : t("Fixture chỉ nhận bộ mẫu gốc; thay đổi chưa được lưu.")}
         </p>
         <button
           className="back-link"
@@ -252,7 +266,7 @@ export default function Review({
             setSelected(null);
           }}
         >
-          Khôi phục bộ mẫu gốc
+          {t("Khôi phục bộ mẫu gốc")}
         </button>
       </section>
     </Page>
