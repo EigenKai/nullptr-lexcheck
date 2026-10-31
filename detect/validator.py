@@ -33,7 +33,7 @@ def _field_present(evidence, versions, request, rule):
             kinds[v.record_id] in ("ad_confirmation", "registration_receipt")
             for v in versions.values()
         )
-    local_fields = ("warning", "text", "uses", "issuing_authority")
+    local_fields = ("warning", "text")
     scope = (
         (versions[evidence.record_version_id],)
         if evidence.field in local_fields
