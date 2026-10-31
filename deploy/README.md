@@ -29,7 +29,7 @@ public fixture deployment until the integrated main SHA passes its real gates.
 
 Integration baseline: main `2049c21` includes detection, cited chat and dev eval
 (PRs #4–#8). The rule engine remains bootstrap; impact/legal/pattern adapters
-await their owners. The draft scoped-cache PR #10 still needs current-session
+await their owners. The scoped-cache PR #10 still needs current-session
 authorization callback integration before layer 3 can be accepted. Intake now
 passes server user/group and hashes of canonical ACL/active patterns to the
 existing model client; no client-supplied role is trusted.
