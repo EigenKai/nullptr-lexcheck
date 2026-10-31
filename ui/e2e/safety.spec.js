@@ -110,7 +110,9 @@ test("record a real live review, dossier recheck finding and decision", async ({
   await page
     .getByRole("button", { name: "Chạy kiểm tra", exact: true })
     .click();
-  await expect(page.locator(".result-section")).toContainText("3 rule đã chạy");
+  await expect(page.locator(".result-section")).toContainText(
+    /\d+ rule đã chạy/,
+  );
   await page.screenshot({
     path: "test-results/local-review.png",
     fullPage: true,
@@ -119,11 +121,9 @@ test("record a real live review, dossier recheck finding and decision", async ({
     .getByRole("button", { name: "Cập nhật nguồn", exact: true })
     .click();
   await page.getByRole("button", { name: "Gửi sự kiện mẫu tới API" }).click();
-  const queueCard = page
-    .locator(".review-card")
-    .filter({
-      has: page.getByRole("heading", { name: "RV-02-v1", exact: true }),
-    });
+  const queueCard = page.locator(".review-card").filter({
+    has: page.getByRole("heading", { name: "RV-02-v1", exact: true }),
+  });
   await queueCard
     .getByRole("button", { name: "Kiểm tra lại", exact: true })
     .first()

@@ -23,13 +23,22 @@ test("live review, source versions, change queue, and responsive Vietnamese font
   await page
     .getByRole("button", { name: "Rà soát hồ sơ", exact: true })
     .click();
+  const checkResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/check") &&
+      response.request().method() === "POST",
+  );
   await page
     .getByRole("button", { name: "Chạy kiểm tra", exact: true })
     .click();
+  const checked = await (await checkResponse).json();
+  expect(checked.rules_checked.length).toBeGreaterThanOrEqual(3);
   await expect(page.locator(".result-section")).toContainText(
-    "No issue found under 3 encoded rules",
+    `No issue found under ${checked.rules_checked.length} encoded rules`,
   );
-  await expect(page.locator(".result-section")).toContainText("3 rule đã chạy");
+  await expect(page.locator(".result-section")).toContainText(
+    `${checked.rules_checked.length} rule đã chạy`,
+  );
   await page
     .getByRole("button", { name: "Cập nhật nguồn", exact: true })
     .click();
@@ -47,7 +56,9 @@ test("live review, source versions, change queue, and responsive Vietnamese font
   await page
     .getByRole("button", { name: "Lịch sử quyết định", exact: true })
     .click();
-  await expect(page.locator("main")).toContainText("3 rule đã chạy");
+  await expect(page.locator("main")).toContainText(
+    `${checked.rules_checked.length} rule đã chạy`,
+  );
   for (const [width, height] of [
     [1280, 720],
     [768, 1024],

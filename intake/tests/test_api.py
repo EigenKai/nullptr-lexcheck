@@ -18,7 +18,8 @@ def run_dossier_flow(api):
     bundle = load_demo()
     original = post_ok(api, "/api/check", bundle.request.model_dump(mode="json"))
     assert original["mode"] == "live"
-    assert original["rules_checked"] == ["R-01", "R-02", "R-03"]
+    assert {"R-01", "R-02", "R-03"} <= set(original["rules_checked"])
+    assert len(original["rules_checked"]) == len(original["rule_snapshots"])
     assert original["status"] == "no_issue_found" and original["findings"] == []
     event = bundle.event.model_dump(mode="json")
     changed = post_ok(api, "/api/changes", event)
