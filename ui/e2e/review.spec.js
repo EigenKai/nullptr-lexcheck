@@ -44,9 +44,16 @@ test("live review, source versions, change queue, and responsive Vietnamese font
     .getByRole("button", { name: "Cập nhật nguồn", exact: true })
     .click();
   await page.getByRole("button", { name: "Xem bản cũ / mới" }).click();
-  await expect(page.locator(".diff-grid")).toContainText(
-    "Hỗ trợ giảm cholesterol.",
-  );
+  const dossierComparison = page
+    .locator("article")
+    .filter({
+      has: page.getByRole("heading", {
+        name: "Hồ sơ công bố có phiên bản mới",
+        exact: true,
+      }),
+    })
+    .locator(".diff-grid");
+  await expect(dossierComparison).toContainText("Hỗ trợ giảm cholesterol.");
   await page.getByRole("button", { name: "Gửi sự kiện mẫu tới API" }).click();
   await expect(page.getByRole("status")).toContainText(
     "API đã ghi nhận thay đổi.",
