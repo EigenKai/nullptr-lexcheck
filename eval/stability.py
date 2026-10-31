@@ -4,14 +4,19 @@ import json
 import os
 from collections import Counter
 
+from detect.client import ModelClient
 from eval.metrics import stability
 from eval.run import ROOT, evaluate_cases, load_cases
 
 
 def main():
     cases = load_cases(ROOT / "data/dev")
+    client = ModelClient(
+        cache_dir=None, user_id="U-eval", group="manager", acl_hash="synthetic-dev"
+    )
     runs = tuple(
-        evaluate_cases(cases, mode=os.getenv("LEXCHECK_LLM_MODE", "off")) for _ in range(3)
+        evaluate_cases(cases, mode=os.getenv("LEXCHECK_LLM_MODE", "off"), client=client)
+        for _ in range(3)
     )
     print(
         json.dumps(
