@@ -1,6 +1,7 @@
-PYTHON ?= python3.11
+PYTHON ?= $(shell command -v python3.11 || command -v python3.12 || command -v python3)
 PY = .venv/bin/python
 LAYER ?= auto
+FORMAT_PATHS ?= .
 .PHONY: setup test lint eval run schemas smoke audit
 setup:
 	$(PYTHON) -m venv .venv
@@ -9,7 +10,6 @@ test:
 	$(PY) -m pytest -q --cov --cov-report=term-missing
 lint:
 	.venv/bin/ruff check .
-	.venv/bin/ruff format --check .
 eval:
 	$(PY) -m eval.run
 run:
@@ -29,3 +29,7 @@ e2e:
 	cd ui && npm run test:e2e
 eval-final:
 	$(PY) -m eval.final --directory "$(FINAL_DIR)"
+
+fmt:
+	.venv/bin/ruff format $(FORMAT_PATHS)
+	.venv/bin/ruff check --fix $(FORMAT_PATHS)

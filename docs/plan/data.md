@@ -30,7 +30,7 @@ Nhãn trên mọi màn: `synthetic/staged`. P0 không có dữ liệu thật. N�
 | R-01 | cảnh báo TPBVSK | NĐ 15/2018 Điều 27(3)(a); ngoại lệ hình thức phải xét | to_be_verified, disabled | Dũng trước 13:30 |
 | R-02 | công dụng ngoài dossier cần chứng cứ | Điều 27(2), 27(4)(đ) | to_be_verified, disabled | Dũng trước 13:30 |
 | R-03 | thiếu chứng cứ đăng ký/xác nhận trong kho | Điều 26(1), 27(1), 27(6) | to_be_verified, disabled | Dũng trước 13:30 |
-| R-04 | endorsement y tế trong quảng cáo chữ | Điều 27(2) | to_be_verified, disabled | Dũng trước 13:30 |
+| R-04 | endorsement y tế trong quảng cáo chữ | pending — Dũng tìm đúng điều khoản trên văn bản gốc | to_be_verified, disabled | Dũng trước 13:30 |
 | R-05 | gợi ý gây hiểu nhầm như thuốc | căn cứ chính xác từ luật/quy định quảng cáo cần Dũng tìm | to_be_verified, disabled; cắt trước | Dũng trước 14:05 |
 
 Nguồn đọc: [NĐ 15 bản ký, trang PDF 19–20, 35–36, 44–45](https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf), [thuộc tính](https://chinhphu.vn/?docid=192829&pageid=27160), [NQ 15/2026, Điều 1–2,5](https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/4/15-nqcp.signed.pdf), [thủ tục VFA](https://vfa.gov.vn/thu-tuc-hanh-chinh/dang-ky-xac-nhan-noi-dung-quang-cao-doi-voi-thuc-pham-bao-ve-suc-khoe.html). Các nguồn đã được đọc trong quá trình chuẩn bị ngày 31/10; điều đó không thay Dũng kiểm nguyên văn và hiệu lực đến ngày demo. Dũng ghi `verified_by`, `verified_at`, `status_note`, source hash và cập nhật rule qua PR; thiếu xác minh thì bỏ rule, không bịa quote.

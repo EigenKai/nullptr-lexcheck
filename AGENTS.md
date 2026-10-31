@@ -31,7 +31,7 @@ Never read, list, write or summarize the human final test set in `~/nullptr-test
 
 ## Delivery
 
-Read your job in `docs/plan/`. Write a failing behavioral test before implementation; keep packages at most 45 minutes. Run local tests/lint/dev eval; report limitations and actual results. Self-review code, open a conventional-title PR, and let a human review and merge. Append your own ledger with time/member/kind/what/result/link, then ask the leader to aggregate. Do not invent tasks, metrics, source verification or completion.
+Read your job in `docs/plan/`. Run `make fmt FORMAT_PATHS="<your owned code directories>"` before every commit; do not include formatting changes outside your ownership. Coverage is reported, not a CI threshold; keep meaningful tests and target at least 80%. Write a failing behavioral test before implementation; keep packages at most 45 minutes. Run local tests/lint/dev eval; report limitations and actual results. Self-review code, open a conventional-title PR, and let a human review and merge. Append your own ledger with time/member/kind/what/result/link, then ask the leader to aggregate. Do not invent tasks, metrics, source verification or completion.
 
 ## Layer gates and integration
 
@@ -42,3 +42,5 @@ Flags LEXCHECK_LAYER1_ENABLED, LEXCHECK_LAYER2_ENABLED and LEXCHECK_LAYER3_ENABL
 intake/runtime.configure_app is the extension point for per-app store and authorization; layer_routes is already mounted. The API owner creates ui/package-lock.json in the first coordinated UI PR; later dependency changes use a separate PR. All other shared files remain coordinated-only. Do not rerun scripts/create_fixtures.py after the rule owner verifies the catalog: it resets bootstrap data. make schemas only exports contracts.
 
 A server-issued reviewer session is required for layer-0 decisions/closure. Layer 3 expands it to two synthetic demo users; group membership comes from server session state, never client actor/group fields. All retrievals, nested history, chat, caches and actions must enforce visibility before returning data.
+
+Python 3.11 is the CI/reference version. `make setup PYTHON=python3.12` is an explicit local fallback; Makefile resolves 3.11, then 3.12, then python3. Frontend reference is Node 22; Node 20.19+ may be used only if the pinned Vite version supports it. Hosting feature env changes require a service restart.

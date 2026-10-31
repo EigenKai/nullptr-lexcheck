@@ -115,7 +115,7 @@ def build():
         "27(3)(a)",
         "27(2), 27(4)(đ)",
         "26(1), 27(1), 27(6)",
-        "27(2)",
+        "pending — Dung to locate",
         "Exact provision pending verification",
         "27(4)(b)",
         "27(5)",
@@ -135,7 +135,7 @@ def build():
         {
             "id": f"CV-{i:02}-v1",
             "clause_id": f"CL-{i:02}",
-            "document": "NĐ 15/2018/NĐ-CP" if i != 5 else "Basis pending verification",
+            "document": "NĐ 15/2018/NĐ-CP" if i not in (4, 5) else "Basis pending verification",
             "article": article,
             "text": f"SOURCE TEXT PENDING VERIFICATION: {article}",
             "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2018/02/15.signed.pdf",

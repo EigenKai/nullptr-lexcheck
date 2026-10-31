@@ -51,15 +51,27 @@ DTO đầy đủ được sinh từ model/fixture phía dưới. Model frozen, e
 <!-- generated-contracts -->
 
 ## Endpoint cố định (v1)
-| Method/path | Request | Response thành công | Bootstrap |
-|---|---|---|---|
-| GET /health | không | HealthResponse, 200 | fixture |
-| GET /api/demo | không | DemoBundle, 200 | fixture thật trên đĩa |
-| POST /api/check | CheckRequest | CheckResult, 200 | chỉ request demo; khác input → 503 |
-| POST /api/changes | ChangeEvent | ChangeResponse, 200 | 503 chưa có store |
-| POST /api/rechecks | RecheckRequest | CheckResult, 200 | 503 chưa có engine |
-| POST /api/decisions | DecisionRequest | Decision, 201 | 503 chưa có store |
-| GET /api/history | không | HistoryResponse, 200 | preview, arrays còn lại rỗng |
+| Method/path | Request | Response thành công | Tầng | Bootstrap |
+|---|---|---|---|---|
+| GET /health | không | HealthResponse, 200 | all | fixture |
+| GET /api/demo | không | DemoBundle, 200 | 0 | fixture thật trên đĩa |
+| POST /api/check | CheckRequest | CheckResult, 200 | 0 | chỉ request demo; khác input → 503 |
+| POST /api/changes | ChangeEvent | ChangeResponse, 200 | 0 | 503 chưa có store |
+| POST /api/rechecks | RecheckRequest | CheckResult, 200 | 0 | 503 chưa có engine |
+| POST /api/decisions | DecisionRequest | Decision, 201 | 0 | 503 chưa có store |
+| GET /api/history | không | HistoryResponse, 200 | 0 | preview, arrays còn lại rỗng |
+| GET /api/features | none | FeatureFlags, 200 | all | false flags |
+| POST /api/session | DemoLoginRequest | DemoSession, 200 | 0 / operations at 3 | 503 pending |
+| GET /api/records | none | RecordsResponse, 200 | 0 | 503 pending |
+| GET /api/checks/{check_id} | none | CheckResult, 200 | 0 | 503 pending |
+| POST /api/chat | ChatRequest | ChatResponse, 200 | 1 | 404 feature_disabled |
+| GET /api/evaluation | none | EvaluationReport, 200 | 1 | 404 feature_disabled |
+| POST /api/legal-changes | LegalChangeEvent | LegalChangeResponse, 200 | 2 | 404 feature_disabled |
+| POST /api/legal-changes/{event_id}/review | LegalReviewRequest | LegalChangeResponse, 200 | 2 | 404 feature_disabled |
+| POST /api/legal-changes/{event_id}/activate | LegalActivationRequest | LegalChangeResponse, 200 | 2 | 404 feature_disabled |
+| POST /api/feedback | FeedbackRequest | PatternResponse, 200 | 3 | 404 feature_disabled |
+| POST /api/patterns/{pattern_id}/review | PatternReviewRequest | PatternResponse, 200 | 3 | 404 feature_disabled |
+
 
 `/openapi.json` và `/docs` là tài liệu FastAPI. API thành công trả trực tiếp typed model; lỗi trả ApiError (không bọc detail). GET sai path → 404. Tất cả POST có 422 input; feature pending → 503. Bản live: ID/version không tồn tại → 404, trùng ID khác payload/stale/closure chưa recheck →409. Không đổi HTTP shape khi thay adapter fixture.
 
@@ -1108,22 +1120,8 @@ GET /health:
 }
 ```
 
-## Endpoint các tầng bổ sung (success HTTP 200)
-| Method | Path | Request | Response | Tầng |
-|---|---|---|---|---|
-| GET | /api/features | none | FeatureFlags | all |
-| POST | /api/session | DemoLoginRequest | DemoSession | 0 / operations at 3 |
-| GET | /api/records | none | RecordsResponse | 0 |
-| GET | /api/checks/{check_id} | none | CheckResult | 0 |
-| POST | /api/chat | ChatRequest | ChatResponse | 1 |
-| GET | /api/evaluation | none | EvaluationReport | 1 |
-| POST | /api/legal-changes | LegalChangeEvent | LegalChangeResponse | 2 |
-| POST | /api/legal-changes/{event_id}/review | LegalReviewRequest | LegalChangeResponse | 2 |
-| POST | /api/legal-changes/{event_id}/activate | LegalActivationRequest | LegalChangeResponse | 2 |
-| POST | /api/feedback | FeedbackRequest | PatternResponse | 3 |
-| POST | /api/patterns/{pattern_id}/review | PatternReviewRequest | PatternResponse | 3 |
-
-Bootstrap: session/records/checks trả503; feature routes trả404 feature_disabled; /api/features trảfalse. Ví dụ dưới là typed fixture, không giả kết quả live. CheckResult example dùng preview đã ghi ở trên. Authorization header đã khai; server phải kiểm theo tầng.
+## JSON mẫu các tầng bổ sung
+Các ví dụ là typed fixture; không giả kết quả live. CheckResult example dùng preview ở trên. Server kiểm Authorization theo tầng.
 
 ### FeatureFlags JSON mẫu
 ```json

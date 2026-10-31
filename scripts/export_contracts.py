@@ -37,15 +37,15 @@ def main():
     bundle = load_demo().model_dump(mode="json")
     endpoints = """
 ## Endpoint cố định (v1)
-| Method/path | Request | Response thành công | Bootstrap |
-|---|---|---|---|
-| GET /health | không | HealthResponse, 200 | fixture |
-| GET /api/demo | không | DemoBundle, 200 | fixture thật trên đĩa |
-| POST /api/check | CheckRequest | CheckResult, 200 | chỉ request demo; khác input → 503 |
-| POST /api/changes | ChangeEvent | ChangeResponse, 200 | 503 chưa có store |
-| POST /api/rechecks | RecheckRequest | CheckResult, 200 | 503 chưa có engine |
-| POST /api/decisions | DecisionRequest | Decision, 201 | 503 chưa có store |
-| GET /api/history | không | HistoryResponse, 200 | preview, arrays còn lại rỗng |
+| Method/path | Request | Response thành công | Tầng | Bootstrap |
+|---|---|---|---|---|
+| GET /health | không | HealthResponse, 200 | all | fixture |
+| GET /api/demo | không | DemoBundle, 200 | 0 | fixture thật trên đĩa |
+| POST /api/check | CheckRequest | CheckResult, 200 | 0 | chỉ request demo; khác input → 503 |
+| POST /api/changes | ChangeEvent | ChangeResponse, 200 | 0 | 503 chưa có store |
+| POST /api/rechecks | RecheckRequest | CheckResult, 200 | 0 | 503 chưa có engine |
+| POST /api/decisions | DecisionRequest | Decision, 201 | 0 | 503 chưa có store |
+| GET /api/history | không | HistoryResponse, 200 | 0 | preview, arrays còn lại rỗng |
 
 `/openapi.json` và `/docs` là tài liệu FastAPI. API thành công trả trực tiếp typed model; lỗi trả ApiError (không bọc detail). GET sai path → 404. Tất cả POST có 422 input; feature pending → 503. Bản live: ID/version không tồn tại → 404, trùng ID khác payload/stale/closure chưa recheck →409. Không đổi HTTP shape khi thay adapter fixture.
 
@@ -150,12 +150,13 @@ POST decisions confirm/assign không đóng task; reject cần note và task dis
             "3",
         ),
     )
-    text += "\n## Endpoint các tầng bổ sung (success HTTP 200)\n| Method | Path | Request | Response | Tầng |\n|---|---|---|---|---|\n"
-    text += "".join(
-        f"| {method} | {route} | {req or 'none'} | {res} | {layer} |\n"
+    rows = "".join(
+        f"| {method} {route} | {req or 'none'} | {res}, 200 | {layer} | {'false flags' if route == '/api/features' else '503 pending' if layer.startswith('0') else '404 feature_disabled'} |\n"
         for method, route, req, res, layer in extra_routes
     )
-    text += "\nBootstrap: session/records/checks trả503; feature routes trả404 feature_disabled; /api/features trảfalse. Ví dụ dưới là typed fixture, không giả kết quả live. CheckResult example dùng preview đã ghi ở trên. Authorization header đã khai; server phải kiểm theo tầng.\n"
+    anchor = "\n\n`/openapi.json`"
+    text = text.replace(anchor, "\n" + rows + anchor, 1)
+    text += "\n## JSON mẫu các tầng bổ sung\nCác ví dụ là typed fixture; không giả kết quả live. CheckResult example dùng preview ở trên. Server kiểm Authorization theo tầng.\n"
     for name, value in examples.items():
         text += f"\n### {name} JSON mẫu\n" + json_block(value)
     path.write_text(text)

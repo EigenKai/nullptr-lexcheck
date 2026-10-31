@@ -8,7 +8,7 @@ Bootstrap only: typed contracts, synthetic fixtures and API previews. All legal 
 
 ## Run
 
-Requires Python 3.11, Git and Make (Windows: WSL). No API key is needed.
+Reference: Python 3.11, Git and Make (Windows: WSL). No API key is needed. If only Python 3.12 is installed, use `make setup PYTHON=python3.12`; CI stays on 3.11.
 
 ```sh
 make setup
@@ -39,3 +39,5 @@ Only synthetic/staged company records are included. Public legal source links ar
 The plan covers the full Today scope with working checkpoints: records and rechecks (layer 0), cited chat and baselines (1), a preloaded legal update (2), then demo permission groups and reviewed feedback (3). Later flags default to off. `make smoke LAYER=0` through `LAYER=3` are live gates; the bootstrap intentionally cannot pass these yet. `make smoke` validates the current completed mode. See [the plan](docs/plan/plan.md) and the three member jobs. Baseline figures remain unmeasured at bootstrap.
 
 Use `make frontend-test`, `make frontend-build` and `make e2e` after the UI package exists. Environment settings are supplied by the shell or hosting service; `.env.example` is a template, not automatically loaded. The final evaluation command is for a human only, on a pinned commit at 15:15.
+
+Run `make fmt` before committing (contributors restrict FORMAT_PATHS to owned code). Coverage is reported without blocking CI; test failures and the current smoke gate still block delivery.

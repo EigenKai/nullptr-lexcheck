@@ -31,3 +31,5 @@ Checklist 16:15:
 - [ ] Một người gửi trước 16:30, ảnh xác nhận và URL lưu nội bộ. Không dựa vào agent để bấm form.
 
 15:30 bắt buộc đối chiếu write-up: tier nào flag off thì chuyển nội dung đó sang roadmap; số rule verified và Nthực chạy tách nhau; held-out n thực thay mục tiêu40–60; metrics gắn EVAL_SHA còn demo gắn FREEZE_SHA. Nếu hai SHA khác nhau nói rõ. Không nhận quyền backend, feedback reuse, graph advantage hay baseline thắng nếu chỉ có màn preview. Phương pháp ViHERMES được proposal dẫn như tài liệu nghiên cứu; không sao chép code/schema từ đó trong build này. Nếu đội đổi quyết định reuse phải khai source/license/phần extension nhất quán trước nộp.
+
+Dũng xác nhận với leader liệu mình có phải đồng tác giả “Dung N. H. Le” của ViHERMES (proposal §8). Dù là đồng tác giả, mọi code/schema tái dùng vẫn phải khai README + form + Declarations; mặc định build này không tái dùng.

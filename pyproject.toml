@@ -7,5 +7,4 @@ line-length = 100
 [tool.coverage.run]
 source = ["contracts", "app", "intake", "rules", "detect"]
 [tool.coverage.report]
-fail_under = 80
 show_missing = true

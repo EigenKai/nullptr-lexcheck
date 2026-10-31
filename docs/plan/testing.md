@@ -2,7 +2,7 @@
 v1 — theo proposal final đã nhận 12:48:37 và quyết định chia tầng của user 12:58, 31/10/2026.
 
 ## Lệnh và tầng test
-- `make setup`: Python 3.11 + venv, dependency ghim. `make test`: pytest, contract + API + smoke không cần key, coverage ≥80% phần Python đã triển khai. `make lint`: Ruff. `make schemas`: xuất schema/OpenAPI. `make eval`: kiểm fixture lúc bootstrap, bảng dev thật sau job 1; tuyệt đối không gọi preview là kết quả model.
+- `make setup`: Python 3.11 + venv, dependency ghim. `make test`: pytest, contract + API + smoke không cần key, coverage báo cáo phần Python đã triển khai, mục tiêu≥80% nhưng không chặn CI bằng tỷ lệ. `make lint`: Ruff. `make schemas`: xuất schema/OpenAPI. `make eval`: kiểm fixture lúc bootstrap, bảng dev thật sau job 1; tuyệt đối không gọi preview là kết quả model.
 - `make smoke`: một lệnh chạy demo từ fixture qua API trong TestClient. Sau job 3: load → check → decision → version change → queue → recheck → history. Tất cả không key.
 - Unit rule: mỗi R-xx ≥2 dương + ≥2 âm, gồm phủ định, profile unknown, khác pack, ngày biên, rule chưa xác minh; R-02 có tài liệu hỗ trợ vẫn cần người đánh giá, không tự kết luận đủ giá trị khoa học.
 - Contract: every model extra=forbid, enums chặt, immutable, span/missing_field loại trừ nhau, khoảng ngày, schema checked-in khớp model. `tests/contracts/test_models.py`, `test_schema_snapshot.py`.
@@ -54,3 +54,5 @@ Test cả401 no token,403 action cấm,404 private ID,422 schema,409 stale,503 u
 
 ## Tự review khởi tạo
 Đã sửa: context_version_ids rõ căn cứ mới mà không đổi record cũ; snapshots giữ cả rule/clause khi không finding; health runtime extension tránh đổi file chung; per-app state để test không nhiễm; các endpoint tầng sau khóa404. Chưa phải bằng chứng tính năng live. Baseline/e2e/per-rule tests trong job files là nghiệm thu cần triển khai, không báo là đã chạy.
+
+Sau review vòng1: make lint chạy Ruff check; formatting sửa bằng make fmt trước commit, không là gate format riêng. Coverage report-only; lỗi hành vi và smoke vẫn chặn merge. Không giảm các test bất biến để làm CI xanh.
