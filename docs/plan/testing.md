@@ -8,7 +8,7 @@ v1 — theo proposal final đã nhận 12:48:37 và quyết định chia tầng 
 - Contract: every model extra=forbid, enums chặt, immutable, span/missing_field loại trừ nhau, khoảng ngày, schema checked-in khớp model. `tests/contracts/test_models.py`, `test_schema_snapshot.py`.
 - API: TestClient, 200/201/404/409/422/503; không echo input độc hại; ID/version sai; snapshot cũ giữ nguyên. `intake/tests/test_api.py`.
 - Grounding: rule/clause lạ, quote bịa, span sai, missing field thực có, clause ngoài ngày, rule disabled; không fuzzy. `detect/tests/test_validator.py`.
-- Wording: scan response JSON và UI source cho các từ cấm, kể cả Unicode/case; validate input không để lỗi trả nguyên văn câu cấm. `tests/contracts/test_wording.py`; `ui/src/wording.test.ts` khi UI có.
+- Wording: scan response JSON và UI source cho các từ cấm, kể cả Unicode/case; validate input không để lỗi trả nguyên văn câu cấm. `tests/contracts/test_wording.py`; `ui/src/wording.test.js` khi UI có.
 - No key: bỏ OPENAI_API_KEY, disable network/model path, chạy `tests/smoke/test_demo.py`. Fixture/cache được ghi nhãn; không chạy model khi key trống.
 - UI: `ui/src/api.test.js::usesLiveApiWhenAvailable` và `showsFixtureBadgeOnStaticFallback` bắt buộc: API sẵn sàng phải dùng response API, fallback file tĩnh phải hiện fixture. Chạy `npm --prefix ui test -- --run src/api.test.js`. Vitest rendering fixture/error/loading/evidence và Playwright browser flow khi frontend sẵn sàng. Một smoke script đủ, không dựng nhiều tầng framework. Makefile đã có `make frontend-test`, `make frontend-build`, `make e2e`; CI tự bật frontend khi ui/package-lock.json xuất hiện. `make eval-final` có điểm cắm nhưng chưa chạy được trước khi job 1 viết eval/final.py.
 
