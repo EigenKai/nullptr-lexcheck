@@ -1,0 +1,197 @@
+[
+  {
+    "case": "clean-1",
+    "scope": [],
+    "input_hash": "cf6331828a6ff3a21c9ff66171bb9d13a355fc3333a0757bfbfa49f01b603ef2",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "clean-2",
+    "scope": [],
+    "input_hash": "9533682c8883bfa0868b23d5d1d700d26143ff7159a8faa6f451c294bf8b00ee",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "clean-3",
+    "scope": [],
+    "input_hash": "a19d7009829315fc55fb9a60f238e06a3b7588545f747dc87f6be7216b2a6fcb",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "clean-4",
+    "scope": [],
+    "input_hash": "dcdbb90d3cb8a38f5b3ddf5001e6a5ee30fa23fc0ffce17227bc276702642c27",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "clean-5",
+    "scope": [],
+    "input_hash": "6bad7ecf178853b30505042f6bb55b8e7bf73432477c6ff29f0aaa6f66bb3dfd",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "endorsement",
+    "scope": [],
+    "input_hash": "929dac557380651a2dabfe674789fbecb9d5410c175179f6028852ccecdcf95d",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 1
+  },
+  {
+    "case": "explicit-2",
+    "scope": [],
+    "input_hash": "ad131aa43208eb1382784da5676e27798fc6b99a2a8b13e83cbf8aab38773197",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 1
+  },
+  {
+    "case": "explicit",
+    "scope": [],
+    "input_hash": "6beae7d90446e43f0ad12b9e2c24e4d8bde9d8734dff08d7494efed7acf60a1b",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 1
+  },
+  {
+    "case": "implied",
+    "scope": [],
+    "input_hash": "ee24f248d5c7046162c5a2d6c0d4c31dbcbe908e4a0d4f8f3ca86f2fa1f87b49",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 1
+  },
+  {
+    "case": "injection",
+    "scope": [],
+    "input_hash": "5f5839e09cdcd1f61a95008bba93e0c1ba80e57e03be16d6d68006d69741e178",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "missing-evidence",
+    "scope": [],
+    "input_hash": "e451dd346b7dea5474e84f8cb032063af5766ebee2cdc89dea6ce64b54a6c1d0",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 1
+  },
+  {
+    "case": "missing-warning",
+    "scope": [],
+    "input_hash": "47781bf4e71777cf5ac05cff5f54610bffb7d2f75e38cec08b238a3c45f25a8a",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 1
+  },
+  {
+    "case": "profile-unknown",
+    "scope": [],
+    "input_hash": "e1c826e44c1d990455c9c54459f678cab3d360007c6eb185bb0fe2cef45291b6",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "use-control",
+    "scope": [],
+    "input_hash": "9533682c8883bfa0868b23d5d1d700d26143ff7159a8faa6f451c294bf8b00ee",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 0
+  },
+  {
+    "case": "use-mismatch",
+    "scope": [],
+    "input_hash": "10d5266ed21bc75d75216315c83ec13d06f2d3f69339d9c898e38c11787d41ca",
+    "prompt_hashes": {
+      "plain_chat": "ab8371acfb146cbb1fbf4c81e7d984c09af8f8cf5509ae4c51e8767685f19da5",
+      "lexcheck": "faa0d552a666a2f4b9731f023c7e374eb754c587314880ab637bdb0019d476f1"
+    },
+    "plain_status": "off",
+    "lexcheck_status": "off",
+    "rejected": {},
+    "unmeasured_gold_pairs": 1
+  }
+]

@@ -209,6 +209,15 @@ def test_confirmation_checks_record_kind(request_data, basis):
     assert check(request, confirmation_basis, evidence=(missing,)).findings
 
 
+def test_missing_use_must_be_absent(request_data, basis):
+    ev = Evidence(record_version_id=basis[2].record_version_id, kind="missing_field", field="uses")
+    assert check(request_data, basis, evidence=(ev,)).rejected[0].reason == "missing_field_present"
+    versions = tuple(v.model_copy(update={"uses": ()}) for v in request_data.versions)
+    assert check(
+        request_data.model_copy(update={"versions": versions}), basis, evidence=(ev,)
+    ).findings
+
+
 def test_context_uses_are_checked(request_data, basis):
     versions = tuple(
         v.model_copy(update={"uses": ()}) if v.id == basis[2].record_version_id else v
@@ -223,3 +232,73 @@ def test_context_uses_are_checked(request_data, basis):
         .reason
         == "missing_field_present"
     )
+
+
+def test_missing_use_span_checks_dossier_and_support(request_data, basis):
+    rule, clause, finding = basis
+    use = "Hỗ trợ tiêu hóa."
+    ev = Evidence(
+        record_version_id=finding.record_version_id, kind="span", quote=use, start=0, end=len(use)
+    )
+    use_basis = (rule.model_copy(update={"check_type": "uses"}), clause, finding)
+    assert (
+        check(request_data, use_basis, evidence=(ev,)).rejected[0].reason == "missing_field_present"
+    )
+    versions = tuple(
+        v.model_copy(update={"uses": (), "text": "Unrelated"})
+        if v.id in request_data.context_version_ids
+        else v
+        for v in request_data.versions
+    )
+    changed = request_data.model_copy(update={"versions": versions})
+    assert check(changed, use_basis, evidence=(ev,)).findings
+
+
+def test_confirmation_of_another_ad_does_not_cancel_finding(request_data, basis):
+    rule, clause, finding = basis
+    confirmation_basis = (rule.model_copy(update={"check_type": "confirmation"}), clause, finding)
+    ev = Evidence(
+        record_version_id=finding.record_version_id, kind="missing_field", field="confirmation_date"
+    )
+    versions = tuple(
+        v.model_copy(update={"reference_ids": ()}) if v.id == finding.record_version_id else v
+        for v in request_data.versions
+    )
+    assert check(
+        request_data.model_copy(update={"versions": versions}), confirmation_basis, evidence=(ev,)
+    ).findings
+
+
+def test_registration_receipt_is_not_ad_confirmation(request_data, basis):
+    rule, clause, finding = basis
+    confirmation_basis = (rule.model_copy(update={"check_type": "confirmation"}), clause, finding)
+    ev = Evidence(
+        record_version_id=finding.record_version_id, kind="missing_field", field="confirmation_date"
+    )
+    records = tuple(
+        r.model_copy(update={"kind": "registration_receipt"}) if r.kind == "ad_confirmation" else r
+        for r in request_data.records
+    )
+    assert check(
+        request_data.model_copy(update={"records": records}), confirmation_basis, evidence=(ev,)
+    ).findings
+
+
+def test_scientific_document_still_requires_human_review(request_data, basis):
+    rule, clause, finding = basis
+    use = "Hỗ trợ tiêu hóa."
+    ev = Evidence(
+        record_version_id=finding.record_version_id, kind="span", quote=use, start=0, end=len(use)
+    )
+    records = tuple(
+        r.model_copy(update={"kind": "scientific_evidence"}) if r.kind == "dossier" else r
+        for r in request_data.records
+    )
+    candidate = finding.model_copy(update={"status": "needs_evidence", "evidence": (ev,)})
+    result = validate_findings(
+        (candidate,),
+        request_data.model_copy(update={"records": records}),
+        (rule.model_copy(update={"check_type": "uses"}),),
+        (clause,),
+    )
+    assert result.findings == (candidate,)

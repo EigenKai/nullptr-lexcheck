@@ -30,7 +30,8 @@ def _field_present(evidence, versions, request, rule):
     if evidence.field == "confirmation_date" and rule.check_type == "confirmation":
         kinds = {r.id: r.kind for r in request.records}
         return any(
-            kinds[v.record_id] in ("ad_confirmation", "registration_receipt")
+            kinds[v.record_id] == "ad_confirmation"
+            and v.id in versions[evidence.record_version_id].reference_ids
             for v in versions.values()
         )
     local_fields = ("warning", "text")
@@ -89,6 +90,17 @@ def _reason(finding, request, rules, clauses):
             return "evidence_mismatch"
         elif evidence.quote is not None:
             return "evidence_mismatch"
+    if rule.check_type == "uses":
+        kinds = {r.id: r.kind for r in request.records}
+        context = tuple(
+            v
+            for v in versions.values()
+            if v.id in request.context_version_ids and kinds[v.record_id] == "dossier"
+        )
+        if any(
+            e.kind == "span" and any(e.quote in v.uses for v in context) for e in finding.evidence
+        ):
+            return "missing_field_present"
     if any(
         e.kind == "missing_field" and _field_present(e, versions, request, rule)
         for e in finding.evidence
