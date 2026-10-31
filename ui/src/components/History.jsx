@@ -104,6 +104,25 @@ export default function History({
                   {d.request.action} · {d.request.finding_id}
                 </h3>
                 <p>{d.request.note}</p>
+                {features.remediation && (
+                  <>
+                    {d.request.internal_due_on && (
+                      <p>Hạn nội bộ: {d.request.internal_due_on}</p>
+                    )}
+                    {d.request.legal_due_on && (
+                      <p>
+                        Hạn theo luật: {d.request.legal_due_on} (nguồn:{" "}
+                        {d.request.legal_clause_version_id})
+                      </p>
+                    )}
+                    {d.request.closure_conditions && (
+                      <p>Điều kiện đóng việc: {d.request.closure_conditions}</p>
+                    )}
+                    {d.request.action === "acknowledge" && (
+                      <p>Đã đọc · trạng thái việc được giữ nguyên</p>
+                    )}
+                  </>
+                )}
                 <small>
                   {d.request.actor} ·{" "}
                   {d.request.owner || "Chưa giao người xử lý"} ·{" "}
